@@ -154,8 +154,9 @@ def montar(ano: int, data_ref: str | None = None) -> dict:
     # tickers conferidos à mão para ISINs fora do padrão (CNPJ -> código de negociação)
     manuais = Path(__file__).with_name("tickers_manuais.json")
     if manuais.exists():
-        mapa = {k: v for k, v in json.loads(manuais.read_text()).items() if not k.startswith("_") and v}
-        fundos["ticker"] = [mapa.get(c, t) for c, t in zip(fundos["CNPJ_Fundo_Classe"], fundos["ticker"])]
+        # valor vazio força "sem ticker": o ISIN do fundo às vezes repete o código de outro fundo
+        mapa = {k: (v or None) for k, v in json.loads(manuais.read_text()).items() if not k.startswith("_")}
+        fundos["ticker"] = [mapa[c] if c in mapa else t for c, t in zip(fundos["CNPJ_Fundo_Classe"], fundos["ticker"])]
 
     ges = gestores(RAW / "registro_fundo_classe.zip")
     achado = [ges.get(so_digitos(c).zfill(14), (None, None)) for c in fundos["CNPJ_Fundo_Classe"]]

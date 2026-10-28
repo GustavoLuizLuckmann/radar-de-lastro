@@ -1,7 +1,13 @@
 {
-  "_comentario": "CNPJ do fundo -> código de negociação na B3. Deixe vazio se o fundo não tiver ticker.",
+  "_comentario": "CNPJ do fundo -> código de negociação na B3. Use \"\" para fundo sem ticker (cetipado ou não listado).",
   "11.827.568/0001-05": "",
   "43.951.875/0001-81": "VDSV11",
   "44.527.494/0001-32": "ARXD11",
-  "54.635.301/0001-10": "DVLT11"
+  "54.635.301/0001-10": "DVLT11",
+  "49.916.958/0001-16": "MARE11",
+  "65.837.970/0001-91": "",
+  "42.432.327/0001-82": "APTO11",
+  "41.081.356/0001-84": "BIME11",
+  "28.548.288/0001-52": "TRXF11",
+  "63.134.454/0001-75": ""
 }

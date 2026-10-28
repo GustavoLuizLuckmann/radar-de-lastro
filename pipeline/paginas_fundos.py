@@ -34,7 +34,8 @@ def slug_fundo(ticker, nome, cnpj):
     if ticker:
         return ticker.lower()
     s = unicodedata.normalize("NFKD", nome or "fii").encode("ascii", "ignore").decode().lower()
-    s = re.sub(r"fundo de investimento imobiliario|responsabilidade limitada|\bfii\b", " ", s)
+    s = re.sub(r"fundo de investimento imobiliario|fundo de investimento imob\w*|\bfi imobiliario\b|responsabilidade limitada|"
+               r"\bresp\.? limitada\b|\bfii\b|\bfi\b|\bresp\b", " ", s)
     s = re.sub(r"[^a-z0-9]+", "-", s).strip("-")[:50].strip("-")
     digitos = re.sub(r"\D", "", cnpj or "")[:8]
     return f"{s or 'fii'}-{digitos}"
