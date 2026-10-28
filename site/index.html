@@ -98,6 +98,7 @@ details.ev>summary::-webkit-details-marker{display:none}
 .fund b{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:22ch}
 .fund span{color:var(--muted);white-space:nowrap}
 .fund.more{color:var(--muted)}
+.otc{font-size:11px;font-weight:600;color:var(--muted);border:1px solid var(--line);border-radius:6px;padding:0 5px;white-space:nowrap}
 .more-link{font-size:13px;font-weight:600;color:var(--accent);display:inline-flex;align-items:center;gap:4px}
 .more-link svg{width:14px;height:14px;transition:transform .2s}
 details[open] .more-link svg{transform:rotate(180deg)}
@@ -197,7 +198,7 @@ details[open] .more-link svg{transform:rotate(180deg)}
     </label>
     <div class="row" id="row" role="group" aria-label="Filtros">
       <label class="switch" for="mine"><input id="mine" type="checkbox">Só meus fundos</label>
-      <label class="switch" for="listed"><input id="listed" type="checkbox" checked>Só FIIs listados</label>
+      <label class="switch" for="listed"><input id="listed" type="checkbox" checked>Só FIIs negociados em bolsa</label>
       <span class="divider" aria-hidden="true"></span>
       <button type="button" class="chip" data-sev="crit" aria-pressed="true" style="--sevbg:var(--crit-soft);--sevfg:var(--crit)"><span class="dot"></span>Urgente</button>
       <button type="button" class="chip" data-sev="warn" aria-pressed="true" style="--sevbg:var(--warn-soft);--sevfg:var(--warn)"><span class="dot"></span>Atenção</button>
@@ -284,7 +285,9 @@ function fase(e){
   if(e.fase==='deliberada') return 'Assembleia realizada';
   return e.categoria;
 }
-function fundosVisiveis(e){ return e.fundos.filter(f=>!state.listed || f.listado); }
+// "em bolsa" = tem código de negociação; o campo de mercado da CVM marca também cotas só registradas na B3
+const emBolsa = f => !!f.ticker;
+function fundosVisiveis(e){ return e.fundos.filter(f=>!state.listed || emBolsa(f)); }
 function afetaMeus(e){ return e.fundos.some(f=>state.carteira.has(f.cnpj_fundo)); }
 
 function filtrar(){
@@ -326,7 +329,7 @@ function renderResumo(){
 function chipsFundos(e){
   const fs=fundosVisiveis(e).slice().sort((a,b)=>(state.carteira.has(b.cnpj_fundo)-state.carteira.has(a.cnpj_fundo))||((b.pct_pl||0)-(a.pct_pl||0)));
   const vis=fs.slice(0,5);
-  let html=vis.map(f=>`<span class="fund${state.carteira.has(f.cnpj_fundo)?' mine':''}"><b class="${f.ticker?'tk':''}">${esc(rotulo(f))}</b><span>${pct(f.pct_pl)}</span></span>`).join('');
+  let html=vis.map(f=>`<span class="fund${state.carteira.has(f.cnpj_fundo)?' mine':''}"><b class="${f.ticker?'tk':''}">${esc(rotulo(f))}</b>${f.ticker?'':'<span class="otc" title="Sem negociação em bolsa">balcão</span>'}<span>${pct(f.pct_pl)}</span></span>`).join('');
   if(fs.length>vis.length) html+=`<span class="fund more">+${fs.length-vis.length} ${fs.length-vis.length===1?'fundo':'fundos'}</span>`;
   return html;
 }
@@ -350,7 +353,7 @@ function renderFeed(){
       <div class="ev-body">
         ${e.trecho?`<div class="box"><h4>Trecho do documento</h4><p class="quote">${esc(e.trecho)}</p></div>`:''}
         <div class="box"><h4>FIIs com esse CRI na carteira</h4>
-          <table class="exp-table"><tbody>${fs.map(f=>`<tr><td><b class="${f.ticker?'tk':''}">${esc(rotulo(f))}</b><br><small>${esc(nomeCurto(f.fundo))}</small></td><td>${pct(f.pct_pl)} do PL<br><small>${brl(f.valor)}</small></td></tr>`).join('')}</tbody></table>
+          <table class="exp-table"><tbody>${fs.map(f=>`<tr><td><b class="${f.ticker?'tk':''}">${esc(rotulo(f))}</b><br><small>${f.ticker?esc(nomeCurto(f.fundo)):'Sem negociação em bolsa'}</small></td><td>${pct(f.pct_pl)} do PL<br><small>${brl(f.valor)}</small></td></tr>`).join('')}</tbody></table>
         </div>
         ${e.data_assembleia?`<div class="box next"><h4>Próximo passo</h4><p>Assembleia marcada para ${dia(e.data_assembleia).toLocaleDateString('pt-BR')}, segundo o edital.</p></div>`:''}
         <div class="links">
@@ -366,7 +369,7 @@ function renderFeed(){
 }
 
 function renderExpo(){
-  let fs=DATA.fundos.filter(f=>!state.listed||f.listado);
+  let fs=DATA.fundos.filter(f=>!state.listed||emBolsa(f));
   const peso=f=>f.expo.crit*10+f.expo.warn*3+f.expo.mon;
   fs.sort((a,b)=>(state.carteira.has(b.cnpj_fundo)-state.carteira.has(a.cnpj_fundo))||(peso(b)-peso(a)));
   const vis=state.todosFundos?fs:fs.slice(0,12);
@@ -378,7 +381,7 @@ function renderExpo(){
     const m=state.carteira.has(f.cnpj_fundo);
     return `<li>
       <button type="button" class="star" data-f="${f.cnpj_fundo}" aria-pressed="${m}" aria-label="${m?'Remover':'Marcar'} ${esc(rotulo(f))} como meu fundo">${m?ICON.star:ICON.starO}</button>
-      <button type="button" class="fname" data-q="${esc(f.ticker||f.fundo)}" title="Ver eventos deste fundo"><span class="${f.ticker?'tk':''}">${esc(rotulo(f))}</span><small>${esc(nomeCurto(f.fundo))} · ${f.eventos} ${f.eventos===1?'evento':'eventos'}</small></button>
+      <button type="button" class="fname" data-q="${esc(f.ticker||f.fundo)}" title="Ver eventos deste fundo"><span class="${f.ticker?'tk':''}">${esc(rotulo(f))}</span><small>${f.ticker?esc(nomeCurto(f.fundo)):'Sem negociação em bolsa'} · ${f.eventos} ${f.eventos===1?'evento':'eventos'}</small></button>
       <span class="tot">${pct(tot(f))}<small>do PL</small></span>
       <div class="bar" role="img" aria-label="Urgente ${pct(f.expo.crit)}, atenção ${pct(f.expo.warn)}, acompanhar ${pct(f.expo.mon)}">${['crit','warn','mon'].filter(s=>f.expo[s]>0).map(s=>`<i class="${s}" style="width:${Math.min(100,f.expo[s]/maxEsc*100).toFixed(2)}%"></i>`).join('')}</div>
     </li>`}).join('');

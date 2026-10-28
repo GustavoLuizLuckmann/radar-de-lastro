@@ -127,6 +127,11 @@ def montar(ano: int, data_ref: str | None = None) -> dict:
     fundos = geral[["CNPJ_Fundo_Classe", "Nome_Fundo_Classe", "Codigo_ISIN", "Mercado_Negociacao_Bolsa",
                     "Segmento_Atuacao", "Nome_Administrador"]].merge(comp, on="CNPJ_Fundo_Classe", how="left")
     fundos["ticker"] = fundos["Codigo_ISIN"].map(ticker_do_isin)
+    # tickers conferidos à mão para ISINs fora do padrão (CNPJ -> código de negociação)
+    manuais = Path(__file__).with_name("tickers_manuais.json")
+    if manuais.exists():
+        mapa = {k: v for k, v in json.loads(manuais.read_text()).items() if not k.startswith("_") and v}
+        fundos["ticker"] = [mapa.get(c, t) for c, t in zip(fundos["CNPJ_Fundo_Classe"], fundos["ticker"])]
 
     pos = pos.merge(fundos, on="CNPJ_Fundo_Classe", how="left")
     pos["pct_pl"] = (pos["valor"] / pos["pl"]).where(pos["pl"] > 0)
