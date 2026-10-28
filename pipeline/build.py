@@ -50,7 +50,7 @@ def main():
             "serie": d["serie"], "outras_series": d["outras_series"], "operacao": d["operacao"],
             "url": URL_DOC.format(id=d["id"]), "cruzamento": metodo, **c,
             "codigos_if": sorted({p["codigo_if"] for p in pos if p["codigo_if"]}),
-            "fundos": [{k: f[k] for k in ("cnpj_fundo", "ticker", "fundo", "listado", "valor", "pct_pl")} for f in fundos],
+            "fundos": [{k: f.get(k) for k in ("cnpj_fundo", "ticker", "fundo", "listado", "gestor", "valor", "pct_pl")} for f in fundos],
         })
 
     # um card por operação e tipo de evento; documentos repetidos (edital, proposta, ata) viram histórico
@@ -74,7 +74,7 @@ def main():
     for e in eventos:
         for f in e["fundos"]:
             x = fundos.setdefault(f["cnpj_fundo"], {"cnpj_fundo": f["cnpj_fundo"], "ticker": f["ticker"], "fundo": f["fundo"],
-                                                    "listado": f["listado"], "pl": None,
+                                                    "listado": f["listado"], "gestor": f.get("gestor"), "pl": None,
                                                     "expo": {"crit": 0.0, "warn": 0.0, "mon": 0.0}, "eventos": 0, "_ops": {}})
             x["eventos"] += 1
             # a mesma operação pode aparecer em mais de um evento; conta o pior

@@ -66,6 +66,8 @@ h1{font-family:var(--display);font-weight:800;font-size:clamp(24px,5vw,30px);mar
 .chip{flex:none;border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:7px 14px;font-size:13.5px;font-weight:500;cursor:pointer;color:var(--muted);display:inline-flex;gap:7px;align-items:center}
 .chip[aria-pressed="true"]{background:var(--sevbg,var(--ink));border-color:transparent;color:var(--sevfg,var(--surface))}
 .chip .dot{width:8px;height:8px;border-radius:50%;background:var(--sevfg)}
+.sel{flex:none;font:inherit;font-size:13.5px;font-weight:500;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:7px 30px 7px 14px;max-width:260px;appearance:none;background-image:linear-gradient(45deg,transparent 50%,var(--muted) 50%),linear-gradient(135deg,var(--muted) 50%,transparent 50%);background-position:calc(100% - 16px) 52%,calc(100% - 11px) 52%;background-size:5px 5px;background-repeat:no-repeat;cursor:pointer}
+.sel.on{border-color:var(--accent);color:var(--accent)}
 .divider{flex:none;width:1px;height:22px;background:var(--line);margin:0 4px}
 .switch{flex:none;display:inline-flex;gap:8px;align-items:center;font-size:13.5px;font-weight:500;color:var(--muted);cursor:pointer;padding:6px 4px}
 .switch input{appearance:none;width:34px;height:20px;border-radius:999px;background:var(--line);position:relative;cursor:pointer;margin:0;transition:background .15s;flex:none}
@@ -199,6 +201,7 @@ details[open] .more-link svg{transform:rotate(180deg)}
     <div class="row" id="row" role="group" aria-label="Filtros">
       <label class="switch" for="mine"><input id="mine" type="checkbox">Só meus fundos</label>
       <label class="switch" for="listed"><input id="listed" type="checkbox" checked>Só FIIs negociados em bolsa</label>
+      <label for="gestora" class="sr" hidden>Gestora</label><select id="gestora" class="sel" aria-label="Filtrar por gestora"><option value="">Todas as gestoras</option></select>
       <span class="divider" aria-hidden="true"></span>
       <button type="button" class="chip" data-sev="crit" aria-pressed="true" style="--sevbg:var(--crit-soft);--sevfg:var(--crit)"><span class="dot"></span>Urgente</button>
       <button type="button" class="chip" data-sev="warn" aria-pressed="true" style="--sevbg:var(--warn-soft);--sevfg:var(--warn)"><span class="dot"></span>Atenção</button>
@@ -258,7 +261,7 @@ const store = {
 };
 const state = {
   q:'', sev:new Set(['crit','warn','mon']), mine:store.get('rl-mine',false), listed:store.get('rl-listed',true),
-  carteira:new Set(store.get('rl-carteira',[])), limite:25, todosFundos:false
+  carteira:new Set(store.get('rl-carteira',[])), limite:25, todosFundos:false, gestora:''
 };
 let DATA=null, HOJE=null;
 
@@ -272,6 +275,12 @@ function nomeCurto(n){
   return s.length>34? s.slice(0,32)+'…' : s;
 }
 const rotulo = f => f.ticker || nomeCurto(f.fundo);
+function gestoraCurta(n){
+  if(!n) return 'Gestora não informada';
+  let t=n.replace(/\b(LTDA|S\/?A|S\.A|EIRELI)\b\.?/gi,' ').replace(/GEST(Ã|A)O DE RECURSOS|GESTORA DE RECURSOS|ADMINISTRA(Ç|C)(Ã|A)O DE RECURSOS|GESTORA LTDA|ASSET MANAGEMENT|GESTÃO E CONSULTORIA DE INVESTIMENTOS|INVESTIMENTOS E PARTICIPA(Ç|C)(Õ|O)ES|\bGESTORA\b|INVESTIMENTOS|\bDTVM\b|DISTRIBUIDORA DE T(Í|I)TULOS E VALORES MOBILI(Á|A)RIOS|CORRETORA DE T(Í|I)TULOS E VALORES MOBILI(Á|A)RIOS/gi,' ');
+  t=t.replace(/[.,\-–\s]+$/,'').replace(/\s+/g,' ').trim().split(' ').map(w=>{const l=w.toLowerCase(); if(['de','da','do','das','dos','e'].includes(l)) return l; if(w.length<=3) return w.toUpperCase(); return l.charAt(0).toUpperCase()+l.slice(1);}).join(' ');
+  return t||n;
+}
 const dia = s => new Date(s.slice(0,10)+'T00:00:00-03:00');
 function quando(iso){
   const n=Math.round((HOJE-dia(iso))/864e5), h=iso.slice(11,16);
@@ -287,7 +296,8 @@ function fase(e){
 }
 // "em bolsa" = tem código de negociação; o campo de mercado da CVM marca também cotas só registradas na B3
 const emBolsa = f => !!f.ticker;
-function fundosVisiveis(e){ return e.fundos.filter(f=>!state.listed || emBolsa(f)); }
+const passaFundo = f => (!state.listed || emBolsa(f)) && (!state.gestora || f.gestor===state.gestora);
+function fundosVisiveis(e){ return e.fundos.filter(passaFundo); }
 function afetaMeus(e){ return e.fundos.some(f=>state.carteira.has(f.cnpj_fundo)); }
 
 function filtrar(){
@@ -297,7 +307,7 @@ function filtrar(){
     if(!fundosVisiveis(e).length) return false;
     if(state.mine && !afetaMeus(e)) return false;
     if(q){
-      const hay=[e.tipo,e.securitizadora,e.operacao,e.trecho,...e.codigos_if,...e.fundos.map(f=>(f.ticker||'')+' '+f.fundo)].join(' ').toLowerCase();
+      const hay=[e.tipo,e.securitizadora,e.operacao,e.trecho,...e.codigos_if,...e.fundos.map(f=>(f.ticker||'')+' '+f.fundo+' '+(f.gestor||''))].join(' ').toLowerCase();
       if(!hay.includes(q)) return false;
     }
     return true;
@@ -353,7 +363,7 @@ function renderFeed(){
       <div class="ev-body">
         ${e.trecho?`<div class="box"><h4>Trecho do documento</h4><p class="quote">${esc(e.trecho)}</p></div>`:''}
         <div class="box"><h4>FIIs com esse CRI na carteira</h4>
-          <table class="exp-table"><tbody>${fs.map(f=>`<tr><td><b class="${f.ticker?'tk':''}">${esc(rotulo(f))}</b><br><small>${f.ticker?esc(nomeCurto(f.fundo)):'Sem negociação em bolsa'}</small></td><td>${pct(f.pct_pl)} do PL<br><small>${brl(f.valor)}</small></td></tr>`).join('')}</tbody></table>
+          <table class="exp-table"><tbody>${fs.map(f=>`<tr><td><b class="${f.ticker?'tk':''}">${esc(rotulo(f))}</b><br><small>${f.ticker?esc(nomeCurto(f.fundo)):'Sem negociação em bolsa'} · ${esc(gestoraCurta(f.gestor))}</small></td><td>${pct(f.pct_pl)} do PL<br><small>${brl(f.valor)}</small></td></tr>`).join('')}</tbody></table>
         </div>
         ${e.data_assembleia?`<div class="box next"><h4>Próximo passo</h4><p>Assembleia marcada para ${dia(e.data_assembleia).toLocaleDateString('pt-BR')}, segundo o edital.</p></div>`:''}
         <div class="links">
@@ -369,7 +379,7 @@ function renderFeed(){
 }
 
 function renderExpo(){
-  let fs=DATA.fundos.filter(f=>!state.listed||emBolsa(f));
+  let fs=DATA.fundos.filter(passaFundo);
   const peso=f=>f.expo.crit*10+f.expo.warn*3+f.expo.mon;
   fs.sort((a,b)=>(state.carteira.has(b.cnpj_fundo)-state.carteira.has(a.cnpj_fundo))||(peso(b)-peso(a)));
   const vis=state.todosFundos?fs:fs.slice(0,12);
@@ -381,7 +391,7 @@ function renderExpo(){
     const m=state.carteira.has(f.cnpj_fundo);
     return `<li>
       <button type="button" class="star" data-f="${f.cnpj_fundo}" aria-pressed="${m}" aria-label="${m?'Remover':'Marcar'} ${esc(rotulo(f))} como meu fundo">${m?ICON.star:ICON.starO}</button>
-      <button type="button" class="fname" data-q="${esc(f.ticker||f.fundo)}" title="Ver eventos deste fundo"><span class="${f.ticker?'tk':''}">${esc(rotulo(f))}</span><small>${f.ticker?esc(nomeCurto(f.fundo)):'Sem negociação em bolsa'} · ${f.eventos} ${f.eventos===1?'evento':'eventos'}</small></button>
+      <button type="button" class="fname" data-q="${esc(f.ticker||f.fundo)}" title="Ver eventos deste fundo"><span class="${f.ticker?'tk':''}">${esc(rotulo(f))}</span><small>${esc(gestoraCurta(f.gestor))}${f.ticker?'':' · balcão'} · ${f.eventos} ${f.eventos===1?'evento':'eventos'}</small></button>
       <span class="tot">${pct(tot(f))}<small>do PL</small></span>
       <div class="bar" role="img" aria-label="Urgente ${pct(f.expo.crit)}, atenção ${pct(f.expo.warn)}, acompanhar ${pct(f.expo.mon)}">${['crit','warn','mon'].filter(s=>f.expo[s]>0).map(s=>`<i class="${s}" style="width:${Math.min(100,f.expo[s]/maxEsc*100).toFixed(2)}%"></i>`).join('')}</div>
     </li>`}).join('');
@@ -408,7 +418,16 @@ function renderFoot(){
     <p>Fontes: Fundos.Net (B3/CVM) e Portal de Dados Abertos da CVM. Documentos de ${dia(DATA.janela.inicio).toLocaleDateString('pt-BR')} a ${dia(DATA.janela.fim).toLocaleDateString('pt-BR')}.</p>`;
 }
 
-function render(){renderResumo();renderFeed();renderExpo();renderAgenda();}
+function renderGestoras(){
+  const sel=document.getElementById('gestora');
+  const cont=new Map();
+  DATA.eventos.forEach(e=>new Set(e.fundos.filter(f=>!state.listed||emBolsa(f)).map(f=>f.gestor).filter(Boolean)).forEach(g=>cont.set(g,(cont.get(g)||0)+1)));
+  const lista=[...cont.entries()].sort((a,b)=>b[1]-a[1]||gestoraCurta(a[0]).localeCompare(gestoraCurta(b[0])));
+  if(state.gestora && !cont.has(state.gestora)) state.gestora='';
+  sel.innerHTML='<option value="">Todas as gestoras</option>'+lista.map(([g,n])=>`<option value="${esc(g)}"${g===state.gestora?' selected':''}>${esc(gestoraCurta(g))} (${n})</option>`).join('');
+  sel.classList.toggle('on',!!state.gestora);
+}
+function render(){renderGestoras();renderResumo();renderFeed();renderExpo();renderAgenda();}
 
 function ligar(){
   const row=document.getElementById('row');
@@ -419,6 +438,7 @@ function ligar(){
   mine.addEventListener('change',()=>{state.mine=mine.checked;store.set('rl-mine',state.mine);state.limite=25;renderFeed();});
   const listed=document.getElementById('listed'); listed.checked=state.listed;
   listed.addEventListener('change',()=>{state.listed=listed.checked;store.set('rl-listed',state.listed);render();});
+  const gs=document.getElementById('gestora'); gs.addEventListener('change',()=>{state.gestora=gs.value;state.limite=25;render();});
   document.getElementById('loadmore').addEventListener('click',()=>{state.limite+=25;renderFeed();});
   document.getElementById('showall').addEventListener('click',()=>{state.todosFundos=!state.todosFundos;renderExpo();});
   document.getElementById('expo').addEventListener('click',ev=>{

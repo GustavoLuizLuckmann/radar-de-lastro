@@ -114,7 +114,7 @@ def expor(posicoes):
     for p in posicoes:
         f = por_fundo.setdefault(p["cnpj_fundo"], {
             "cnpj_fundo": p["cnpj_fundo"], "ticker": p["ticker"], "fundo": p["fundo"],
-            "listado": p["listado"], "valor": 0.0, "pl": p["pl"], "codigos_if": set(),
+            "listado": p["listado"], "gestor": p.get("gestor"), "valor": 0.0, "pl": p["pl"], "codigos_if": set(),
         })
         f["valor"] += p["valor"]
         if p["codigo_if"]:

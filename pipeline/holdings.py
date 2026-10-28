@@ -79,12 +79,35 @@ def so_digitos(s):
     return re.sub(r"\D", "", s) if isinstance(s, str) else ""
 
 
+def gestores(zcad: Path) -> dict:
+    """CNPJ (só dígitos) do fundo ou da classe -> (nome, CNPJ) do gestor, pelo cadastro de fundos da CVM."""
+    with zipfile.ZipFile(zcad) as z:
+        with z.open("registro_fundo.csv") as f:
+            rf = pd.read_csv(io.TextIOWrapper(f, encoding="latin1"), sep=";", dtype=str)
+        with z.open("registro_classe.csv") as f:
+            rc = pd.read_csv(io.TextIOWrapper(f, encoding="latin1"), sep=";", dtype=str,
+                             usecols=["ID_Registro_Fundo", "CNPJ_Classe"])
+    rf = rf.sort_values("Data_Inicio_Situacao")
+    por_id = {r.ID_Registro_Fundo: (r.Gestor, r.CPF_CNPJ_Gestor) for r in rf.itertuples() if isinstance(r.Gestor, str)}
+    mapa = {}
+    for r in rc.itertuples():
+        if r.ID_Registro_Fundo in por_id:
+            mapa[so_digitos(r.CNPJ_Classe).zfill(14)] = por_id[r.ID_Registro_Fundo]
+    for r in rf.itertuples():  # o CNPJ do fundo tem prioridade sobre o da classe
+        if isinstance(r.Gestor, str):
+            mapa[so_digitos(r.CNPJ_Fundo).zfill(14)] = (r.Gestor, r.CPF_CNPJ_Gestor)
+    return mapa
+
+
 def montar(ano: int, data_ref: str | None = None) -> dict:
     ztri = RAW / f"inf_trimestral_fii_{ano}.zip"
     zmen = RAW / f"inf_mensal_fii_{ano}.zip"
     if "--offline" not in sys.argv:
         baixar(f"INF_TRIMESTRAL/DADOS/inf_trimestral_fii_{ano}.zip", ztri)
         baixar(f"INF_MENSAL/DADOS/inf_mensal_fii_{ano}.zip", zmen)
+        r = requests.get("https://dados.cvm.gov.br/dados/FI/CAD/DADOS/registro_fundo_classe.zip", timeout=300)
+        r.raise_for_status()
+        (RAW / "registro_fundo_classe.zip").write_bytes(r.content)
 
     ativo = ultima_versao(ler_zip(ztri, "inf_trimestral_fii_ativo_"))
     cri = ativo[ativo["Tipo"] == "CRI/CRA"].copy()
@@ -134,6 +157,11 @@ def montar(ano: int, data_ref: str | None = None) -> dict:
         mapa = {k: v for k, v in json.loads(manuais.read_text()).items() if not k.startswith("_") and v}
         fundos["ticker"] = [mapa.get(c, t) for c, t in zip(fundos["CNPJ_Fundo_Classe"], fundos["ticker"])]
 
+    ges = gestores(RAW / "registro_fundo_classe.zip")
+    achado = [ges.get(so_digitos(c).zfill(14), (None, None)) for c in fundos["CNPJ_Fundo_Classe"]]
+    fundos["gestor"] = [g for g, _ in achado]
+    fundos["cnpj_gestor"] = [c for _, c in achado]
+
     pos = pos.merge(fundos, on="CNPJ_Fundo_Classe", how="left")
     pos["pct_pl"] = (pos["valor"] / pos["pl"]).where(pos["pl"] > 0)
 
@@ -152,6 +180,7 @@ def montar(ano: int, data_ref: str | None = None) -> dict:
         registros.append({
             "cnpj_fundo": r.CNPJ_Fundo_Classe, "ticker": limpo(r.ticker), "fundo": limpo(r.Nome_Fundo_Classe),
             "listado": r.Mercado_Negociacao_Bolsa == "S", "administrador": limpo(r.Nome_Administrador),
+            "gestor": limpo(r.gestor), "cnpj_gestor": limpo(r.cnpj_gestor),
             "chave": r.chave, "metodo": r.metodo, "codigo_if": limpo(r.codigo_if), "cnpj_emissor": r.cnpj_emissor,
             "emissao": r.emissao, "serie": r.serie, "descricao": r.descricao, "vencimento": limpo(r.vencimento),
             "valor": round(float(r.valor), 2),
