@@ -1,5 +1,15 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta property="og:title" content="Radar de Lastro">
+<meta property="og:description" content="Eventos de crédito nos CRIs da carteira dos FIIs, com dados públicos do Fundos.Net e da CVM.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://radardelastro.com.br/">
+<meta name="theme-color" content="#0E7C70">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' rx='6' fill='%23E1F3F0'/%3E%3Cg fill='none' stroke='%230E7C70' stroke-width='2' stroke-linecap='round'%3E%3Ccircle cx='12' cy='12' r='8'/%3E%3Cpath d='M12 12 L17.5 7'/%3E%3C/g%3E%3C/svg%3E">
 <title>Radar de Lastro</title>
-<meta name="claude:viewport-fit-sides" content="cover">
 <meta name="description" content="Eventos de crédito nos CRIs da carteira dos FIIs, com dados públicos do Fundos.Net e da CVM.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=DM+Mono:wght@400;500&display=swap">
@@ -28,6 +38,11 @@
   color-scheme:dark}
 
 *{box-sizing:border-box}
+html{color-scheme:light}
+:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+body{margin:0}
+img{max-width:100%}
+[hidden]{display:none!important}
 body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.55}
 .wrap{max-width:1180px;margin:0 auto;padding-block:22px 56px;
   padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
@@ -171,6 +186,8 @@ details[open] .more-link svg{transform:rotate(180deg)}
 .loading{padding:40px 0;text-align:center;color:var(--muted)}
 @media (prefers-reduced-motion:no-preference){details.ev[open] .ev-body{animation:in .2s ease-out}@keyframes in{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}}
 </style>
+</head>
+<body>
 
 <div class="wrap">
   <header class="top">
@@ -461,3 +478,7 @@ fetch('data.json').then(r=>{if(!r.ok) throw new Error(r.status); return r.json()
   document.getElementById('feed').innerHTML='<li class="empty">Sem dados para mostrar agora.</li>';
 });
 </script>
+<!-- Cloudflare Web Analytics (sem cookies) -->
+<script type="module" src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "8320a7efa9a3461a9691bc75bac53d7b"}'></script>
+</body>
+</html>
