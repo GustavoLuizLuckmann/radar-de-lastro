@@ -33,7 +33,7 @@ function render(){
     :'<p class="empty"><b>Nenhuma assembleia futura com data identificada.</b>Quando um edital novo for publicado, ele aparece aqui.</p>';
 
   const per=assem.filter(e=>noPeriodo(e.data) && passa(e)).sort((a,b)=>b.data.localeCompare(a.data));
-  document.getElementById('h-per').textContent='Documentos de assembleia '+periodoTexto();
+  document.getElementById('h-per').textContent='Já publicados '+periodoTexto();
   document.getElementById('n-per').textContent=per.length+(per.length===1?' documento':' documentos');
   document.getElementById('periodo-lista').innerHTML=per.length?per.map(e=>item(e,e.data,`<span class="in" style="color:var(--muted)">${esc(fase(e))}</span>`)).join('<hr style="border:0;border-top:1px solid var(--line);margin:0">')
     :'<p class="empty"><b>Nenhum documento de assembleia com esses filtros.</b>Amplie o período ou limpe a busca.</p>';

@@ -78,10 +78,13 @@ def gestora_curta(n):
                r"GEST(Ã|A)O E CONSULTORIA DE INVESTIMENTOS|INVESTIMENTOS E PARTICIPA(Ç|C)(Õ|O)ES|\bGESTORA\b|"
                r"INVESTIMENTOS|\bDTVM\b|DISTRIBUIDORA DE T(Í|I)TULOS E VALORES MOBILI(Á|A)RIOS|"
                r"CORRETORA DE T(Í|I)TULOS E VALORES MOBILI(Á|A)RIOS", " ", t, flags=re.I)
+    t = re.sub(r"\s+", " ", t).strip(" .,-–")
+    t = re.sub(r"^((de|da|do|das|dos|e|&)\s+)+", "", t, flags=re.I)
+    t = re.sub(r"(\s+(de|da|do|das|dos|e|&))+[\s.,\-–]*$", "", t, flags=re.I).strip(" .,-–")
     pal = []
-    for w in re.sub(r"\s+", " ", t).strip(" .,-–").split():
+    for w in t.split():
         lw = w.lower()
-        pal.append(lw if lw in CONECTIVOS else (w.upper() if len(w) <= 3 else lw[:1].upper() + lw[1:]))
+        pal.append(lw if lw in CONECTIVOS else (w.upper() if len(w) <= 3 and lw not in {"rio", "sul", "mar", "sol", "paz", "lar"} else lw[:1].upper() + lw[1:]))
     return " ".join(pal) or n
 
 

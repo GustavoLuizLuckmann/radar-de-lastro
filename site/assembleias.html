@@ -3,10 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Assembleias · Radar de Lastro</title>
-<meta name="description" content="Assembleias de titulares de CRIs que estão na carteira dos FIIs, com data e pauta.">
-<meta property="og:title" content="Assembleias · Radar de Lastro">
-<meta property="og:description" content="Assembleias de titulares de CRIs que estão na carteira dos FIIs, com data e pauta.">
+<title>Próximas assembleias · Radar de Lastro</title>
+<meta name="description" content="Próximas assembleias de titulares de CRIs que estão na carteira dos FIIs, com data, pauta e fundos expostos.">
+<meta property="og:title" content="Próximas assembleias · Radar de Lastro">
+<meta property="og:description" content="Próximas assembleias de titulares de CRIs que estão na carteira dos FIIs, com data, pauta e fundos expostos.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://radardelastro.com.br/assembleias.html">
 <link rel="canonical" href="https://radardelastro.com.br/assembleias.html">
@@ -31,12 +31,12 @@
         <b>Radar de Lastro</b>
       </a>
       <nav class="nav" aria-label="Páginas">
-        <a href="/">Eventos</a><a href="/fundos.html">Fundos expostos</a><a href="/assembleias.html" aria-current="page">Assembleias</a><a href="/como-funciona.html">Como funciona</a>
+        <a href="/">Eventos</a><a href="/fundos.html">Fundos expostos</a><a href="/assembleias.html" aria-current="page">Próximas assembleias</a><a href="/como-funciona.html">Como funciona</a>
       </nav>
     </div>
     <div class="hero compact">
-      <h1 id="headline">Assembleias</h1>
-      <p id="subline">Assembleias de titulares de CRIs que estão na carteira de FIIs, convocadas para tratar de crédito.</p>
+      <h1 id="headline">Próximas assembleias</h1>
+      <p id="subline">Assembleias de titulares de CRIs que estão na carteira de FIIs, convocadas para tratar de crédito, de hoje em diante.</p>
       <p class="updated" id="updated"></p>
     </div>
   </div>
@@ -59,13 +59,13 @@
 
 <main class="wrap">
   <section class="ag-group" aria-labelledby="h-prox">
-    <div class="head"><h2 id="h-prox">Próximas assembleias</h2><small id="n-prox"></small></div>
+    <div class="head"><h2 id="h-prox">Agenda</h2><small id="n-prox"></small></div>
     <p class="note" style="margin:0 0 10px">Datas lidas dos editais de convocação. Confirme no documento: a assembleia pode ser adiada ou ter segunda convocação.</p>
     <div class="panel"><div class="list" id="prox"><p class="loading">Carregando…</p></div></div>
   </section>
   <section class="ag-group" aria-labelledby="h-per">
-    <div class="head"><h2 id="h-per">Documentos de assembleia no período</h2><small id="n-per"></small></div>
-    <p class="note" style="margin:0 0 10px">Editais, propostas, atas e sumários das decisões publicados no período escolhido.</p>
+    <div class="head"><h2 id="h-per">Já publicados</h2><small id="n-per"></small></div>
+    <p class="note" style="margin:0 0 10px">Para consulta: editais, propostas, atas e sumários das decisões publicados no período escolhido no filtro acima.</p>
     <div class="panel"><div class="list" id="periodo-lista"></div></div>
   </section>
 </main>
@@ -109,7 +109,7 @@ function render(){
     :'<p class="empty"><b>Nenhuma assembleia futura com data identificada.</b>Quando um edital novo for publicado, ele aparece aqui.</p>';
 
   const per=assem.filter(e=>noPeriodo(e.data) && passa(e)).sort((a,b)=>b.data.localeCompare(a.data));
-  document.getElementById('h-per').textContent='Documentos de assembleia '+periodoTexto();
+  document.getElementById('h-per').textContent='Já publicados '+periodoTexto();
   document.getElementById('n-per').textContent=per.length+(per.length===1?' documento':' documentos');
   document.getElementById('periodo-lista').innerHTML=per.length?per.map(e=>item(e,e.data,`<span class="in" style="color:var(--muted)">${esc(fase(e))}</span>`)).join('<hr style="border:0;border-top:1px solid var(--line);margin:0">')
     :'<p class="empty"><b>Nenhum documento de assembleia com esses filtros.</b>Amplie o período ou limpe a busca.</p>';

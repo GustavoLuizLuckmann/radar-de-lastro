@@ -10,7 +10,7 @@ SITE = AQUI.parent / "site"
 PAGINAS = {
     "index.html": ("Radar de Lastro", "Eventos de crédito nos CRIs da carteira dos FIIs, com dados públicos do Fundos.Net e da CVM."),
     "fundos.html": ("Fundos expostos · Radar de Lastro", "Ranking dos FIIs com mais patrimônio em CRIs que tiveram eventos de crédito."),
-    "assembleias.html": ("Assembleias · Radar de Lastro", "Assembleias de titulares de CRIs que estão na carteira dos FIIs, com data e pauta."),
+    "assembleias.html": ("Próximas assembleias · Radar de Lastro", "Próximas assembleias de titulares de CRIs que estão na carteira dos FIIs, com data, pauta e fundos expostos."),
     "como-funciona.html": ("Como funciona · Radar de Lastro", "De onde vêm os dados do Radar de Lastro, como os eventos são classificados e o que cada um significa."),
 }
 
@@ -47,7 +47,7 @@ HEAD = """<!doctype html>
         <b>Radar de Lastro</b>
       </a>
       <nav class="nav" aria-label="Páginas">
-        <a href="/"{a_index}>Eventos</a><a href="/fundos.html"{a_fundos}>Fundos expostos</a><a href="/assembleias.html"{a_assembleias}>Assembleias</a><a href="/como-funciona.html"{a_como}>Como funciona</a>
+        <a href="/"{a_index}>Eventos</a><a href="/fundos.html"{a_fundos}>Fundos expostos</a><a href="/assembleias.html"{a_assembleias}>Próximas assembleias</a><a href="/como-funciona.html"{a_como}>Como funciona</a>
       </nav>
     </div>
 """

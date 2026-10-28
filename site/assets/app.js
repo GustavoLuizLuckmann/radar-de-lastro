@@ -57,7 +57,8 @@ const urlFundo = f => f.slug ? '/fii/'+f.slug+'/' : '/?q='+encodeURIComponent(f.
 function gestoraCurta(n){
   if(!n) return 'Gestora não informada';
   let t=n.replace(/\b(LTDA|S\/?A|S\.A|EIRELI)\b\.?/gi,' ').replace(/GEST(Ã|A)O DE RECURSOS|GESTORA DE RECURSOS|ADMINISTRA(Ç|C)(Ã|A)O DE RECURSOS|ASSET MANAGEMENT|GEST(Ã|A)O E CONSULTORIA DE INVESTIMENTOS|INVESTIMENTOS E PARTICIPA(Ç|C)(Õ|O)ES|\bGESTORA\b|INVESTIMENTOS|\bDTVM\b|DISTRIBUIDORA DE T(Í|I)TULOS E VALORES MOBILI(Á|A)RIOS|CORRETORA DE T(Í|I)TULOS E VALORES MOBILI(Á|A)RIOS/gi,' ');
-  t=t.replace(/[.,\-–\s]+$/,'').replace(/\s+/g,' ').trim().split(' ').map(w=>{const l=w.toLowerCase(); if(['de','da','do','das','dos','e'].includes(l)) return l; if(w.length<=3) return w.toUpperCase(); return l.charAt(0).toUpperCase()+l.slice(1);}).join(' ');
+  // tira conectivos que sobram nas pontas ("CARTESIA INVESTIMENTOS E GESTÃO DE RECURSOS" -> "Cartesia")
+  t=t.replace(/\s+/g,' ').trim().replace(/^((de|da|do|das|dos|e|&)\s+)+/i,'').replace(/(\s+(de|da|do|das|dos|e|&))+[.,\-–\s]*$/i,'').replace(/[.,\-–\s]+$/,'').trim().split(' ').map(w=>{const l=w.toLowerCase(); if(['de','da','do','das','dos','e'].includes(l)) return l; if(w.length<=3 && !['rio','sul','mar','sol','paz','lar'].includes(l)) return w.toUpperCase(); return l.charAt(0).toUpperCase()+l.slice(1);}).join(' ');
   return t||n;
 }
 const secNome = s => SECS[s] || titulo(s||'');
