@@ -51,7 +51,8 @@ def ultima_versao(df: pd.DataFrame) -> pd.DataFrame:
 
 def ticker_do_isin(isin):
     # ISIN de cota de FII: BR + 4 letras do código de negociação + CTF + dígitos. Ex.: BRHGLGCTF004 -> HGLG11
-    if not isinstance(isin, str) or len(isin) < 12 or isin[6:9] != "CTF":
+    # também aceita o formato BRxxxxR01..., usado por algumas classes (ex.: BRARXDR01M19 -> ARXD11)
+    if not isinstance(isin, str) or len(isin) < 12 or isin[6:9] not in ("CTF", "R01"):
         return None
     raiz = isin[2:6]
     return raiz + "11" if re.fullmatch(r"[A-Z]{4}", raiz) else None
