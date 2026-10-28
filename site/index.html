@@ -3,273 +3,336 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Radar de Lastro</title>
+<meta name="description" content="Eventos de crédito nos CRIs da carteira dos FIIs, com dados públicos do Fundos.Net e da CVM.">
 <meta property="og:title" content="Radar de Lastro">
 <meta property="og:description" content="Eventos de crédito nos CRIs da carteira dos FIIs, com dados públicos do Fundos.Net e da CVM.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://radardelastro.com.br/">
-<meta name="theme-color" content="#0E7C70">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' rx='6' fill='%23E1F3F0'/%3E%3Cg fill='none' stroke='%230E7C70' stroke-width='2' stroke-linecap='round'%3E%3Ccircle cx='12' cy='12' r='8'/%3E%3Cpath d='M12 12 L17.5 7'/%3E%3C/g%3E%3C/svg%3E">
-<title>Radar de Lastro</title>
-<meta name="description" content="Eventos de crédito nos CRIs da carteira dos FIIs, com dados públicos do Fundos.Net e da CVM.">
+<meta name="theme-color" content="#173F31">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23173F31'/%3E%3Cg fill='none' stroke='%23CFE6D9' stroke-width='1.6'%3E%3Ccircle cx='16' cy='16' r='10'/%3E%3Ccircle cx='16' cy='16' r='6' opacity='.6'/%3E%3C/g%3E%3Cpath d='M16 16 L24 9' stroke='%23D9A441' stroke-width='2.2' stroke-linecap='round'/%3E%3Ccircle cx='16' cy='16' r='2' fill='%23D9A441'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=DM+Mono:wght@400;500&display=swap">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&display=swap">
 <style>
-/* Layout: resumo em frase, filtros em chips, eventos em cards; lateral com fundos expostos e assembleias */
+/*
+  Identidade: papel de título de crédito. Verde de cautela, linhas concêntricas de radar que
+  lembram a gravação de segurança (guilhochê) de um certificado, selo ocre só na marca.
+  Layout: faixa verde com a frase do período; barra de filtros fixa; lista de eventos em linhas
+  à esquerda; carteira, fundos expostos e agenda à direita. Tudo alinhado à esquerda.
+*/
 :root{
-  --bg:#F4F6FA; --surface:#FFFFFF; --soft:#EEF2F8; --ink:#1C2333; --muted:#5F6B80; --line:#E2E7EF;
-  --accent:#0E7C70; --accent-soft:#E1F3F0;
-  --crit:#C93B3B; --crit-soft:#FDECEC; --warn:#B76A00; --warn-soft:#FFF3DD; --mon:#3767AE; --mon-soft:#E8F0FB;
-  --shadow:0 1px 2px rgba(28,35,51,.05),0 6px 18px rgba(28,35,51,.06);
-  --display:"Bricolage Grotesque","Avenir Next","Segoe UI",sans-serif;
-  --body:"DM Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
-  --mono:"DM Mono",ui-monospace,Menlo,monospace;
+  --paper:#F4F6F3; --surface:#FFFFFF; --ink:#13221B; --muted:#5A6A61; --line:#DCE3DE; --soft:#EEF2EF;
+  --brand:#173F31; --brand-2:#245C47; --brand-ink:#EAF3EE; --brand-muted:#A9C7B8; --seal:#D9A441;
+  --accent:#1F6B4F; --accent-soft:#E3F0E9;
+  --crit:#B42318; --crit-soft:#FCECEA; --warn:#9A5B05; --warn-soft:#FDF2DE; --mon:#2C5D8A; --mon-soft:#E7EFF7;
+  --font:"Schibsted Grotesk","Helvetica Neue",Arial,sans-serif;
+  --r-lg:14px; --r-md:10px; --r-sm:6px;
+  color-scheme:light;
 }
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
-  --bg:#10151D; --surface:#18202B; --soft:#1F2936; --ink:#E8EDF4; --muted:#9AA7B8; --line:#273242;
-  --accent:#4FC7B6; --accent-soft:#163430;
-  --crit:#F28B8B; --crit-soft:#3B1F22; --warn:#F2BA62; --warn-soft:#3A2C14; --mon:#8DB4F0; --mon-soft:#1C2A40;
-  --shadow:0 1px 2px rgba(0,0,0,.3),0 6px 18px rgba(0,0,0,.25);
+  --paper:#0D1411; --surface:#141E19; --ink:#E3EBE6; --muted:#96A79E; --line:#24332B; --soft:#1A2620;
+  --brand:#0F2A20; --brand-2:#1A3D30; --brand-ink:#E3EFE8; --brand-muted:#8FB3A1; --seal:#E2B158;
+  --accent:#7CC6A3; --accent-soft:#16352A;
+  --crit:#F08A80; --crit-soft:#3A1D1A; --warn:#EDB862; --warn-soft:#372812; --mon:#8EB6E3; --mon-soft:#192A3D;
   color-scheme:dark}}
 :root[data-theme="dark"]{
-  --bg:#10151D; --surface:#18202B; --soft:#1F2936; --ink:#E8EDF4; --muted:#9AA7B8; --line:#273242;
-  --accent:#4FC7B6; --accent-soft:#163430;
-  --crit:#F28B8B; --crit-soft:#3B1F22; --warn:#F2BA62; --warn-soft:#3A2C14; --mon:#8DB4F0; --mon-soft:#1C2A40;
-  --shadow:0 1px 2px rgba(0,0,0,.3),0 6px 18px rgba(0,0,0,.25);
+  --paper:#0D1411; --surface:#141E19; --ink:#E3EBE6; --muted:#96A79E; --line:#24332B; --soft:#1A2620;
+  --brand:#0F2A20; --brand-2:#1A3D30; --brand-ink:#E3EFE8; --brand-muted:#8FB3A1; --seal:#E2B158;
+  --accent:#7CC6A3; --accent-soft:#16352A;
+  --crit:#F08A80; --crit-soft:#3A1D1A; --warn:#EDB862; --warn-soft:#372812; --mon:#8EB6E3; --mon-soft:#192A3D;
   color-scheme:dark}
 
 *{box-sizing:border-box}
-html{color-scheme:light}
-:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
-body{margin:0}
-img{max-width:100%}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--font);font-size:15.5px;line-height:1.55;font-variant-numeric:tabular-nums}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:30;background:var(--brand)}
 [hidden]{display:none!important}
-body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.55}
-.wrap{max-width:1180px;margin:0 auto;padding-block:22px 56px;
-  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
-button{font:inherit;color:inherit}
 a{color:var(--accent)}
-:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-.tk{font-family:var(--mono);font-weight:500;letter-spacing:.01em}
+button,input,select{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--seal);outline-offset:2px}
+.wrap{max-width:1200px;margin:0 auto;padding-left:max(20px,env(safe-area-inset-left,0px));padding-right:max(20px,env(safe-area-inset-right,0px))}
+.tk{font-weight:700;letter-spacing:.02em}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 
-.top{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;justify-content:space-between;margin-bottom:16px}
-.logo{display:flex;gap:12px;align-items:center}
-.mark{width:40px;height:40px;border-radius:12px;background:var(--accent-soft);display:grid;place-items:center;flex:none}
-.mark svg{width:24px;height:24px}
-h1{font-family:var(--display);font-weight:800;font-size:clamp(24px,5vw,30px);margin:0;line-height:1.1;letter-spacing:-.01em}
-.tag{font-size:13px;color:var(--muted);margin:2px 0 0}
-.fresh{font-size:12.5px;color:var(--muted);background:var(--surface);border:1px solid var(--line);padding:6px 12px;border-radius:999px}
-.fresh b{color:var(--ink);font-weight:600}
+/* Faixa da marca */
+.band{background:var(--brand);color:var(--brand-ink);position:relative;overflow:hidden;padding-top:env(safe-area-inset-top,0px)}
+.rings{position:absolute;right:-160px;top:50%;width:620px;height:620px;transform:translateY(-50%);border-radius:50%;pointer-events:none;
+  background:repeating-radial-gradient(circle at center, transparent 0 21px, color-mix(in srgb,var(--brand-muted) 22%,transparent) 21px 22px);
+  -webkit-mask:radial-gradient(circle, #000 40%, transparent 70%);mask:radial-gradient(circle, #000 40%, transparent 70%)}
+.sweep{position:absolute;inset:0;border-radius:50%;background:conic-gradient(from 0deg, color-mix(in srgb,var(--seal) 34%,transparent), transparent 55deg)}
+@media (prefers-reduced-motion:no-preference){.sweep{animation:sweep 9s linear infinite}@keyframes sweep{to{transform:rotate(360deg)}}}
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:12px 24px;flex-wrap:wrap;padding-block:16px;position:relative}
+.brand{display:flex;align-items:center;gap:12px;text-decoration:none;color:inherit}
+.brand svg{width:34px;height:34px;flex:none}
+.brand b{font-size:19px;font-weight:800;letter-spacing:-.01em}
+.nav{display:flex;gap:4px;flex-wrap:wrap}
+.nav a{color:var(--brand-ink);text-decoration:none;font-size:14.5px;font-weight:500;padding:6px 12px;border-radius:var(--r-sm);opacity:.85}
+.nav a:hover{opacity:1;background:color-mix(in srgb,var(--brand-ink) 10%,transparent)}
+.hero{position:relative;padding-block:28px 34px;max-width:760px}
+.hero h1{font-size:clamp(26px,4.6vw,42px);line-height:1.12;font-weight:800;letter-spacing:-.02em;margin:0;text-wrap:balance}
+.hero p{margin:12px 0 0;color:var(--brand-muted);font-size:16px;max-width:62ch}
+.tally{display:flex;flex-wrap:wrap;gap:10px 26px;margin-top:22px}
+.tally div{display:flex;align-items:baseline;gap:8px}
+.tally b{font-size:30px;font-weight:800;line-height:1}
+.tally span{font-size:14px;color:var(--brand-muted)}
+.tally i{width:10px;height:10px;border-radius:2px;display:inline-block;align-self:center}
+.updated{font-size:13px;color:var(--brand-muted)}
 
-.hello{background:var(--surface);border-radius:20px;box-shadow:var(--shadow);padding:20px 22px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:16px 24px;align-items:center;margin-bottom:18px}
-.hello h2{font-family:var(--display);font-weight:700;font-size:clamp(19px,3.6vw,23px);line-height:1.3;margin:0;text-wrap:balance;max-width:38ch}
-.hello h2 .c{color:var(--crit)} .hello h2 .w{color:var(--warn)}
-.hello p{margin:6px 0 0;color:var(--muted);font-size:14px}
-.counts{display:flex;gap:10px}
-.count{border-radius:14px;padding:10px 14px;min-width:88px;display:flex;flex-direction:column}
-.count b{font-family:var(--display);font-size:26px;line-height:1.1;font-variant-numeric:tabular-nums}
-.count span{font-size:12.5px;font-weight:600}
-.count.crit{background:var(--crit-soft);color:var(--crit)} .count.warn{background:var(--warn-soft);color:var(--warn)} .count.mon{background:var(--mon-soft);color:var(--mon)}
-@media (max-width:640px){.hello{grid-template-columns:minmax(0,1fr)} .count{flex:1 1 0;min-width:0}}
-
-.filters{display:flex;flex-direction:column;gap:10px;margin-bottom:16px}
-.search{position:relative;display:flex}
-.search svg{position:absolute;left:14px;top:50%;transform:translateY(-50%);width:18px;height:18px;color:var(--muted)}
-.search input{width:100%;font:inherit;padding:12px 14px 12px 42px;border:1px solid var(--line);border-radius:14px;background:var(--surface);color:var(--ink)}
+/* Filtros */
+.filters{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:color-mix(in srgb,var(--paper) 92%,transparent);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+.frow{display:flex;gap:10px;align-items:center;padding-block:12px;flex-wrap:wrap}
+.search{flex:1 1 260px;min-width:0;position:relative}
+.search svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);width:17px;height:17px;color:var(--muted)}
+.search input{width:100%;padding:10px 12px 10px 38px;border:1px solid var(--line);border-radius:var(--r-md);background:var(--surface)}
 .search input::placeholder{color:var(--muted)}
-.row{display:flex;gap:8px;overflow-x:auto;padding-bottom:2px;scrollbar-width:none;align-items:center}
-.row::-webkit-scrollbar{display:none}
-.chip{flex:none;border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:7px 14px;font-size:13.5px;font-weight:500;cursor:pointer;color:var(--muted);display:inline-flex;gap:7px;align-items:center}
-.chip[aria-pressed="true"]{background:var(--sevbg,var(--ink));border-color:transparent;color:var(--sevfg,var(--surface))}
-.chip .dot{width:8px;height:8px;border-radius:50%;background:var(--sevfg)}
-.sel{flex:none;font:inherit;font-size:13.5px;font-weight:500;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:7px 30px 7px 14px;max-width:260px;appearance:none;background-image:linear-gradient(45deg,transparent 50%,var(--muted) 50%),linear-gradient(135deg,var(--muted) 50%,transparent 50%);background-position:calc(100% - 16px) 52%,calc(100% - 11px) 52%;background-size:5px 5px;background-repeat:no-repeat;cursor:pointer}
-.sel.on{border-color:var(--accent);color:var(--accent)}
-.divider{flex:none;width:1px;height:22px;background:var(--line);margin:0 4px}
-.switch{flex:none;display:inline-flex;gap:8px;align-items:center;font-size:13.5px;font-weight:500;color:var(--muted);cursor:pointer;padding:6px 4px}
-.switch input{appearance:none;width:34px;height:20px;border-radius:999px;background:var(--line);position:relative;cursor:pointer;margin:0;transition:background .15s;flex:none}
-.switch input::after{content:"";position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:var(--surface);box-shadow:0 1px 2px rgba(0,0,0,.2);transition:transform .15s}
-.switch input:checked{background:var(--accent)} .switch input:checked::after{transform:translateX(14px)}
+.sel{padding:9px 32px 9px 12px;border:1px solid var(--line);border-radius:var(--r-md);background:var(--surface);max-width:240px;appearance:none;cursor:pointer;
+  background-image:linear-gradient(45deg,transparent 50%,var(--muted) 50%),linear-gradient(135deg,var(--muted) 50%,transparent 50%);background-position:calc(100% - 17px) 52%,calc(100% - 12px) 52%;background-size:5px 5px;background-repeat:no-repeat}
+.sel.on{border-color:var(--accent);color:var(--accent);font-weight:600}
+.sevs{display:inline-flex;border:1px solid var(--line);border-radius:var(--r-md);overflow:hidden;background:var(--surface)}
+.sevs button{border:0;background:none;padding:8px 12px;cursor:pointer;display:inline-flex;gap:7px;align-items:center;color:var(--muted);font-size:14px}
+.sevs button+button{border-left:1px solid var(--line)}
+.sevs button[aria-pressed="true"]{color:var(--ink);font-weight:600;background:var(--soft)}
+.sevs i{width:9px;height:9px;border-radius:2px;display:inline-block;opacity:.35}
+.sevs button[aria-pressed="true"] i{opacity:1}
+.tgl{display:inline-flex;gap:8px;align-items:center;font-size:14px;color:var(--muted);cursor:pointer;white-space:nowrap}
+.tgl input{accent-color:var(--accent);width:16px;height:16px;margin:0}
 
-.grid{display:grid;grid-template-columns:minmax(0,1fr) 360px;gap:20px;align-items:start}
-@media (max-width:940px){.grid{grid-template-columns:minmax(0,1fr)}}
-.sec-title{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin:0 2px 10px}
-.sec-title h3{font-family:var(--display);font-size:18px;font-weight:700;margin:0}
-.sec-title small{font-size:13px;color:var(--muted)}
+/* Grade */
+main.wrap{padding-block:22px 48px}
+.grid{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:24px;align-items:start}
+@media (max-width:960px){.grid{grid-template-columns:minmax(0,1fr)}}
+.head{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin:0 0 10px}
+.head h2{font-size:20px;font-weight:800;margin:0;letter-spacing:-.01em}
+.head small{color:var(--muted);font-size:14px}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg)}
 
-.feed{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:12px}
-.card{background:var(--surface);border-radius:18px;box-shadow:var(--shadow)}
-details.ev>summary{list-style:none;cursor:pointer;padding:16px 18px;display:flex;flex-direction:column;gap:10px;border-radius:18px}
+/* Lista de eventos */
+.list{list-style:none;margin:0;padding:0}
+.list>li+li{border-top:1px solid var(--line)}
+details.ev>summary{list-style:none;cursor:pointer;display:grid;grid-template-columns:64px minmax(0,1fr) auto;gap:4px 16px;padding:16px 18px;align-items:start}
 details.ev>summary::-webkit-details-marker{display:none}
-.ev-head{display:flex;justify-content:space-between;gap:8px 10px;align-items:center;flex-wrap:wrap}
-.pills{display:flex;gap:6px;flex-wrap:wrap}
-.pill{font-size:12.5px;font-weight:700;padding:4px 10px;border-radius:999px;display:inline-flex;gap:6px;align-items:center}
-.pill::before{content:"";width:7px;height:7px;border-radius:50%;background:currentColor}
-.pill.crit{color:var(--crit);background:var(--crit-soft)} .pill.warn{color:var(--warn);background:var(--warn-soft)} .pill.mon{color:var(--mon);background:var(--mon-soft)}
-.phase{font-size:12.5px;font-weight:600;color:var(--muted);background:var(--soft);padding:4px 10px;border-radius:999px}
-.when{font-size:13px;color:var(--muted)}
-.ev-title{font-family:var(--display);font-weight:700;font-size:18px;line-height:1.3;margin:0}
-.ev-sub{font-size:13.5px;color:var(--muted);margin-top:2px}
-.ev-sub b{color:var(--ink);font-weight:600}
-.funds{display:flex;flex-wrap:wrap;gap:8px}
-.fund{display:inline-flex;align-items:center;gap:6px;background:var(--soft);border-radius:10px;padding:5px 10px;font-size:13px;max-width:100%}
-.fund.mine{background:var(--accent-soft)}
-.fund b{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:22ch}
-.fund span{color:var(--muted);white-space:nowrap}
-.fund.more{color:var(--muted)}
-.otc{font-size:11px;font-weight:600;color:var(--muted);border:1px solid var(--line);border-radius:6px;padding:0 5px;white-space:nowrap}
-.more-link{font-size:13px;font-weight:600;color:var(--accent);display:inline-flex;align-items:center;gap:4px}
-.more-link svg{width:14px;height:14px;transition:transform .2s}
-details[open] .more-link svg{transform:rotate(180deg)}
-.ev-body{padding:0 18px 18px;display:grid;gap:12px}
-.box{background:var(--soft);border-radius:14px;padding:12px 14px}
-.box h4{margin:0 0 4px;font-size:12.5px;font-weight:700;color:var(--muted);letter-spacing:.02em}
-.box p{margin:0;max-width:72ch;font-size:14.5px}
-.quote{font-size:14.5px;border-left:3px solid var(--line);padding-left:10px;margin:0}
-.box.next{background:var(--accent-soft)} .box.next h4{color:var(--accent)}
-.exp-table{width:100%;border-collapse:collapse;font-size:13.5px;font-variant-numeric:tabular-nums}
-.exp-table td{padding:5px 0;border-top:1px solid var(--line);vertical-align:top}
-.exp-table tr:first-child td{border-top:0}
-.exp-table td:last-child{text-align:right;white-space:nowrap;padding-left:12px}
-.exp-table small{color:var(--muted)}
-.links{display:flex;flex-wrap:wrap;gap:8px 16px;font-size:13.5px;align-items:center}
-.links a{font-weight:600;text-decoration:none;display:inline-flex;gap:5px;align-items:center}
-.links a svg{width:14px;height:14px}
-.how-matched{font-size:12.5px;color:var(--muted)}
-.empty{background:var(--surface);border-radius:18px;padding:28px 18px;text-align:center;color:var(--muted)}
-.loadmore{display:block;margin:14px auto 0;border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:9px 18px;font-weight:600;cursor:pointer}
+details.ev>summary:hover{background:color-mix(in srgb,var(--soft) 60%,transparent)}
+details.ev[open]>summary{background:var(--soft)}
+.when{font-size:13px;color:var(--muted);line-height:1.3;padding-top:2px}
+.when b{display:block;font-size:15px;color:var(--ink);font-weight:700}
+.ev-main{min-width:0}
+.ev-top{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center}
+.tag{font-size:12.5px;font-weight:700;padding:2px 8px;border-radius:var(--r-sm);white-space:nowrap}
+.tag.crit{color:var(--crit);background:var(--crit-soft)} .tag.warn{color:var(--warn);background:var(--warn-soft)} .tag.mon{color:var(--mon);background:var(--mon-soft)}
+.ev-title{font-size:16.5px;font-weight:700;line-height:1.3}
+.ev-op{font-size:14px;color:var(--muted);margin-top:3px}
+.ev-op strong{color:var(--ink);font-weight:600}
+.phase{font-size:13px;color:var(--muted)}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px}
+.chip{display:inline-flex;gap:6px;align-items:baseline;font-size:13px;padding:3px 9px;border-radius:var(--r-sm);background:var(--soft);max-width:100%}
+.chip b{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:24ch}
+.chip span{color:var(--muted);white-space:nowrap}
+.chip.mine{background:var(--accent-soft);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--accent) 35%,transparent)}
+.chip em{font-style:normal;font-size:11.5px;color:var(--muted);border:1px solid var(--line);border-radius:4px;padding:0 4px}
+.max{text-align:right;font-size:13px;color:var(--muted);line-height:1.25;padding-top:2px;white-space:nowrap}
+.max b{display:block;font-size:17px;color:var(--ink)}
+@media (max-width:600px){
+  details.ev>summary{grid-template-columns:minmax(0,1fr) auto;padding:14px 16px}
+  .when{grid-column:1/-1;display:flex;gap:8px;align-items:baseline}
+  .when b{display:inline;font-size:14px}
+}
+.body{padding:2px 18px 20px 98px;display:grid;gap:14px}
+@media (max-width:600px){.body{padding:4px 16px 18px}}
+.body h3{font-size:13.5px;font-weight:700;margin:0 0 4px;color:var(--muted)}
+.body p{margin:0;max-width:70ch}
+.quote{border-left:3px solid var(--line);padding-left:12px;font-style:italic}
+.tbl-wrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th{font-weight:600;color:var(--muted);text-align:left;font-size:13px;padding:6px 10px 6px 0;border-bottom:1px solid var(--line)}
+td{padding:8px 10px 8px 0;border-bottom:1px solid var(--line);vertical-align:top}
+td.num,th.num{text-align:right;padding-right:0;white-space:nowrap}
+td small{display:block;color:var(--muted);font-size:12.5px}
+.links{display:flex;flex-wrap:wrap;gap:8px}
+.btn{display:inline-flex;align-items:center;gap:6px;font-size:14px;font-weight:600;text-decoration:none;padding:7px 12px;border-radius:var(--r-md);border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer}
+.btn.primary{background:var(--brand);border-color:var(--brand);color:var(--brand-ink)}
+.btn svg{width:15px;height:15px}
+.note{font-size:13px;color:var(--muted)}
+.empty{padding:36px 20px;color:var(--muted)}
+.empty b{display:block;color:var(--ink);margin-bottom:4px}
+.more{display:block;margin:14px auto 0}
 
+/* Lateral */
 .side{display:flex;flex-direction:column;gap:20px}
-.panel{background:var(--surface);border-radius:18px;box-shadow:var(--shadow);padding:16px 18px}
-.panel h3{font-family:var(--display);font-size:17px;font-weight:700;margin:0}
-.panel .note{font-size:12.5px;color:var(--muted);margin:2px 0 12px}
-.expo{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:14px}
-.expo li{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:6px 10px;align-items:center}
-.star{border:0;background:var(--soft);width:30px;height:30px;border-radius:9px;cursor:pointer;display:grid;place-items:center;color:var(--muted)}
-.star svg{width:16px;height:16px}
-.star[aria-pressed="true"]{background:var(--accent-soft);color:var(--accent)}
-.fname{min-width:0;background:none;border:0;padding:0;text-align:left;cursor:pointer}
-.fname .tk{display:block;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.fname small{display:block;font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.tot{font-family:var(--display);font-weight:700;font-size:16px;font-variant-numeric:tabular-nums;text-align:right}
-.tot small{display:block;font-family:var(--body);font-weight:400;font-size:11.5px;color:var(--muted)}
-.bar{grid-column:1/-1;display:flex;gap:2px;height:10px;border-radius:999px;background:var(--soft);overflow:hidden}
+.side .panel{padding:16px 18px}
+.side h2{font-size:17px;font-weight:800;margin:0}
+.side .sub{font-size:13.5px;color:var(--muted);margin:3px 0 12px}
+.add{display:flex;gap:8px}
+.add input{flex:1;min-width:0;padding:8px 10px;border:1px solid var(--line);border-radius:var(--r-md);background:var(--surface)}
+.mine-list{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.mine-list button{display:inline-flex;gap:6px;align-items:center;border:0;background:var(--accent-soft);color:var(--ink);padding:4px 6px 4px 10px;border-radius:var(--r-sm);font-size:13.5px;font-weight:600;cursor:pointer}
+.mine-list button span{color:var(--muted);font-weight:400;font-size:15px;line-height:1}
+.mine-empty{font-size:13.5px;color:var(--muted);margin:10px 0 0}
+.expo{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:12px}
+.expo li{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:5px 10px;align-items:baseline}
+.expo .fn{background:none;border:0;padding:0;text-align:left;cursor:pointer;min-width:0}
+.expo .fn b{display:block;font-size:14.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.expo .fn small{display:block;font-size:12.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.expo .tot{font-weight:700;font-size:15px;text-align:right}
+.bar{grid-column:1/-1;display:flex;height:6px;border-radius:3px;background:var(--soft);overflow:hidden}
 .bar i{display:block;height:100%}
-.bar i:first-child{border-radius:999px 0 0 999px} .bar i:last-child{border-radius:0 999px 999px 0}
 .bar .crit{background:var(--crit)} .bar .warn{background:var(--warn)} .bar .mon{background:var(--mon)}
-.scale{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-top:10px;font-variant-numeric:tabular-nums}
-.legend{display:flex;flex-wrap:wrap;gap:12px;font-size:12px;color:var(--muted);margin-top:10px}
-.legend span{display:inline-flex;gap:6px;align-items:center}
-.legend i{width:8px;height:8px;border-radius:50%;display:inline-block}
-.showall{margin-top:12px;border:0;background:none;color:var(--accent);font-weight:600;cursor:pointer;padding:0;font-size:13.5px}
-
-.agenda{list-style:none;margin:12px 0 0;padding:0;display:flex;flex-direction:column;gap:12px}
-.agenda li{display:grid;grid-template-columns:50px minmax(0,1fr);gap:12px;align-items:center}
-.cal{border-radius:12px;background:var(--soft);text-align:center;padding:6px 0;line-height:1.05}
-.cal b{display:block;font-family:var(--display);font-size:20px}
-.cal span{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+.scale{display:flex;justify-content:space-between;font-size:11.5px;color:var(--muted);margin-top:10px}
+.link-btn{border:0;background:none;padding:0;margin-top:12px;color:var(--accent);font-weight:600;cursor:pointer;font-size:14px}
+.agenda{list-style:none;margin:0;padding:0;display:flex;flex-direction:column}
+.agenda li+li{border-top:1px solid var(--line)}
+.agenda button{all:unset;cursor:pointer;display:grid;grid-template-columns:48px minmax(0,1fr);gap:12px;padding:10px 0;width:100%}
+.agenda button:focus-visible{outline:2px solid var(--seal);outline-offset:2px}
+.cal{text-align:center;border:1px solid var(--line);border-radius:var(--r-sm);padding:4px 0;line-height:1.1;align-self:start}
+.cal b{display:block;font-size:19px}
+.cal span{font-size:12px;color:var(--muted)}
 .agenda .what{font-weight:600;font-size:14px;line-height:1.3}
-.agenda .sub{font-size:12.5px;color:var(--muted)}
-.agenda .in{font-size:12px;font-weight:700;color:var(--accent)}
+.agenda .who{font-size:13px;color:var(--muted)}
+.agenda .in{font-size:12.5px;font-weight:600;color:var(--accent)}
 .agenda .in.soon{color:var(--crit)}
-.agenda button{all:unset;cursor:pointer;display:contents}
 
-.how{margin-top:28px}
-.how h3{font-family:var(--display);font-size:20px;margin:0 0 12px}
-.steps{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;counter-reset:s}
-@media (max-width:880px){.steps{grid-template-columns:repeat(2,minmax(0,1fr))}}
-@media (max-width:480px){.steps{grid-template-columns:minmax(0,1fr)}}
-.steps li{counter-increment:s;background:var(--surface);border-radius:16px;padding:16px;box-shadow:var(--shadow)}
-.steps li::before{content:counter(s);display:grid;place-items:center;width:28px;height:28px;border-radius:9px;background:var(--accent-soft);color:var(--accent);font-weight:700;font-size:14px;margin-bottom:8px}
-.steps b{display:block;margin-bottom:4px}
-.steps p{margin:0;font-size:13.5px;color:var(--muted)}
-.foot{margin-top:16px;font-size:12.5px;color:var(--muted);max-width:86ch}
-.foot p{margin:0 0 6px}
-.loading{padding:40px 0;text-align:center;color:var(--muted)}
-@media (prefers-reduced-motion:no-preference){details.ev[open] .ev-body{animation:in .2s ease-out}@keyframes in{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}}
+/* Método e rodapé */
+.method{margin-top:40px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:24px}
+@media (max-width:820px){.method{grid-template-columns:minmax(0,1fr)}}
+.method h2{font-size:20px;font-weight:800;margin:0 0 10px}
+.steps{margin:0;padding-left:20px;display:grid;gap:10px}
+.steps b{display:block}
+.steps span{color:var(--muted);font-size:14.5px}
+dl.gloss{margin:0;display:grid;gap:10px}
+dl.gloss dt{font-weight:700}
+dl.gloss dd{margin:0;color:var(--muted);font-size:14.5px;max-width:62ch}
+footer{border-top:1px solid var(--line);margin-top:40px;padding-block:20px calc(28px + env(safe-area-inset-bottom,0px))}
+footer p{margin:0 0 8px;font-size:13.5px;color:var(--muted);max-width:90ch}
+.loading{padding:28px 20px;color:var(--muted)}
+@media (prefers-reduced-motion:no-preference){details.ev[open] .body{animation:in .18s ease-out}@keyframes in{from{opacity:0;transform:translateY(-3px)}to{opacity:1;transform:none}}}
 </style>
 </head>
 <body>
 
-<div class="wrap">
-  <header class="top">
-    <div class="logo">
-      <div class="mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5" opacity=".55"/><path d="M12 12 L18.5 6.5"/><circle cx="12" cy="12" r="1.4" fill="var(--accent)" stroke="none"/></svg></div>
-      <div>
-        <h1>Radar de Lastro</h1>
-        <p class="tag">Eventos de crédito nos CRIs que estão na carteira dos FIIs</p>
+<header class="band">
+  <div class="rings" aria-hidden="true"><div class="sweep"></div></div>
+  <div class="wrap">
+    <div class="topbar">
+      <a class="brand" href="#">
+        <svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="7" fill="var(--brand-2)"/><g fill="none" stroke="var(--brand-ink)" stroke-width="1.5"><circle cx="16" cy="16" r="10.5"/><circle cx="16" cy="16" r="6.5" opacity=".55"/></g><path d="M16 16 L24 8.8" stroke="var(--seal)" stroke-width="2.2" stroke-linecap="round"/><circle cx="16" cy="16" r="2.1" fill="var(--seal)"/></svg>
+        <b>Radar de Lastro</b>
+      </a>
+      <nav class="nav" aria-label="Seções">
+        <a href="#eventos">Eventos</a><a href="#fundos">Fundos expostos</a><a href="#agenda">Assembleias</a><a href="#metodo">Como funciona</a>
+      </nav>
+    </div>
+    <div class="hero">
+      <h1 id="headline">Eventos de crédito nos CRIs da carteira dos FIIs</h1>
+      <p id="subline">Carregando os dados mais recentes do Fundos.Net e da CVM.</p>
+      <div class="tally" aria-label="Eventos no período">
+        <div><i style="background:var(--crit)"></i><b id="n-crit">–</b><span>urgentes</span></div>
+        <div><i style="background:var(--warn)"></i><b id="n-warn">–</b><span>de atenção</span></div>
+        <div><i style="background:var(--mon)"></i><b id="n-mon">–</b><span>para acompanhar</span></div>
       </div>
-    </div>
-    <span class="fresh" id="fresh">Carregando dados…</span>
-  </header>
-
-  <section class="hello" aria-label="Resumo do período">
-    <div><h2 id="headline">Carregando eventos…</h2><p id="subline"></p></div>
-    <div class="counts">
-      <div class="count crit"><b id="n-crit">–</b><span>Urgente</span></div>
-      <div class="count warn"><b id="n-warn">–</b><span>Atenção</span></div>
-      <div class="count mon"><b id="n-mon">–</b><span>Acompanhar</span></div>
-    </div>
-  </section>
-
-  <div class="filters">
-    <label class="search" for="q">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
-      <input id="q" type="search" placeholder="Buscar FII, operação, securitizadora ou código IF" autocomplete="off">
-    </label>
-    <div class="row" id="row" role="group" aria-label="Filtros">
-      <label class="switch" for="mine"><input id="mine" type="checkbox">Só meus fundos</label>
-      <label class="switch" for="listed"><input id="listed" type="checkbox" checked>Só FIIs negociados em bolsa</label>
-      <label for="gestora" class="sr" hidden>Gestora</label><select id="gestora" class="sel" aria-label="Filtrar por gestora"><option value="">Todas as gestoras</option></select>
-      <span class="divider" aria-hidden="true"></span>
-      <button type="button" class="chip" data-sev="crit" aria-pressed="true" style="--sevbg:var(--crit-soft);--sevfg:var(--crit)"><span class="dot"></span>Urgente</button>
-      <button type="button" class="chip" data-sev="warn" aria-pressed="true" style="--sevbg:var(--warn-soft);--sevfg:var(--warn)"><span class="dot"></span>Atenção</button>
-      <button type="button" class="chip" data-sev="mon" aria-pressed="true" style="--sevbg:var(--mon-soft);--sevfg:var(--mon)"><span class="dot"></span>Acompanhar</button>
+      <p class="updated" id="updated"></p>
     </div>
   </div>
+</header>
 
+<div class="filters">
+  <div class="wrap frow" role="search">
+    <label class="search" for="q"><span class="sr">Buscar</span>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+      <input id="q" type="search" placeholder="Buscar FII, devedor, securitizadora ou código IF" autocomplete="off">
+    </label>
+    <select id="gestora" class="sel" aria-label="Filtrar por gestora"><option value="">Todas as gestoras</option></select>
+    <div class="sevs" role="group" aria-label="Severidade">
+      <button type="button" data-sev="crit" aria-pressed="true"><i style="background:var(--crit)"></i>Urgente</button>
+      <button type="button" data-sev="warn" aria-pressed="true"><i style="background:var(--warn)"></i>Atenção</button>
+      <button type="button" data-sev="mon" aria-pressed="true"><i style="background:var(--mon)"></i>Acompanhar</button>
+    </div>
+    <label class="tgl" for="mine"><input id="mine" type="checkbox">Só meus fundos</label>
+    <label class="tgl" for="listed"><input id="listed" type="checkbox" checked>Só negociados em bolsa</label>
+  </div>
+</div>
+
+<main class="wrap">
   <div class="grid">
-    <section aria-labelledby="h-feed">
-      <div class="sec-title"><h3 id="h-feed">Eventos</h3><small id="count"></small></div>
-      <ul class="feed" id="feed"><li class="loading">Carregando…</li></ul>
-      <button type="button" class="loadmore" id="loadmore" hidden>Mostrar mais eventos</button>
+    <section id="eventos" aria-labelledby="h-ev">
+      <div class="head"><h2 id="h-ev">Eventos dos últimos 30 dias</h2><small id="count"></small></div>
+      <div class="panel"><ul class="list" id="feed"><li class="loading">Carregando eventos…</li></ul></div>
+      <button type="button" class="btn more" id="loadmore" hidden>Mostrar mais eventos</button>
     </section>
 
     <aside class="side">
-      <section class="panel" aria-labelledby="h-expo">
-        <h3 id="h-expo">FIIs mais expostos</h3>
-        <p class="note" id="expo-note">Soma do % do PL em CRIs com evento no período.</p>
+      <section class="panel" aria-labelledby="h-mine">
+        <h2 id="h-mine">Meus fundos</h2>
+        <p class="sub">Adicione os FIIs que você acompanha para ver primeiro o que afeta sua carteira. Fica salvo só neste navegador.</p>
+        <form class="add" id="add-form">
+          <label for="add-input" class="sr">Fundo para acompanhar</label>
+          <input id="add-input" list="fundos-list" placeholder="Digite o ticker ou o nome" autocomplete="off">
+          <datalist id="fundos-list"></datalist>
+          <button class="btn" type="submit">Adicionar</button>
+        </form>
+        <div class="mine-list" id="mine-list"></div>
+        <p class="mine-empty" id="mine-empty">Nenhum fundo adicionado ainda.</p>
+      </section>
+
+      <section class="panel" id="fundos" aria-labelledby="h-expo">
+        <h2 id="h-expo">Fundos mais expostos</h2>
+        <p class="sub">Parte do PL aplicada em CRIs que tiveram evento no período.</p>
         <ul class="expo" id="expo"></ul>
         <div class="scale" id="scale"></div>
-        <div class="legend"><span><i style="background:var(--crit)"></i>Urgente</span><span><i style="background:var(--warn)"></i>Atenção</span><span><i style="background:var(--mon)"></i>Acompanhar</span></div>
-        <button type="button" class="showall" id="showall">Ver todos os fundos</button>
+        <button type="button" class="link-btn" id="showall">Ver todos</button>
       </section>
-      <section class="panel" aria-labelledby="h-ag">
-        <h3 id="h-ag">Próximas assembleias</h3>
-        <p class="note">Convocadas sobre temas de crédito, com data lida do edital.</p>
-        <ul class="agenda" id="agenda"></ul>
+
+      <section class="panel" id="agenda" aria-labelledby="h-ag">
+        <h2 id="h-ag">Próximas assembleias</h2>
+        <p class="sub">Convocadas para tratar de crédito, com a data lida do edital.</p>
+        <ul class="agenda" id="agenda-list"></ul>
       </section>
     </aside>
   </div>
 
-  <section class="how" aria-labelledby="h-how">
-    <h3 id="h-how">Como funciona</h3>
-    <ol class="steps">
-      <li><b>Documentos dos CRIs</b><p>Todo dia, o radar lê os fatos relevantes, comunicados, avisos e documentos de assembleia que as securitizadoras publicam no Fundos.Net.</p></li>
-      <li><b>Classificação</b><p>Regras procuram temas de crédito no corpo do comunicado ou na pauta da assembleia: inadimplência, vencimento antecipado, waiver, fundo de reserva, repactuação e outros.</p></li>
-      <li><b>Carteira dos FIIs</b><p>A posição de cada FII vem do informe trimestral estruturado nos dados abertos da CVM, e o PL vem do informe mensal do mesmo mês.</p></li>
-      <li><b>Cruzamento</b><p>O evento é ligado ao fundo pelo código IF do CRI. Quando o documento não traz o código, usa securitizadora, emissão e série.</p></li>
-    </ol>
-    <div class="foot" id="foot"></div>
+  <section class="method" id="metodo" aria-label="Como funciona">
+    <div>
+      <h2>Como funciona</h2>
+      <ol class="steps">
+        <li><b>Lemos os documentos dos CRIs</b><span>Duas vezes por dia, o radar baixa os fatos relevantes, comunicados, avisos e documentos de assembleia que as securitizadoras publicam no Fundos.Net.</span></li>
+        <li><b>Identificamos o tema</b><span>Regras procuram assuntos de crédito no corpo do comunicado ou na pauta da assembleia e definem a severidade.</span></li>
+        <li><b>Encontramos quem tem o CRI</b><span>A carteira de cada FII vem do informe trimestral da CVM. O evento é ligado ao fundo pelo código IF do CRI ou, sem ele, por securitizadora, emissão e série.</span></li>
+        <li><b>Calculamos o peso no fundo</b><span>O valor do CRI na carteira é dividido pelo patrimônio líquido do fundo no mesmo mês.</span></li>
+      </ol>
+    </div>
+    <div>
+      <h2>O que cada evento quer dizer</h2>
+      <dl class="gloss" id="gloss"></dl>
+    </div>
   </section>
-</div>
+</main>
+
+<footer>
+  <div class="wrap" id="foot">
+    <p>Fontes: Fundos.Net (B3 e CVM) e Portal de Dados Abertos da CVM.</p>
+  </div>
+</footer>
 
 <script>
 const SEV = {crit:'Urgente', warn:'Atenção', mon:'Acompanhar'};
-const ORD = {crit:0, warn:1, mon:2};
 const MESES = ['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
+// explicação em linguagem simples de cada tipo de evento
+const EXPLICA = {
+  'Pagamento não realizado':'A parcela de juros ou amortização do CRI não foi paga na data. Costuma haver um prazo curto para regularizar antes de virar inadimplência formal.',
+  'Recuperação judicial ou falência do devedor':'O devedor do CRI pediu proteção na Justiça contra os credores, ou teve a falência decretada. Os pagamentos passam a depender das garantias e do plano de recuperação.',
+  'Vencimento antecipado declarado':'O CRI passou a valer como vencido de uma vez: o saldo inteiro fica cobrável, normalmente porque o devedor descumpriu alguma obrigação.',
+  'Execução de garantias':'A securitizadora está cobrando ou tomando as garantias da operação, como imóveis ou recebíveis, para pagar os investidores.',
+  'Assembleia sobre vencimento antecipado':'Os investidores vão decidir, ou decidiram, se cobram o CRI de forma antecipada ou se dão uma nova chance ao devedor.',
+  'Assembleia sobre inadimplemento':'Assembleia para tratar de pagamentos em atraso e das medidas que serão tomadas.',
+  'Uso do fundo de reserva':'O caixa de segurança da operação foi usado para pagar os investidores ou está abaixo do mínimo e precisa ser recomposto.',
+  'Pedido de waiver':'O devedor pede autorização dos investidores para descumprir uma regra da operação por um tempo, sem que isso gere vencimento antecipado.',
+  'Garantia ou covenant desenquadrado':'Algum limite da operação, como o valor das garantias ou um índice financeiro do devedor, ficou fora do combinado.',
+  'Repactuação ou carência':'Mudança nas condições de pagamento do CRI, como novo cronograma, prazo maior ou período sem pagamento de principal.',
+  'Rebaixamento de rating':'Uma agência de classificação de risco piorou a nota da operação ou do devedor.',
+  'Amortização extraordinária ou resgate antecipado':'Parte ou todo o saldo do CRI foi pago antes do prazo. Em geral reduz o risco, mas o fundo precisa reinvestir o dinheiro.',
+  'Troca de garantia':'Uma garantia da operação foi substituída ou liberada. Vale conferir se a nova cobertura é equivalente.',
+  'Troca de prestador da operação':'Mudou um prestador de serviço do CRI, como o agente fiduciário, que fiscaliza a operação em nome dos investidores.'
+};
 const ICON = {
-  star:'<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 3.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.9l-5.2 2.7 1-5.8L3.5 9.7l5.9-.9z"/></svg>',
-  starO:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.9l-5.2 2.7 1-5.8L3.5 9.7l5.9-.9z"/></svg>',
-  chev:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>',
   ext:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M14 4h6v6"/><path d="M20 4 11 13"/><path d="M19 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h5"/></svg>'
 };
 const store = {
@@ -280,42 +343,47 @@ const state = {
   q:'', sev:new Set(['crit','warn','mon']), mine:store.get('rl-mine',false), listed:store.get('rl-listed',true),
   carteira:new Set(store.get('rl-carteira',[])), limite:25, todosFundos:false, gestora:''
 };
-let DATA=null, HOJE=null;
+let DATA=null, HOJE=null, FUNDOS_IDX=new Map();
 
 const esc = s => String(s ?? '').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-function pct(x){ if(x==null) return '—'; const v=x*100; if(v>0 && v<0.1) return '<0,1%'; return v.toLocaleString('pt-BR',{minimumFractionDigits:1,maximumFractionDigits:1})+'%'; }
+function pct(x){ if(x==null) return '–'; const v=x*100; if(v>0 && v<0.1) return '< 0,1%'; return v.toLocaleString('pt-BR',{minimumFractionDigits:1,maximumFractionDigits:1})+'%'; }
 function brl(v){ if(v>=1e9) return 'R$ '+(v/1e9).toLocaleString('pt-BR',{maximumFractionDigits:1})+' bi'; if(v>=1e6) return 'R$ '+(v/1e6).toLocaleString('pt-BR',{maximumFractionDigits:1})+' mi'; return 'R$ '+Math.round(v/1e3).toLocaleString('pt-BR')+' mil'; }
+function titulo(s){ return s.toLowerCase().split(' ').map(w=>{ if(['de','da','do','das','dos','e'].includes(w)) return w; if(w.length<=3 && /^[a-z]+$/.test(w) && w!=='sul' && w!=='rio') return w.toUpperCase(); return w.charAt(0).toUpperCase()+w.slice(1);}).join(' '); }
 function nomeCurto(n){
   if(!n) return 'FII sem nome';
-  let s=n.replace(/FUNDO DE INVESTIMENTO IMOBILI[ÁA]RIO|FUNDO DE INVESTIMENTO IMOB\.?|FUNDO DE INV\.? IMOB\.?|FDO\.? INV\.? IMOB\.?|RESPONSABILIDADE LIMITADA|RESP\.? LIMITADA|\bFII\b|\bFI IMOB\w*|CLASSE [ÚU]NICA|\s-\s*$/gi,' ').replace(/\s+/g,' ').replace(/[-–\s]+$/,'').trim();
-  s=s.toLowerCase().replace(/(^|\s)(\S)/g,(m,a,b)=>a+b.toUpperCase());
-  return s.length>34? s.slice(0,32)+'…' : s;
+  let s=n.replace(/FUNDO DE INVESTIMENTO IMOBILI[ÁA]RIO|FUNDO DE INVESTIMENTO IMOB\.?|FUNDO DE INV\.? IMOB\.?|FDO\.? INV\.? IMOB\.?|RESPONSABILIDADE LIMITADA|RESP\.? LIMITADA|\bFII\b|\bFI IMOB\w*|CLASSE [ÚU]NICA/gi,' ').replace(/[-–,\s]+$/,'').replace(/\s+/g,' ').trim();
+  s=titulo(s);
+  if(s.length<=36) return s;
+  const corte=s.lastIndexOf(' ',34); return s.slice(0,corte>18?corte:34)+'…';
 }
 const rotulo = f => f.ticker || nomeCurto(f.fundo);
 function gestoraCurta(n){
   if(!n) return 'Gestora não informada';
-  let t=n.replace(/\b(LTDA|S\/?A|S\.A|EIRELI)\b\.?/gi,' ').replace(/GEST(Ã|A)O DE RECURSOS|GESTORA DE RECURSOS|ADMINISTRA(Ç|C)(Ã|A)O DE RECURSOS|GESTORA LTDA|ASSET MANAGEMENT|GESTÃO E CONSULTORIA DE INVESTIMENTOS|INVESTIMENTOS E PARTICIPA(Ç|C)(Õ|O)ES|\bGESTORA\b|INVESTIMENTOS|\bDTVM\b|DISTRIBUIDORA DE T(Í|I)TULOS E VALORES MOBILI(Á|A)RIOS|CORRETORA DE T(Í|I)TULOS E VALORES MOBILI(Á|A)RIOS/gi,' ');
+  let t=n.replace(/\b(LTDA|S\/?A|S\.A|EIRELI)\b\.?/gi,' ').replace(/GEST(Ã|A)O DE RECURSOS|GESTORA DE RECURSOS|ADMINISTRA(Ç|C)(Ã|A)O DE RECURSOS|ASSET MANAGEMENT|GEST(Ã|A)O E CONSULTORIA DE INVESTIMENTOS|INVESTIMENTOS E PARTICIPA(Ç|C)(Õ|O)ES|\bGESTORA\b|INVESTIMENTOS|\bDTVM\b|DISTRIBUIDORA DE T(Í|I)TULOS E VALORES MOBILI(Á|A)RIOS|CORRETORA DE T(Í|I)TULOS E VALORES MOBILI(Á|A)RIOS/gi,' ');
   t=t.replace(/[.,\-–\s]+$/,'').replace(/\s+/g,' ').trim().split(' ').map(w=>{const l=w.toLowerCase(); if(['de','da','do','das','dos','e'].includes(l)) return l; if(w.length<=3) return w.toUpperCase(); return l.charAt(0).toUpperCase()+l.slice(1);}).join(' ');
   return t||n;
 }
 const dia = s => new Date(s.slice(0,10)+'T00:00:00-03:00');
-function quando(iso){
-  const n=Math.round((HOJE-dia(iso))/864e5), h=iso.slice(11,16);
-  if(n<=0) return 'Hoje, '+h; if(n===1) return 'Ontem, '+h;
-  const d=dia(iso); return d.getDate()+' '+MESES[d.getMonth()]+' · há '+n+' dias';
-}
+const diasAtras = iso => Math.round((HOJE-dia(iso))/864e5);
+function dataLonga(iso){const d=dia(iso); return d.getDate()+' de '+['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'][d.getMonth()];}
 function dataCurta(iso){const d=dia(iso); return d.getDate().toString().padStart(2,'0')+'/'+(d.getMonth()+1).toString().padStart(2,'0');}
-function ordinal(n){return n+'ª'}
+function relativo(iso){const n=diasAtras(iso); return n<=0?'hoje':n===1?'ontem':'há '+n+' dias';}
 function fase(e){
-  if(e.fase==='convocada') return e.data_assembleia ? 'Assembleia em '+dataCurta(e.data_assembleia) : 'Assembleia convocada';
+  if(e.fase==='convocada') return e.data_assembleia ? 'Assembleia marcada para '+dataCurta(e.data_assembleia) : 'Assembleia convocada';
   if(e.fase==='deliberada') return 'Assembleia realizada';
   return e.categoria;
 }
+const SECS={'OPEA':'Opea','PROVINCIA':'Província','CANAL SEC':'Canal','ISEC':'Virgo','VIRGO':'Virgo','HABITASEC':'Habitasec','FORTE CAP':'Forte','BARI SEC':'Bari','BRAZILIAN SC':'Brazilian Securities','LEVERAGE SEC':'Leverage','Lever':'Leverage','VERTCIASEC':'Vert','REIT SEC':'Reit','TRAVESSIASEC':'Travessia','CASAPEDRASEC':'Casa de Pedra','PLAYBANCOSEC':'Playbanco','ÉXES':'Éxes','RBCAPITALRES':'RB Capital','OURINVESTSEC':'Ourinvest','PATRIA SEC':'Pátria','OCTANTE SEC':'Octante','BSIP':'BSI Capital','REAG SECURIT':'Reag','CIBRASEC':'Cibrasec','POLO CAP SEC':'Polo Capital','BAMBOO SEC':'Bamboo','BASESEC':'Base','LOGOS CIA':'Logos','B.SEC':'B.Sec'};
+const secNome = s => SECS[s] || titulo(s||'');
+// nome da operação no Fundos.Net vem truncado e com mês/ano de emissão no fim
+function opNome(o){ let t=(o||'').replace(/\s+\d{2}\/\d{4}\s*$/,'').trim(); if(!t) return 'Operação sem nome'; if(t===t.toUpperCase()) t=titulo(t); return t; }
+function serieTxt(e){ return e.outras_series ? `séries ${e.serie} a ${+e.serie+e.outras_series}` : `${e.serie}ª série`; }
+
 // "em bolsa" = tem código de negociação; o campo de mercado da CVM marca também cotas só registradas na B3
 const emBolsa = f => !!f.ticker;
 const passaFundo = f => (!state.listed || emBolsa(f)) && (!state.gestora || f.gestor===state.gestora);
-function fundosVisiveis(e){ return e.fundos.filter(passaFundo); }
-function afetaMeus(e){ return e.fundos.some(f=>state.carteira.has(f.cnpj_fundo)); }
+const fundosVisiveis = e => e.fundos.filter(passaFundo);
+const afetaMeus = e => e.fundos.some(f=>state.carteira.has(f.cnpj_fundo));
 
 function filtrar(){
   const q=state.q.trim().toLowerCase();
@@ -328,111 +396,113 @@ function filtrar(){
       if(!hay.includes(q)) return false;
     }
     return true;
-  });
+  }).sort((a,b)=>(state.carteira.size?(afetaMeus(b)-afetaMeus(a)):0) || b.data.localeCompare(a.data));
 }
 
-function renderResumo(){
+function renderHero(){
   const base=DATA.eventos.filter(e=>fundosVisiveis(e).length);
   const c={crit:0,warn:0,mon:0}; base.forEach(e=>c[e.severidade]++);
   for(const k in c) document.getElementById('n-'+k).textContent=c[k];
   const nf=new Set(base.flatMap(e=>fundosVisiveis(e).map(f=>f.cnpj_fundo))).size;
   const h=document.getElementById('headline'), s=document.getElementById('subline');
-  const j=DATA.janela;
   if(state.carteira.size){
-    const meus=base.filter(afetaMeus), mc=meus.filter(e=>e.severidade==='crit').length, mw=meus.filter(e=>e.severidade==='warn').length;
-    if(!meus.length) h.textContent='Nenhum CRI dos seus fundos teve evento no período.';
-    else{
-      const p=[]; if(mc) p.push(`<span class="c">${mc} ${mc===1?'urgente':'urgentes'}</span>`); if(mw) p.push(`<span class="w">${mw} de atenção</span>`);
-      const r=meus.length-mc-mw; if(r) p.push(r+' para acompanhar');
-      h.innerHTML='Seus fundos tiveram '+p.join(', ').replace(/, ([^,]*)$/,' e $1')+' nos últimos 30 dias.';
-    }
-    s.textContent='Você acompanha '+state.carteira.size+(state.carteira.size===1?' fundo':' fundos')+'. No mercado todo foram '+base.length+' eventos em CRIs de '+nf+' FIIs.';
+    const meus=base.filter(afetaMeus);
+    const mc=meus.filter(e=>e.severidade==='crit').length;
+    h.textContent = meus.length
+      ? `Seus fundos tiveram ${meus.length} ${meus.length===1?'evento':'eventos'} de crédito nos últimos 30 dias${mc?`, ${mc} ${mc===1?'urgente':'urgentes'}`:''}.`
+      : 'Nenhum CRI dos seus fundos teve evento de crédito nos últimos 30 dias.';
+    s.textContent=`No mercado todo foram ${base.length} eventos, em CRIs de ${nf} FIIs.`;
   } else {
-    h.innerHTML=`<span class="c">${c.crit} ${c.crit===1?'evento urgente':'eventos urgentes'}</span> e <span class="w">${c.warn} de atenção</span> em CRIs de ${nf} FIIs nos últimos 30 dias.`;
-    s.textContent='Marque a estrela dos seus fundos na lista ao lado para ver só o que afeta a sua carteira.';
+    h.textContent=`${base.length} eventos de crédito atingiram CRIs de ${nf} FIIs nos últimos 30 dias.`;
+    s.textContent='Inadimplência, assembleias, waivers e outros eventos publicados pelas securitizadoras, ligados aos fundos que têm cada CRI na carteira.';
   }
 }
 
-function chipsFundos(e){
+function chips(e){
   const fs=fundosVisiveis(e).slice().sort((a,b)=>(state.carteira.has(b.cnpj_fundo)-state.carteira.has(a.cnpj_fundo))||((b.pct_pl||0)-(a.pct_pl||0)));
-  const vis=fs.slice(0,5);
-  let html=vis.map(f=>`<span class="fund${state.carteira.has(f.cnpj_fundo)?' mine':''}"><b class="${f.ticker?'tk':''}">${esc(rotulo(f))}</b>${f.ticker?'':'<span class="otc" title="Sem negociação em bolsa">balcão</span>'}<span>${pct(f.pct_pl)}</span></span>`).join('');
-  if(fs.length>vis.length) html+=`<span class="fund more">+${fs.length-vis.length} ${fs.length-vis.length===1?'fundo':'fundos'}</span>`;
-  return html;
+  const vis=fs.slice(0,4);
+  let h=vis.map(f=>`<span class="chip${state.carteira.has(f.cnpj_fundo)?' mine':''}"><b class="${f.ticker?'tk':''}">${esc(rotulo(f))}</b>${f.ticker?'':'<em>balcão</em>'}<span>${pct(f.pct_pl)}</span></span>`).join('');
+  if(fs.length>vis.length) h+=`<span class="chip"><span>mais ${fs.length-vis.length}</span></span>`;
+  return h;
+}
+
+function linha(e){
+  const fs=fundosVisiveis(e).slice().sort((a,b)=>(b.pct_pl||0)-(a.pct_pl||0));
+  const maior=fs[0]?.pct_pl;
+  const d=dia(e.data);
+  const historico=e.historico.slice(0,3).map(x=>`<a class="btn" href="${esc(x.url)}" target="_blank" rel="noopener">${esc(x.especie)} de ${dataCurta(x.data)}</a>`).join('');
+  return `<li><details class="ev" id="${e.id}">
+    <summary>
+      <div class="when"><b>${d.getDate()} ${MESES[d.getMonth()]}</b>${relativo(e.data)}</div>
+      <div class="ev-main">
+        <div class="ev-top"><span class="tag ${e.severidade}">${SEV[e.severidade]}</span><span class="ev-title">${esc(e.tipo)}</span></div>
+        <div class="ev-op"><strong>${esc(opNome(e.operacao))}</strong>, CRI da ${e.emissao}ª emissão, ${serieTxt(e)}, ${esc(secNome(e.securitizadora))}. <span class="phase">${esc(fase(e))}.</span></div>
+        <div class="chips">${chips(e)}</div>
+      </div>
+      <div class="max">${maior!=null?`até<b>${pct(maior)}</b>do PL`:''}</div>
+    </summary>
+    <div class="body">
+      ${EXPLICA[e.tipo]?`<div><h3>O que isso significa</h3><p>${esc(EXPLICA[e.tipo])}</p></div>`:''}
+      ${e.trecho?`<div><h3>Trecho do documento</h3><p class="quote">${esc(e.trecho)}</p></div>`:''}
+      ${e.data_assembleia?`<div><h3>Próximo passo</h3><p>Assembleia marcada para ${dataLonga(e.data_assembleia)}, segundo o edital.</p></div>`:''}
+      <div><h3>FIIs com esse CRI na carteira</h3>
+        <div class="tbl-wrap"><table><thead><tr><th>Fundo</th><th>Gestora</th><th class="num">Valor</th><th class="num">% do PL</th></tr></thead><tbody>
+        ${fs.map(f=>`<tr><td><b class="${f.ticker?'tk':''}">${esc(rotulo(f))}</b><small>${f.ticker?esc(nomeCurto(f.fundo)):'Sem negociação em bolsa'}</small></td><td>${esc(gestoraCurta(f.gestor))}</td><td class="num">${brl(f.valor)}</td><td class="num"><b>${pct(f.pct_pl)}</b></td></tr>`).join('')}
+        </tbody></table></div>
+      </div>
+      <div class="links"><a class="btn primary" href="${esc(e.url)}" target="_blank" rel="noopener">${ICON.ext}Abrir documento no Fundos.Net</a>${historico}</div>
+      <p class="note">${e.cruzamento==='emissao_serie'
+        ? 'O documento não cita o código IF; ligamos aos fundos por securitizadora, emissão e série. Confira no documento antes de tirar conclusões.'
+        : 'Ligado aos fundos pelo código IF '+esc(e.codigos_if.slice(0,3).join(', '))+'.'} Carteira de referência: ${dia(DATA.carteira.data_referencia).toLocaleDateString('pt-BR')}.</p>
+    </div>
+  </details></li>`;
 }
 
 function renderFeed(){
   const lista=filtrar();
   document.getElementById('count').textContent=lista.length+(lista.length===1?' evento':' eventos');
   const feed=document.getElementById('feed');
-  if(!lista.length){feed.innerHTML='<li class="empty">Nenhum evento com esses filtros. Limpe a busca ou inclua outras severidades.</li>';document.getElementById('loadmore').hidden=true;return}
-  feed.innerHTML=lista.slice(0,state.limite).map(e=>{
-    const fs=fundosVisiveis(e).slice().sort((a,b)=>(b.pct_pl||0)-(a.pct_pl||0));
-    const serie = e.outras_series ? `séries ${e.serie} a ${+e.serie+e.outras_series}` : `${ordinal(e.serie)} série`;
-    return `<li class="card"><details class="ev" id="${e.id}">
-      <summary>
-        <div class="ev-head"><div class="pills"><span class="pill ${e.severidade}">${SEV[e.severidade]}</span><span class="phase">${esc(fase(e))}</span></div><span class="when">${quando(e.data)}</span></div>
-        <div><p class="ev-title">${esc(e.tipo)}</p>
-          <div class="ev-sub"><b>${esc(e.operacao||'Operação sem nome')}</b> · CRI ${ordinal(e.emissao)} emissão, ${serie} · ${esc(e.securitizadora)}</div></div>
-        <div class="funds">${chipsFundos(e)}</div>
-        <span class="more-link">Ver detalhes ${ICON.chev}</span>
-      </summary>
-      <div class="ev-body">
-        ${e.trecho?`<div class="box"><h4>Trecho do documento</h4><p class="quote">${esc(e.trecho)}</p></div>`:''}
-        <div class="box"><h4>FIIs com esse CRI na carteira</h4>
-          <table class="exp-table"><tbody>${fs.map(f=>`<tr><td><b class="${f.ticker?'tk':''}">${esc(rotulo(f))}</b><br><small>${f.ticker?esc(nomeCurto(f.fundo)):'Sem negociação em bolsa'} · ${esc(gestoraCurta(f.gestor))}</small></td><td>${pct(f.pct_pl)} do PL<br><small>${brl(f.valor)}</small></td></tr>`).join('')}</tbody></table>
-        </div>
-        ${e.data_assembleia?`<div class="box next"><h4>Próximo passo</h4><p>Assembleia marcada para ${dia(e.data_assembleia).toLocaleDateString('pt-BR')}, segundo o edital.</p></div>`:''}
-        <div class="links">
-          <a href="${esc(e.url)}" target="_blank" rel="noopener">${ICON.ext}Abrir documento no Fundos.Net</a>
-          ${e.historico.slice(0,4).map(x=>`<a href="${esc(x.url)}" target="_blank" rel="noopener">${esc(x.especie)} de ${dataCurta(x.data)}</a>`).join('')}
-        </div>
-        <p class="how-matched">${e.cruzamento==='emissao_serie'?'Ligado aos fundos por securitizadora, emissão e série (o documento não cita código IF). Confira antes de agir.':'Ligado aos fundos pelo código IF'+(e.codigos_if.length?' '+esc(e.codigos_if.slice(0,4).join(', ')):'')+'.'}</p>
-      </div>
-    </details></li>`}).join('');
+  if(!lista.length){
+    feed.innerHTML=`<li class="empty"><b>Nenhum evento com esses filtros.</b>${state.mine&&!state.carteira.size?'Adicione seus fundos no painel ao lado ou desligue "Só meus fundos".':'Limpe a busca, troque a gestora ou inclua outras severidades.'}</li>`;
+    document.getElementById('loadmore').hidden=true; return;
+  }
+  feed.innerHTML=lista.slice(0,state.limite).map(linha).join('');
   const lm=document.getElementById('loadmore');
-  lm.hidden = lista.length<=state.limite;
-  lm.textContent = 'Mostrar mais '+Math.min(25,lista.length-state.limite)+' eventos';
+  lm.hidden=lista.length<=state.limite;
+  lm.textContent='Mostrar mais '+Math.min(25,lista.length-state.limite)+' eventos';
 }
 
 function renderExpo(){
-  let fs=DATA.fundos.filter(passaFundo);
-  const peso=f=>f.expo.crit*10+f.expo.warn*3+f.expo.mon;
-  fs.sort((a,b)=>(state.carteira.has(b.cnpj_fundo)-state.carteira.has(a.cnpj_fundo))||(peso(b)-peso(a)));
-  const vis=state.todosFundos?fs:fs.slice(0,12);
-  const tot=f=>f.expo.crit+f.expo.warn+f.expo.mon;
+  const fs=DATA.fundos.filter(passaFundo);
+  const peso=f=>f.expo.crit*10+f.expo.warn*3+f.expo.mon, tot=f=>f.expo.crit+f.expo.warn+f.expo.mon;
+  fs.sort((a,b)=>peso(b)-peso(a));
+  const vis=state.todosFundos?fs:fs.slice(0,10);
   const maxV=Math.max(...vis.map(tot),0.0001);
-  const passo=[0.01,0.02,0.05,0.1,0.2,0.25,0.5,1].find(p=>p*4>=maxV)||1;
-  const maxEsc=passo*4;
-  document.getElementById('expo').innerHTML=vis.map(f=>{
-    const m=state.carteira.has(f.cnpj_fundo);
-    return `<li>
-      <button type="button" class="star" data-f="${f.cnpj_fundo}" aria-pressed="${m}" aria-label="${m?'Remover':'Marcar'} ${esc(rotulo(f))} como meu fundo">${m?ICON.star:ICON.starO}</button>
-      <button type="button" class="fname" data-q="${esc(f.ticker||f.fundo)}" title="Ver eventos deste fundo"><span class="${f.ticker?'tk':''}">${esc(rotulo(f))}</span><small>${esc(gestoraCurta(f.gestor))}${f.ticker?'':' · balcão'} · ${f.eventos} ${f.eventos===1?'evento':'eventos'}</small></button>
-      <span class="tot">${pct(tot(f))}<small>do PL</small></span>
-      <div class="bar" role="img" aria-label="Urgente ${pct(f.expo.crit)}, atenção ${pct(f.expo.warn)}, acompanhar ${pct(f.expo.mon)}">${['crit','warn','mon'].filter(s=>f.expo[s]>0).map(s=>`<i class="${s}" style="width:${Math.min(100,f.expo[s]/maxEsc*100).toFixed(2)}%"></i>`).join('')}</div>
-    </li>`}).join('');
-  document.getElementById('scale').innerHTML=[0,1,2,3,4].map(i=>`<span>${(passo*i*100).toLocaleString('pt-BR',{maximumFractionDigits:1})}%</span>`).join('');
-  const b=document.getElementById('showall'); b.hidden=fs.length<=12; b.textContent=state.todosFundos?'Mostrar menos':'Ver todos os '+fs.length+' fundos';
+  const passo=[0.01,0.02,0.05,0.1,0.15,0.2,0.25,0.5,1].find(p=>p*4>=maxV)||1;
+  document.getElementById('expo').innerHTML=vis.length?vis.map(f=>`<li>
+      <button type="button" class="fn" data-q="${esc(f.ticker||f.fundo)}" title="Ver eventos deste fundo"><b class="${f.ticker?'tk':''}">${esc(rotulo(f))}</b><small>${esc(gestoraCurta(f.gestor))}${f.ticker?'':', balcão'}, ${f.eventos} ${f.eventos===1?'evento':'eventos'}</small></button>
+      <span class="tot">${pct(tot(f))}</span>
+      <div class="bar" role="img" aria-label="Urgente ${pct(f.expo.crit)}, atenção ${pct(f.expo.warn)}, acompanhar ${pct(f.expo.mon)}">${['crit','warn','mon'].filter(s=>f.expo[s]>0).map(s=>`<i class="${s}" style="width:${Math.min(100,f.expo[s]/(passo*4)*100).toFixed(2)}%"></i>`).join('')}</div>
+    </li>`).join(''):'<li class="note">Nenhum fundo com esses filtros.</li>';
+  document.getElementById('scale').innerHTML=vis.length?[0,1,2,3,4].map(i=>`<span>${(passo*i*100).toLocaleString('pt-BR',{maximumFractionDigits:1})}%</span>`).join(''):'';
+  const b=document.getElementById('showall'); b.hidden=fs.length<=10; b.textContent=state.todosFundos?'Mostrar menos':'Ver todos os '+fs.length+' fundos';
 }
 
 function renderAgenda(){
   const prox=DATA.eventos.filter(e=>e.data_assembleia && dia(e.data_assembleia)>=HOJE && fundosVisiveis(e).length)
     .sort((a,b)=>a.data_assembleia.localeCompare(b.data_assembleia)).slice(0,8);
-  const el=document.getElementById('agenda');
-  if(!prox.length){el.innerHTML='<li><span></span><span class="sub">Nenhuma assembleia futura com data identificada.</span></li>';return}
+  const el=document.getElementById('agenda-list');
+  if(!prox.length){el.innerHTML='<li class="note">Nenhuma assembleia futura com data identificada nos editais do período.</li>';return}
   el.innerHTML=prox.map(e=>{const d=dia(e.data_assembleia), n=Math.round((d-HOJE)/864e5);
-    return `<li><div class="cal"><b>${d.getDate()}</b><span>${MESES[d.getMonth()]}</span></div>
-      <div><div class="what">${esc(e.tipo)}</div><div class="sub">${esc(e.operacao)} · ${esc(e.securitizadora)}</div><div class="in${n<=7?' soon':''}">${n===0?'hoje':'em '+n+(n===1?' dia':' dias')} · ${fundosVisiveis(e).map(rotulo).slice(0,3).join(', ')}</div></div></li>`}).join('');
+    return `<li><button type="button" data-ev="${e.id}"><div class="cal"><b>${d.getDate()}</b><span>${MESES[d.getMonth()]}</span></div>
+      <div><div class="what">${esc(e.tipo)}</div><div class="who">${esc(opNome(e.operacao))}, ${esc(fundosVisiveis(e).map(rotulo).slice(0,3).join(', '))}</div><div class="in${n<=7?' soon':''}">${n===0?'hoje':'em '+n+(n===1?' dia':' dias')}</div></div></button></li>`}).join('');
 }
 
-function renderFoot(){
-  const c=DATA.carteira, v=c.valor_por_metodo||{};
-  const dref=dia(c.data_referencia).toLocaleDateString('pt-BR');
-  document.getElementById('foot').innerHTML=`
-    <p>Carteira de referência: informe trimestral de ${dref}, com ${c.fundos_com_cri} FIIs e ${brl(c.valor_total)} em CRI/CRA. Nesse informe, ${pct(v.if||0)} do valor traz o código IF do ativo, ${pct(v.reserva||0)} só tem emissão e série, e ${pct(v.sem_chave||0)} não tem dado suficiente para cruzar. Posições compradas ou vendidas depois dessa data não aparecem.</p>
-    <p>Classificação automática por regras, que pode errar: sempre abra o documento original antes de tomar qualquer decisão. Isto não é recomendação de investimento.</p>
-    <p>Fontes: Fundos.Net (B3/CVM) e Portal de Dados Abertos da CVM. Documentos de ${dia(DATA.janela.inicio).toLocaleDateString('pt-BR')} a ${dia(DATA.janela.fim).toLocaleDateString('pt-BR')}.</p>`;
+function renderCarteira(){
+  const box=document.getElementById('mine-list');
+  const itens=[...state.carteira].map(c=>FUNDOS_IDX.get(c)).filter(Boolean);
+  box.innerHTML=itens.map(f=>`<button type="button" data-rm="${esc(f.cnpj_fundo)}" aria-label="Remover ${esc(rotulo(f))}">${esc(rotulo(f))}<span aria-hidden="true">×</span></button>`).join('');
+  document.getElementById('mine-empty').hidden=itens.length>0;
 }
 
 function renderGestoras(){
@@ -444,11 +514,40 @@ function renderGestoras(){
   sel.innerHTML='<option value="">Todas as gestoras</option>'+lista.map(([g,n])=>`<option value="${esc(g)}"${g===state.gestora?' selected':''}>${esc(gestoraCurta(g))} (${n})</option>`).join('');
   sel.classList.toggle('on',!!state.gestora);
 }
-function render(){renderGestoras();renderResumo();renderFeed();renderExpo();renderAgenda();}
+
+function renderGlossario(){
+  const usados=new Set(DATA.eventos.map(e=>e.tipo));
+  document.getElementById('gloss').innerHTML=Object.entries(EXPLICA).filter(([t])=>usados.has(t)).map(([t,x])=>`<div><dt>${esc(t)}</dt><dd>${esc(x)}</dd></div>`).join('');
+}
+
+function renderFoot(){
+  const c=DATA.carteira, v=c.valor_por_metodo||{};
+  const dref=dia(c.data_referencia).toLocaleDateString('pt-BR');
+  document.getElementById('foot').innerHTML=`
+    <p>A carteira de referência é o informe trimestral de ${dref}: ${c.fundos_com_cri} FIIs com ${brl(c.valor_total)} em CRI e CRA. Nesse informe, ${pct(v.if||0)} do valor traz o código IF do ativo, ${pct(v.reserva||0)} só tem emissão e série, e ${pct(v.sem_chave||0)} não tem dado suficiente para o cruzamento. Compras e vendas posteriores não aparecem.</p>
+    <p>A classificação é automática e pode errar. Abra sempre o documento original antes de qualquer decisão. O Radar de Lastro reúne informação pública e não faz recomendação de investimento.</p>
+    <p>Fontes: Fundos.Net (B3 e CVM) e Portal de Dados Abertos da CVM. Documentos de ${dia(DATA.janela.inicio).toLocaleDateString('pt-BR')} a ${dia(DATA.janela.fim).toLocaleDateString('pt-BR')}.</p>`;
+}
+
+function render(){renderGestoras();renderHero();renderFeed();renderExpo();renderAgenda();renderCarteira();}
+
+function adicionar(texto){
+  const t=texto.trim().toLowerCase(); if(!t) return false;
+  const f=DATA.fundos.concat([...FUNDOS_IDX.values()]).find(x=>(x.ticker||'').toLowerCase()===t)
+       || [...FUNDOS_IDX.values()].find(x=>(x.ticker||'').toLowerCase()===t || (x.fundo||'').toLowerCase().includes(t) || rotulo(x).toLowerCase()===t);
+  if(!f) return false;
+  state.carteira.add(f.cnpj_fundo); store.set('rl-carteira',[...state.carteira]); return true;
+}
+
+function abrirEvento(id){
+  const el=document.getElementById(id);
+  if(!el){ state.q=''; document.getElementById('q').value=''; state.limite=999; renderFeed(); }
+  const d=document.getElementById(id); if(!d) return;
+  d.open=true; d.scrollIntoView({behavior:'smooth',block:'start'});
+}
 
 function ligar(){
-  const row=document.getElementById('row');
-  row.addEventListener('click',ev=>{const b=ev.target.closest('button[data-sev]'); if(!b) return;
+  document.querySelector('.sevs').addEventListener('click',ev=>{const b=ev.target.closest('button[data-sev]'); if(!b) return;
     const v=b.dataset.sev; state.sev.has(v)?state.sev.delete(v):state.sev.add(v); b.setAttribute('aria-pressed',state.sev.has(v)); state.limite=25; renderFeed();});
   const q=document.getElementById('q'); q.addEventListener('input',()=>{state.q=q.value;state.limite=25;renderFeed();});
   const mine=document.getElementById('mine'); mine.checked=state.mine;
@@ -458,24 +557,32 @@ function ligar(){
   const gs=document.getElementById('gestora'); gs.addEventListener('change',()=>{state.gestora=gs.value;state.limite=25;render();});
   document.getElementById('loadmore').addEventListener('click',()=>{state.limite+=25;renderFeed();});
   document.getElementById('showall').addEventListener('click',()=>{state.todosFundos=!state.todosFundos;renderExpo();});
-  document.getElementById('expo').addEventListener('click',ev=>{
-    const s=ev.target.closest('.star');
-    if(s){const f=s.dataset.f; state.carteira.has(f)?state.carteira.delete(f):state.carteira.add(f); store.set('rl-carteira',[...state.carteira]); render(); return}
-    const t=ev.target.closest('.fname');
-    if(t){q.value=t.dataset.q;state.q=t.dataset.q;state.limite=25;renderFeed();document.getElementById('h-feed').scrollIntoView({behavior:'smooth',block:'start'});}
-  });
+  document.getElementById('expo').addEventListener('click',ev=>{const t=ev.target.closest('.fn'); if(!t) return;
+    q.value=t.dataset.q; state.q=t.dataset.q; state.limite=25; renderFeed(); document.getElementById('eventos').scrollIntoView({behavior:'smooth',block:'start'});});
+  document.getElementById('agenda-list').addEventListener('click',ev=>{const b=ev.target.closest('button[data-ev]'); if(b) abrirEvento(b.dataset.ev);});
+  const form=document.getElementById('add-form'), inp=document.getElementById('add-input');
+  form.addEventListener('submit',ev=>{ev.preventDefault();
+    if(adicionar(inp.value)){inp.value='';inp.setCustomValidity('');render();}
+    else{inp.setCustomValidity('Não encontramos esse fundo entre os FIIs com CRI na carteira.');inp.reportValidity();}});
+  inp.addEventListener('input',()=>inp.setCustomValidity(''));
+  document.getElementById('mine-list').addEventListener('click',ev=>{const b=ev.target.closest('button[data-rm]'); if(!b) return;
+    state.carteira.delete(b.dataset.rm); store.set('rl-carteira',[...state.carteira]); render();});
 }
 
-fetch('data.json').then(r=>{if(!r.ok) throw new Error(r.status); return r.json();}).then(d=>{
-  DATA=d;
-  HOJE=dia(d.janela.fim);
+fetch('data.json',{cache:'no-cache'}).then(r=>{if(!r.ok) throw new Error(r.status); return r.json();}).then(d=>{
+  DATA=d; HOJE=dia(d.janela.fim);
+  // índice de todos os fundos citados, para o campo "Meus fundos"
+  d.eventos.forEach(e=>e.fundos.forEach(f=>{ if(!FUNDOS_IDX.has(f.cnpj_fundo)) FUNDOS_IDX.set(f.cnpj_fundo,f); }));
+  document.getElementById('fundos-list').innerHTML=[...FUNDOS_IDX.values()].sort((a,b)=>rotulo(a).localeCompare(rotulo(b)))
+    .map(f=>`<option value="${esc(f.ticker||nomeCurto(f.fundo))}">${esc(f.ticker?nomeCurto(f.fundo):'Sem negociação em bolsa')}</option>`).join('');
   const g=new Date(d.gerado_em);
-  document.getElementById('fresh').innerHTML='Atualizado em <b>'+g.toLocaleDateString('pt-BR')+'</b> · dados públicos';
-  ligar(); render(); renderFoot();
-}).catch(err=>{
-  document.getElementById('headline').textContent='Não foi possível carregar os dados.';
-  document.getElementById('subline').textContent='Recarregue a página. Se continuar, os dados podem estar sendo atualizados.';
-  document.getElementById('feed').innerHTML='<li class="empty">Sem dados para mostrar agora.</li>';
+  document.getElementById('updated').textContent='Atualizado em '+g.toLocaleDateString('pt-BR')+' às '+g.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})+'.';
+  ligar(); render(); renderGlossario(); renderFoot();
+  if(/^#e\d+$/.test(location.hash)) abrirEvento(location.hash.slice(1));
+}).catch(()=>{
+  document.getElementById('headline').textContent='Os dados não carregaram.';
+  document.getElementById('subline').textContent='Recarregue a página. Se o problema continuar, a atualização pode estar em andamento.';
+  document.getElementById('feed').innerHTML='<li class="empty"><b>Sem eventos para mostrar agora.</b>Tente de novo em alguns minutos.</li>';
 });
 </script>
 <!-- Cloudflare Web Analytics (sem cookies) -->

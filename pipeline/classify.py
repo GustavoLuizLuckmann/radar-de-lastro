@@ -136,17 +136,52 @@ def data_assembleia(texto_norm: str):
     return None
 
 
-def frase(texto_plano: str, ini: int, fim: int, tamanho: int = 280):
-    """Frase do documento em volta do trecho encontrado, cortada com reticências se for longa."""
-    a = texto_plano.rfind(". ", 0, ini)
-    a = 0 if a == -1 else a + 2
-    b = texto_plano.find(". ", fim)
-    b = len(texto_plano) if b == -1 else b + 1
-    if b - a <= tamanho:
-        return texto_plano[a:b].strip()
-    a = max(a, ini - tamanho // 3)
-    b = min(b, a + tamanho)
-    return ("…" if a > 0 else "") + texto_plano[a:b].strip() + "…"
+# palavras que terminam em ponto sem encerrar a frase
+ABREVIACOES = {
+    "av", "sr", "sra", "dr", "dra", "n", "no", "nº", "art", "arts", "inc", "incs", "cia", "ltda", "s.a", "s/a",
+    "p", "pp", "fl", "fls", "al", "res", "cap", "par", "ex", "exmo", "exma", "v", "vs", "obs", "aprox", "tel",
+    "r", "rua", "cj", "conj", "km", "min", "máx", "mín", "etc", "c", "e.g", "i.e",
+}
+# fim de frase (. ou ;) ou início de item de pauta ("deliberar sobre: (i) ...")
+_FIM = re.compile(r"[.;]\s+(?=[\(\[“\"'A-ZÀ-Ý0-9])|:\s+(?=\((?:[ivxlc]+|[a-z]|\d+)\))")
+
+
+def _limites(tp: str):
+    """Posições onde termina uma frase ou um item de pauta (ponto final ou ponto e vírgula)."""
+    pos = []
+    for m in _FIM.finditer(tp):
+        if tp[m.start()] == ".":
+            anterior = re.search(r"(\S+)$", tp[:m.start()])
+            palavra = (anterior.group(1) if anterior else "").lower().strip("(“\"'")
+            if palavra in ABREVIACOES or re.fullmatch(r"[\divxlc]{1,4}|[a-z]|\d+(\.\d+)*", palavra):
+                continue  # "Av.", "nº.", "1.", "iv." não encerram frase
+        pos.append(m.start() + 1)
+    return pos
+
+
+def frase(texto_plano: str, ini: int, fim: int, tamanho: int = 320):
+    """Frase ou item de pauta que contém o trecho encontrado, sem cortar palavras.
+
+    Se o item for longo, recorta numa janela em volta do trecho, sempre em fronteira de palavra,
+    e marca os cortes com reticências.
+    """
+    lim = _limites(texto_plano)
+    a = max([p for p in lim if p <= ini] or [0])
+    b = min([p for p in lim if p > fim] or [len(texto_plano)])
+    trecho = texto_plano[a:b].strip()
+    if len(trecho) <= tamanho:
+        return trecho.rstrip(";").rstrip() or None
+    # janela em volta do gatilho, ajustada para começar e terminar em espaço
+    j_ini = max(a, ini - tamanho // 3)
+    j_fim = min(b, j_ini + tamanho)
+    if j_ini > a:
+        esp = texto_plano.find(" ", j_ini)
+        j_ini = esp + 1 if 0 <= esp < ini else j_ini
+    if j_fim < b:
+        esp = texto_plano.rfind(" ", fim, j_fim)
+        j_fim = esp if esp > fim else j_fim
+    corte = texto_plano[j_ini:j_fim].strip().rstrip(",;:")
+    return ("…" if j_ini > a else "") + corte + ("…" if j_fim < b else "")
 
 
 def classificar(doc, texto: str):
