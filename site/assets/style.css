@@ -1,29 +1,30 @@
 /*
-  Identidade: papel de título de crédito. Verde de cautela, linhas concêntricas de radar que
+  Identidade a partir do logo: azul-marinho, prata e ouro (o lastro), com o azul elétrico do radar.
+  Antes: papel de título de crédito. Verde de cautela, linhas concêntricas de radar que
   lembram a gravação de segurança (guilhochê) de um certificado, selo ocre só na marca.
   Layout: faixa verde com a frase do período; barra de filtros fixa; lista de eventos em linhas
   à esquerda; carteira, fundos expostos e agenda à direita. Tudo alinhado à esquerda.
 */
 :root{
-  --paper:#F4F6F3; --surface:#FFFFFF; --ink:#13221B; --muted:#5A6A61; --line:#DCE3DE; --soft:#EEF2EF;
-  --brand:#173F31; --brand-2:#245C47; --brand-ink:#EAF3EE; --brand-muted:#A9C7B8; --seal:#D9A441;
-  --accent:#1F6B4F; --accent-soft:#E3F0E9;
-  --crit:#B42318; --crit-soft:#FCECEA; --warn:#9A5B05; --warn-soft:#FDF2DE; --mon:#2C5D8A; --mon-soft:#E7EFF7;
+  --paper:#F3F5F9; --surface:#FFFFFF; --ink:#0F1B2D; --muted:#56637A; --line:#DAE1EB; --soft:#ECF0F6;
+  --brand:#0C2E54; --brand-2:#123F6E; --brand-ink:#EEF3FA; --brand-muted:#A8B9D2; --seal:#C9A24A;
+  --accent:#1B5FAA; --accent-soft:#E3EDF9; --radar:#3BA7EA; --silver:#C9D3E0;
+  --crit:#B42318; --crit-soft:#FCECEA; --warn:#9A5B05; --warn-soft:#FDF2DE; --mon:#1F6E7A; --mon-soft:#E2F1F2;
   --font:"Schibsted Grotesk","Helvetica Neue",Arial,sans-serif;
   --r-lg:14px; --r-md:10px; --r-sm:6px;
   color-scheme:light;
 }
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
-  --paper:#0D1411; --surface:#141E19; --ink:#E3EBE6; --muted:#96A79E; --line:#24332B; --soft:#1A2620;
-  --brand:#0F2A20; --brand-2:#1A3D30; --brand-ink:#E3EFE8; --brand-muted:#8FB3A1; --seal:#E2B158;
-  --accent:#7CC6A3; --accent-soft:#16352A;
-  --crit:#F08A80; --crit-soft:#3A1D1A; --warn:#EDB862; --warn-soft:#372812; --mon:#8EB6E3; --mon-soft:#192A3D;
+  --paper:#09111D; --surface:#101B2B; --ink:#E4EAF3; --muted:#93A2B8; --line:#22324A; --soft:#16233A;
+  --brand:#081C36; --brand-2:#0F2C52; --brand-ink:#E7EEF8; --brand-muted:#8FA4C2; --seal:#DDB862;
+  --accent:#7DB4F0; --accent-soft:#142B49; --radar:#56B8F2; --silver:#9FB0C6;
+  --crit:#F08A80; --crit-soft:#3A1D1A; --warn:#EDB862; --warn-soft:#372812; --mon:#7FCAD3; --mon-soft:#13303A;
   color-scheme:dark}}
 :root[data-theme="dark"]{
-  --paper:#0D1411; --surface:#141E19; --ink:#E3EBE6; --muted:#96A79E; --line:#24332B; --soft:#1A2620;
-  --brand:#0F2A20; --brand-2:#1A3D30; --brand-ink:#E3EFE8; --brand-muted:#8FB3A1; --seal:#E2B158;
-  --accent:#7CC6A3; --accent-soft:#16352A;
-  --crit:#F08A80; --crit-soft:#3A1D1A; --warn:#EDB862; --warn-soft:#372812; --mon:#8EB6E3; --mon-soft:#192A3D;
+  --paper:#09111D; --surface:#101B2B; --ink:#E4EAF3; --muted:#93A2B8; --line:#22324A; --soft:#16233A;
+  --brand:#081C36; --brand-2:#0F2C52; --brand-ink:#E7EEF8; --brand-muted:#8FA4C2; --seal:#DDB862;
+  --accent:#7DB4F0; --accent-soft:#142B49; --radar:#56B8F2; --silver:#9FB0C6;
+  --crit:#F08A80; --crit-soft:#3A1D1A; --warn:#EDB862; --warn-soft:#372812; --mon:#7FCAD3; --mon-soft:#13303A;
   color-scheme:dark}
 
 *{box-sizing:border-box}
@@ -39,16 +40,17 @@ button,input,select{font:inherit;color:inherit}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 
 /* Faixa da marca */
-.band{background:var(--brand);color:var(--brand-ink);position:relative;overflow:hidden;padding-top:env(safe-area-inset-top,0px)}
+.band{background:linear-gradient(180deg,var(--brand-2) 0%,var(--brand) 100%);color:var(--brand-ink);position:relative;overflow:hidden;padding-top:env(safe-area-inset-top,0px)}
 .rings{position:absolute;right:-160px;top:50%;width:620px;height:620px;transform:translateY(-50%);border-radius:50%;pointer-events:none;
-  background:repeating-radial-gradient(circle at center, transparent 0 21px, color-mix(in srgb,var(--brand-muted) 22%,transparent) 21px 22px);
+  background:repeating-radial-gradient(circle at center, transparent 0 21px, color-mix(in srgb,var(--silver) 20%,transparent) 21px 22px);
   -webkit-mask:radial-gradient(circle, #000 40%, transparent 70%);mask:radial-gradient(circle, #000 40%, transparent 70%)}
-.sweep{position:absolute;inset:0;border-radius:50%;background:conic-gradient(from 0deg, color-mix(in srgb,var(--seal) 34%,transparent), transparent 55deg)}
+.sweep{position:absolute;inset:0;border-radius:50%;background:conic-gradient(from 0deg, color-mix(in srgb,var(--radar) 38%,transparent), transparent 50deg)}
 @media (prefers-reduced-motion:no-preference){.sweep{animation:sweep 9s linear infinite}@keyframes sweep{to{transform:rotate(360deg)}}}
+.band::after{content:"";position:absolute;left:0;right:0;bottom:0;height:3px;background:linear-gradient(90deg,transparent,var(--seal) 20%,#E9CF85 50%,var(--seal) 80%,transparent)}
 .topbar{display:flex;align-items:center;justify-content:space-between;gap:12px 24px;flex-wrap:wrap;padding-block:16px;position:relative}
 .brand{display:flex;align-items:center;gap:12px;text-decoration:none;color:inherit}
-.brand svg{width:34px;height:34px;flex:none}
-.brand b{font-size:19px;font-weight:800;letter-spacing:-.01em}
+.brand img{width:44px;height:44px;flex:none;border-radius:10px;box-shadow:0 0 0 1px color-mix(in srgb,var(--silver) 35%,transparent)}
+.brand b{font-size:18px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--brand-ink)}
 .nav{display:flex;gap:4px;flex-wrap:wrap}
 .nav a{color:var(--brand-ink);text-decoration:none;font-size:14.5px;font-weight:500;padding:6px 12px;border-radius:var(--r-sm);opacity:.85}
 .nav a:hover{opacity:1;background:color-mix(in srgb,var(--brand-ink) 10%,transparent)}
@@ -57,7 +59,7 @@ button,input,select{font:inherit;color:inherit}
 .hero p{margin:12px 0 0;color:var(--brand-muted);font-size:16px;max-width:62ch}
 .tally{display:flex;flex-wrap:wrap;gap:10px 26px;margin-top:22px}
 .tally div{display:flex;align-items:baseline;gap:8px}
-.tally b{font-size:30px;font-weight:800;line-height:1}
+.tally b{font-size:30px;font-weight:800;line-height:1;color:#fff}
 .tally span{font-size:14px;color:var(--brand-muted)}
 .tally i{width:10px;height:10px;border-radius:2px;display:inline-block;align-self:center}
 .updated{font-size:13px;color:var(--brand-muted)}
@@ -133,7 +135,7 @@ td.num,th.num{text-align:right;padding-right:0;white-space:nowrap}
 td small{display:block;color:var(--muted);font-size:12.5px}
 .links{display:flex;flex-wrap:wrap;gap:8px}
 .btn{display:inline-flex;align-items:center;gap:6px;font-size:14px;font-weight:600;text-decoration:none;padding:7px 12px;border-radius:var(--r-md);border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer}
-.btn.primary{background:var(--brand);border-color:var(--brand);color:var(--brand-ink)}
+.btn.primary{background:var(--brand-2);border-color:var(--brand-2);color:var(--brand-ink)}
 .btn svg{width:15px;height:15px}
 .note{font-size:13px;color:var(--muted)}
 .empty{padding:36px 20px;color:var(--muted)}
