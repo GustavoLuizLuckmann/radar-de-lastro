@@ -13,7 +13,7 @@ function passa(e){
 
 function item(e, dataRef, extra){
   const d=dia(dataRef), fs=fundosVisiveis(e).slice().sort((a,b)=>(b.pct_pl||0)-(a.pct_pl||0));
-  return `<a class="ag-row" href="index.html#${e.id}">
+  return `<a class="ag-row" href="/#${e.id}">
     <div class="cal"><b>${d.getDate()}</b><span>${MESES[d.getMonth()]}</span></div>
     <div><div class="ev-top"><span class="tag ${e.severidade}">${SEV[e.severidade]}</span><span class="what">${esc(e.tipo)}</span></div>
       <div class="who">${esc(opNome(e.operacao))}, CRI da ${e.emissao}ª emissão, ${esc(secNome(e.securitizadora))}</div>

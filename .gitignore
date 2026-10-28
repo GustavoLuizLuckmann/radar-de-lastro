@@ -4,3 +4,4 @@ site/data.json
 __pycache__/
 *.pyc
 site/sitemap.xml
+site/fii/

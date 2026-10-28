@@ -22,7 +22,7 @@ function render(){
   }
   const max=Math.max(...fs.map(f=>f.total),0.0001);
   corpo.innerHTML=fs.map(f=>{
-    const m=S.carteira.has(f.cnpj_fundo), alvo='index.html?q='+encodeURIComponent(f.ticker||f.fundo);
+    const m=S.carteira.has(f.cnpj_fundo), alvo=urlFundo(f);
     return `<tr data-href="${esc(alvo)}">
       <td><a href="${esc(alvo)}"><b class="${f.ticker?'tk':''}">${esc(rotulo(f))}</b></a><small>${f.ticker?esc(nomeCurto(f.fundo)):'Sem negociação em bolsa'}</small></td>
       <td>${esc(gestoraCurta(f.gestor))}</td>

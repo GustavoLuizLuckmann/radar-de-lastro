@@ -7,6 +7,7 @@ from pathlib import Path
 
 from classify import classificar
 from match import Indice, expor
+from paginas_fundos import gerar as gerar_paginas_fundos, mapa_slugs
 
 ROOT = Path(__file__).resolve().parent.parent
 TXT = ROOT / "raw" / "fnet" / "txt"
@@ -26,12 +27,13 @@ PAGINAS = [("", "daily", "1.0"), ("fundos.html", "daily", "0.8"), ("assembleias.
            ("como-funciona.html", "monthly", "0.5")]
 
 
-def escrever_sitemap(data: str):
+def escrever_sitemap(data: str, fundos: list[str] = ()):
     """Mapa do site para buscadores; a data muda a cada atualização dos dados."""
+    todas = list(PAGINAS) + [(u, "daily", "0.6") for u in sorted(fundos)]
     itens = "\n".join(
         f"  <url><loc>https://radardelastro.com.br/{p}</loc><lastmod>{data}</lastmod>"
         f"<changefreq>{f}</changefreq><priority>{pr}</priority></url>"
-        for p, f, pr in PAGINAS
+        for p, f, pr in todas
     )
     (SITE / "sitemap.xml").write_text(
         '<?xml version="1.0" encoding="UTF-8"?>\n'
@@ -43,6 +45,7 @@ def main():
     h = json.loads((ROOT / "data" / "holdings.json").read_text())
     coleta = json.loads((ROOT / "raw" / "fnet" / "docs.json").read_text())
     idx = Indice(h["posicoes"])
+    slugs = mapa_slugs(h)
 
     stats = defaultdict(int)
     brutos = []
@@ -67,7 +70,8 @@ def main():
             "serie": d["serie"], "outras_series": d["outras_series"], "operacao": d["operacao"],
             "url": URL_DOC.format(id=d["id"]), "cruzamento": metodo, **c,
             "codigos_if": sorted({p["codigo_if"] for p in pos if p["codigo_if"]}),
-            "fundos": [{k: f.get(k) for k in ("cnpj_fundo", "ticker", "fundo", "listado", "gestor", "valor", "pct_pl")} for f in fundos],
+            "fundos": [{**{k: f.get(k) for k in ("cnpj_fundo", "ticker", "fundo", "listado", "gestor", "valor", "pct_pl")},
+                        "slug": slugs.get(f["cnpj_fundo"])} for f in fundos],
         })
 
     # um card por operação e tipo de evento; documentos repetidos (edital, proposta, ata) viram histórico
@@ -117,7 +121,8 @@ def main():
     }
     SITE.mkdir(exist_ok=True)
     (SITE / "data.json").write_text(json.dumps(saida, ensure_ascii=False))
-    escrever_sitemap(saida["gerado_em"][:10])
+    paginas = gerar_paginas_fundos(saida, h)
+    escrever_sitemap(saida["gerado_em"][:10], paginas)
     print(json.dumps({"eventos": len(eventos), "fundos": len(fundos), **stats}, ensure_ascii=False), file=sys.stderr)
 
 

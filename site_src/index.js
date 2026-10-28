@@ -66,7 +66,7 @@ function linha(e){
       ${e.data_assembleia?`<div><h3>Próximo passo</h3><p>Assembleia marcada para ${dataLonga(e.data_assembleia)}, segundo o edital.</p></div>`:''}
       <div><h3>FIIs com esse CRI na carteira</h3>
         <div class="tbl-wrap"><table><thead><tr><th>Fundo</th><th>Gestora</th><th class="num">Valor</th><th class="num">% do PL</th></tr></thead><tbody>
-        ${lista.map(f=>`<tr><td><b class="${f.ticker?'tk':''}">${esc(rotulo(f))}</b><small>${f.ticker?esc(nomeCurto(f.fundo)):'Sem negociação em bolsa'}</small></td><td>${esc(gestoraCurta(f.gestor))}</td><td class="num">${brl(f.valor)}</td><td class="num"><b>${pct(f.pct_pl)}</b></td></tr>`).join('')}
+        ${lista.map(f=>`<tr><td><a href="${esc(urlFundo(f))}" style="color:inherit"><b class="${f.ticker?'tk':''}">${esc(rotulo(f))}</b></a><small>${f.ticker?esc(nomeCurto(f.fundo)):'Sem negociação em bolsa'}</small></td><td>${esc(gestoraCurta(f.gestor))}</td><td class="num">${brl(f.valor)}</td><td class="num"><b>${pct(f.pct_pl)}</b></td></tr>`).join('')}
         </tbody></table></div>
       </div>
       <div class="links"><a class="btn primary" href="${esc(e.url)}" target="_blank" rel="noopener">${ICON.ext}Abrir documento no Fundos.Net</a>${historico}</div>

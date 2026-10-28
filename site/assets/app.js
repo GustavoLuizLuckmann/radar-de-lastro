@@ -53,6 +53,7 @@ function nomeCurto(n){
   const corte=s.lastIndexOf(' ',34); return s.slice(0,corte>18?corte:34)+'…';
 }
 const rotulo = f => f.ticker || nomeCurto(f.fundo);
+const urlFundo = f => f.slug ? '/fii/'+f.slug+'/' : '/?q='+encodeURIComponent(f.ticker||f.fundo);
 function gestoraCurta(n){
   if(!n) return 'Gestora não informada';
   let t=n.replace(/\b(LTDA|S\/?A|S\.A|EIRELI)\b\.?/gi,' ').replace(/GEST(Ã|A)O DE RECURSOS|GESTORA DE RECURSOS|ADMINISTRA(Ç|C)(Ã|A)O DE RECURSOS|ASSET MANAGEMENT|GEST(Ã|A)O E CONSULTORIA DE INVESTIMENTOS|INVESTIMENTOS E PARTICIPA(Ç|C)(Õ|O)ES|\bGESTORA\b|INVESTIMENTOS|\bDTVM\b|DISTRIBUIDORA DE T(Í|I)TULOS E VALORES MOBILI(Á|A)RIOS|CORRETORA DE T(Í|I)TULOS E VALORES MOBILI(Á|A)RIOS/gi,' ');
@@ -155,18 +156,15 @@ function ligarBolsa(input, aoMudar){
 }
 
 /* ---------- carga e moldura da página ---------- */
-function marcarNav(){
-  const pag=(location.pathname.split('/').pop()||'index.html').replace(/^$/,'index.html');
-  document.querySelectorAll('.nav a').forEach(a=>{ if(a.getAttribute('href')===pag) a.setAttribute('aria-current','page'); });
-}
+function marcarNav(){} // a página atual já vem marcada no HTML gerado
 function rodape(){
   const el=document.getElementById('foot'); if(!el||!DATA) return;
   el.innerHTML=`<p>O Radar de Lastro reúne informação pública e não faz recomendação de investimento. A classificação dos eventos é automática e pode errar: abra sempre o documento original antes de qualquer decisão.</p>
-    <p>Fontes: Fundos.Net (B3 e CVM) e Portal de Dados Abertos da CVM. Carteira de referência: informe trimestral de ${dia(DATA.carteira.data_referencia).toLocaleDateString('pt-BR')}. <a href="como-funciona.html">Como funciona</a>.</p>`;
+    <p>Fontes: Fundos.Net (B3 e CVM) e Portal de Dados Abertos da CVM. Carteira de referência: informe trimestral de ${dia(DATA.carteira.data_referencia).toLocaleDateString('pt-BR')}. <a href="/como-funciona.html">Como funciona</a>.</p>`;
 }
 function carregar(){
   marcarNav();
-  return fetch('data.json',{cache:'no-cache'}).then(r=>{if(!r.ok) throw new Error(r.status); return r.json();}).then(d=>{
+  return fetch('/data.json',{cache:'no-cache'}).then(r=>{if(!r.ok) throw new Error(r.status); return r.json();}).then(d=>{
     DATA=d;
     d.eventos.forEach(e=>e.fundos.forEach(f=>{ if(!FUNDOS_IDX.has(f.cnpj_fundo)) FUNDOS_IDX.set(f.cnpj_fundo,f); }));
     const g=new Date(d.gerado_em), up=document.getElementById('updated');

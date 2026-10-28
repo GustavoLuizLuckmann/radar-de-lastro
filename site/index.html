@@ -13,25 +13,25 @@
 <meta property="og:image" content="https://radardelastro.com.br/assets/og.png">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="theme-color" content="#0C2E54">
-<link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32.png">
-<link rel="icon" type="image/png" sizes="64x64" href="assets/favicon-64.png">
-<link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png">
+<link rel="icon" type="image/png" sizes="64x64" href="/assets/favicon-64.png">
+<link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&display=swap">
-<link rel="stylesheet" href="assets/style.css">
+<link rel="stylesheet" href="/assets/style.css">
 </head>
 <body>
 <header class="band">
   <div class="rings" aria-hidden="true"><div class="sweep"></div></div>
   <div class="wrap">
     <div class="topbar">
-      <a class="brand" href="index.html">
-        <img src="assets/logo-emblema.png" alt="" width="44" height="44">
+      <a class="brand" href="/">
+        <img src="/assets/logo-emblema.png" alt="" width="44" height="44">
         <b>Radar de Lastro</b>
       </a>
       <nav class="nav" aria-label="Páginas">
-        <a href="index.html">Eventos</a><a href="fundos.html">Fundos expostos</a><a href="assembleias.html">Assembleias</a><a href="como-funciona.html">Como funciona</a>
+        <a href="/" aria-current="page">Eventos</a><a href="/fundos.html">Fundos expostos</a><a href="/assembleias.html">Assembleias</a><a href="/como-funciona.html">Como funciona</a>
       </nav>
     </div>
     <div class="hero">
@@ -94,14 +94,14 @@
         <p class="sub" id="expo-sub">Parte do PL aplicada em CRIs que tiveram evento no período.</p>
         <ul class="expo" id="expo"></ul>
         <div class="scale" id="scale"></div>
-        <a class="link-btn" href="fundos.html" style="display:inline-block;text-decoration:none">Ver o ranking completo</a>
+        <a class="link-btn" href="/fundos.html" style="display:inline-block;text-decoration:none">Ver o ranking completo</a>
       </section>
 
       <section class="panel" aria-labelledby="h-ag">
         <h2 id="h-ag">Próximas assembleias</h2>
         <p class="sub">Convocadas para tratar de crédito, com a data lida do edital.</p>
         <ul class="agenda" id="agenda-list"></ul>
-        <a class="link-btn" href="assembleias.html" style="display:inline-block;text-decoration:none">Ver todas as assembleias</a>
+        <a class="link-btn" href="/assembleias.html" style="display:inline-block;text-decoration:none">Ver todas as assembleias</a>
       </section>
     </aside>
   </div>
@@ -109,7 +109,7 @@
 <footer>
   <div class="wrap" id="foot"><p>Fontes: Fundos.Net (B3 e CVM) e Portal de Dados Abertos da CVM.</p></div>
 </footer>
-<script src="assets/app.js"></script>
+<script src="/assets/app.js"></script>
 <script>
 const P = { q:'', sev:new Set(['crit','warn','mon']), mine:store.get('rl-mine',false), limite:25, forcar:null };
 
@@ -179,7 +179,7 @@ function linha(e){
       ${e.data_assembleia?`<div><h3>Próximo passo</h3><p>Assembleia marcada para ${dataLonga(e.data_assembleia)}, segundo o edital.</p></div>`:''}
       <div><h3>FIIs com esse CRI na carteira</h3>
         <div class="tbl-wrap"><table><thead><tr><th>Fundo</th><th>Gestora</th><th class="num">Valor</th><th class="num">% do PL</th></tr></thead><tbody>
-        ${lista.map(f=>`<tr><td><b class="${f.ticker?'tk':''}">${esc(rotulo(f))}</b><small>${f.ticker?esc(nomeCurto(f.fundo)):'Sem negociação em bolsa'}</small></td><td>${esc(gestoraCurta(f.gestor))}</td><td class="num">${brl(f.valor)}</td><td class="num"><b>${pct(f.pct_pl)}</b></td></tr>`).join('')}
+        ${lista.map(f=>`<tr><td><a href="${esc(urlFundo(f))}" style="color:inherit"><b class="${f.ticker?'tk':''}">${esc(rotulo(f))}</b></a><small>${f.ticker?esc(nomeCurto(f.fundo)):'Sem negociação em bolsa'}</small></td><td>${esc(gestoraCurta(f.gestor))}</td><td class="num">${brl(f.valor)}</td><td class="num"><b>${pct(f.pct_pl)}</b></td></tr>`).join('')}
         </tbody></table></div>
       </div>
       <div class="links"><a class="btn primary" href="${esc(e.url)}" target="_blank" rel="noopener">${ICON.ext}Abrir documento no Fundos.Net</a>${historico}</div>
