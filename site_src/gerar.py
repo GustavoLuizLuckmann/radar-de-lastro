@@ -25,6 +25,7 @@ HEAD = """<!doctype html>
 <meta property="og:description" content="{descricao}">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://radardelastro.com.br/{arquivo}">
+<link rel="canonical" href="https://radardelastro.com.br/{arquivo}">
 <meta property="og:image" content="https://radardelastro.com.br/assets/og.png">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="theme-color" content="#0C2E54">

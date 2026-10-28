@@ -22,6 +22,23 @@ def data_iso(br: str):
     return f"{aa}-{mm}-{dd}T{h or '00:00'}"
 
 
+PAGINAS = [("", "daily", "1.0"), ("fundos.html", "daily", "0.8"), ("assembleias.html", "daily", "0.8"),
+           ("como-funciona.html", "monthly", "0.5")]
+
+
+def escrever_sitemap(data: str):
+    """Mapa do site para buscadores; a data muda a cada atualização dos dados."""
+    itens = "\n".join(
+        f"  <url><loc>https://radardelastro.com.br/{p}</loc><lastmod>{data}</lastmod>"
+        f"<changefreq>{f}</changefreq><priority>{pr}</priority></url>"
+        for p, f, pr in PAGINAS
+    )
+    (SITE / "sitemap.xml").write_text(
+        '<?xml version="1.0" encoding="UTF-8"?>\n'
+        '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' + itens + "\n</urlset>\n"
+    )
+
+
 def main():
     h = json.loads((ROOT / "data" / "holdings.json").read_text())
     coleta = json.loads((ROOT / "raw" / "fnet" / "docs.json").read_text())
@@ -100,6 +117,7 @@ def main():
     }
     SITE.mkdir(exist_ok=True)
     (SITE / "data.json").write_text(json.dumps(saida, ensure_ascii=False))
+    escrever_sitemap(saida["gerado_em"][:10])
     print(json.dumps({"eventos": len(eventos), "fundos": len(fundos), **stats}, ensure_ascii=False), file=sys.stderr)
 
 
