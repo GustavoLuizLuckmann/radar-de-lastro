@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Fundos expostos · Radar de Lastro</title>
+<meta name="description" content="Ranking dos FIIs com mais patrimônio em CRIs que tiveram eventos de crédito.">
+<meta property="og:title" content="Fundos expostos · Radar de Lastro">
+<meta property="og:description" content="Ranking dos FIIs com mais patrimônio em CRIs que tiveram eventos de crédito.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://radardelastro.com.br/fundos.html">
+<meta name="theme-color" content="#173F31">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23173F31'/%3E%3Cg fill='none' stroke='%23CFE6D9' stroke-width='1.6'%3E%3Ccircle cx='16' cy='16' r='10'/%3E%3Ccircle cx='16' cy='16' r='6' opacity='.6'/%3E%3C/g%3E%3Cpath d='M16 16 L24 9' stroke='%23D9A441' stroke-width='2.2' stroke-linecap='round'/%3E%3Ccircle cx='16' cy='16' r='2' fill='%23D9A441'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&display=swap">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<header class="band">
+  <div class="rings" aria-hidden="true"><div class="sweep"></div></div>
+  <div class="wrap">
+    <div class="topbar">
+      <a class="brand" href="index.html">
+        <svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="7" fill="var(--brand-2)"/><g fill="none" stroke="var(--brand-ink)" stroke-width="1.5"><circle cx="16" cy="16" r="10.5"/><circle cx="16" cy="16" r="6.5" opacity=".55"/></g><path d="M16 16 L24 8.8" stroke="var(--seal)" stroke-width="2.2" stroke-linecap="round"/><circle cx="16" cy="16" r="2.1" fill="var(--seal)"/></svg>
+        <b>Radar de Lastro</b>
+      </a>
+      <nav class="nav" aria-label="Páginas">
+        <a href="index.html">Eventos</a><a href="fundos.html">Fundos expostos</a><a href="assembleias.html">Assembleias</a><a href="como-funciona.html">Como funciona</a>
+      </nav>
+    </div>
+    <div class="hero compact">
+      <h1 id="headline">Fundos expostos</h1>
+      <p id="subline">FIIs com patrimônio aplicado em CRIs que tiveram eventos de crédito no período.</p>
+      <p class="updated" id="updated"></p>
+    </div>
+  </div>
+</header>
+
+<div class="filters">
+  <div class="wrap frow" role="search">
+    <label class="search" for="q"><span class="sr">Buscar fundo</span>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+      <input id="q" type="search" placeholder="Buscar FII ou gestora" autocomplete="off">
+    </label>
+    <select id="gestora" class="sel" aria-label="Filtrar por gestora"><option value="">Todas as gestoras</option></select>
+  </div>
+  <div class="wrap frow">
+    <div class="periodo" id="periodo"></div>
+    <label class="tgl" for="mine"><input id="mine" type="checkbox">Só meus fundos</label>
+    <label class="tgl" for="listed"><input id="listed" type="checkbox">Só negociados em bolsa</label>
+  </div>
+</div>
+
+<main class="wrap">
+  <div class="head"><h2 id="h-rank">Ranking</h2><small id="count"></small></div>
+  <p class="note" style="margin:0 0 12px">Cada coluna soma a parte do PL aplicada em CRIs com evento daquela severidade. Um CRI conta uma vez, pela pior severidade do período. Clique num fundo para ver os eventos.</p>
+  <div class="panel tbl-wrap">
+    <table class="rank">
+      <thead><tr>
+        <th scope="col">Fundo</th>
+        <th scope="col">Gestora</th>
+        <th scope="col" class="num" data-sort="eventos"><button type="button">Eventos</button></th>
+        <th scope="col" class="num" data-sort="crit"><button type="button">Urgente</button></th>
+        <th scope="col" class="num" data-sort="warn"><button type="button">Atenção</button></th>
+        <th scope="col" class="num" data-sort="mon"><button type="button">Acompanhar</button></th>
+        <th scope="col" class="num" data-sort="total" aria-sort="descending"><button type="button">Total do PL</button></th>
+        <th scope="col"><span class="sr">Acompanhar</span></th>
+      </tr></thead>
+      <tbody id="rank"><tr><td colspan="8" class="loading">Carregando fundos…</td></tr></tbody>
+    </table>
+  </div>
+</main>
+<footer>
+  <div class="wrap" id="foot"><p>Fontes: Fundos.Net (B3 e CVM) e Portal de Dados Abertos da CVM.</p></div>
+</footer>
+<script src="assets/app.js"></script>
+<script>
+const P = { q:'', mine:store.get('rl-mine',false), ordem:'total' };
+
+function linhas(){
+  const eventos=DATA.eventos.filter(e=>noPeriodo(e.data));
+  const q=P.q.trim().toLowerCase();
+  let fs=calcExpo(eventos).filter(passaFundo);
+  if(P.mine) fs=fs.filter(f=>S.carteira.has(f.cnpj_fundo));
+  if(q) fs=fs.filter(f=>((f.ticker||'')+' '+f.fundo+' '+(f.gestor||'')+' '+gestoraCurta(f.gestor)).toLowerCase().includes(q));
+  const v=f=>P.ordem==='total'?f.total:P.ordem==='eventos'?f.eventos:f.expo[P.ordem];
+  return fs.sort((a,b)=>v(b)-v(a)||b.total-a.total);
+}
+
+function render(){
+  montarGestoras(document.getElementById('gestora'), DATA.eventos.filter(e=>noPeriodo(e.data)), render);
+  const fs=linhas();
+  document.getElementById('h-rank').textContent='Fundos com eventos '+periodoTexto();
+  document.getElementById('count').textContent=fs.length+(fs.length===1?' fundo':' fundos');
+  const corpo=document.getElementById('rank');
+  if(!fs.length){
+    corpo.innerHTML=`<tr><td colspan="8" class="empty"><b>Nenhum fundo com esses filtros.</b>${P.mine&&!S.carteira.size?'Adicione seus fundos na página de eventos ou com o botão Acompanhar.':'Amplie o período ou limpe a busca.'}</td></tr>`;
+    return;
+  }
+  const max=Math.max(...fs.map(f=>f.total),0.0001);
+  corpo.innerHTML=fs.map(f=>{
+    const m=S.carteira.has(f.cnpj_fundo), alvo='index.html?q='+encodeURIComponent(f.ticker||f.fundo);
+    return `<tr data-href="${esc(alvo)}">
+      <td><a href="${esc(alvo)}"><b class="${f.ticker?'tk':''}">${esc(rotulo(f))}</b></a><small>${f.ticker?esc(nomeCurto(f.fundo)):'Sem negociação em bolsa'}</small></td>
+      <td>${esc(gestoraCurta(f.gestor))}</td>
+      <td class="num">${f.eventos}</td>
+      <td class="num">${f.expo.crit?pct(f.expo.crit):'–'}</td>
+      <td class="num">${f.expo.warn?pct(f.expo.warn):'–'}</td>
+      <td class="num">${f.expo.mon?pct(f.expo.mon):'–'}</td>
+      <td class="num"><b>${pct(f.total)}</b><div class="bar" role="img" aria-label="Total ${pct(f.total)}">${['crit','warn','mon'].filter(s=>f.expo[s]>0).map(s=>`<i class="${s}" style="width:${(f.expo[s]/max*100).toFixed(2)}%"></i>`).join('')}</div></td>
+      <td><button type="button" class="btn" data-f="${esc(f.cnpj_fundo)}" aria-pressed="${m}">${m?'Acompanhando':'Acompanhar'}</button></td>
+    </tr>`;
+  }).join('');
+}
+
+carregar().then(()=>{
+  montarPeriodo(document.getElementById('periodo'), render);
+  const q=document.getElementById('q'); q.addEventListener('input',()=>{P.q=q.value; render();});
+  const mine=document.getElementById('mine'); mine.checked=P.mine;
+  mine.addEventListener('change',()=>{P.mine=mine.checked; store.set('rl-mine',P.mine); render();});
+  ligarBolsa(document.getElementById('listed'), render);
+  document.querySelector('.rank thead').addEventListener('click',ev=>{
+    const th=ev.target.closest('th[data-sort]'); if(!th) return;
+    P.ordem=th.dataset.sort;
+    document.querySelectorAll('.rank th[data-sort]').forEach(x=>x===th?x.setAttribute('aria-sort','descending'):x.removeAttribute('aria-sort'));
+    render();
+  });
+  document.getElementById('rank').addEventListener('click',ev=>{
+    const b=ev.target.closest('button[data-f]');
+    if(b){ const c=b.dataset.f; S.carteira.has(c)?S.carteira.delete(c):S.carteira.add(c); salvarCarteira(); render(); return; }
+    if(ev.target.closest('a')) return;
+    const tr=ev.target.closest('tr[data-href]'); if(tr) location.href=tr.dataset.href;
+  });
+  render();
+}).catch(falhaCarga);
+</script>
+<!-- Cloudflare Web Analytics (sem cookies) -->
+<script type="module" src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "8320a7efa9a3461a9691bc75bac53d7b"}'></script>
+</body>
+</html>

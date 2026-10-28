@@ -17,7 +17,7 @@ concurrency:
 jobs:
   atualizar:
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 170
     steps:
       - uses: actions/checkout@v4
 
@@ -30,15 +30,16 @@ jobs:
           sudo apt-get update -y && sudo apt-get install -y poppler-utils
           pip install -r requirements.txt
 
-      # textos já extraídos ficam em cache entre execuções; só documentos novos são baixados
+      # histórico de documentos e textos extraídos ficam em cache entre execuções;
+      # só documentos novos são baixados. Se o cache sumir, a primeira execução refaz 90 dias.
       - uses: actions/cache@v4
         with:
-          path: raw/fnet/txt
-          key: textos-${{ github.run_id }}
-          restore-keys: textos-
+          path: raw/fnet
+          key: fnet-${{ github.run_id }}
+          restore-keys: fnet-
 
       - name: Rodar pipeline
-        run: python pipeline/run.py 30
+        run: python pipeline/run.py 7
 
       - uses: actions/upload-pages-artifact@v3
         with:

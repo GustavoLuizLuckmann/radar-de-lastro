@@ -1,0 +1,72 @@
+    <div class="hero">
+      <h1 id="headline">Eventos de crédito nos CRIs da carteira dos FIIs</h1>
+      <p id="subline">Carregando os dados mais recentes do Fundos.Net e da CVM.</p>
+      <div class="tally" aria-label="Eventos no período">
+        <div><i style="background:var(--crit)"></i><b id="n-crit">–</b><span>urgentes</span></div>
+        <div><i style="background:var(--warn)"></i><b id="n-warn">–</b><span>de atenção</span></div>
+        <div><i style="background:var(--mon)"></i><b id="n-mon">–</b><span>para acompanhar</span></div>
+      </div>
+      <p class="updated" id="updated"></p>
+    </div>
+  </div>
+</header>
+
+<div class="filters">
+  <div class="wrap frow" role="search">
+    <label class="search" for="q"><span class="sr">Buscar</span>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+      <input id="q" type="search" placeholder="Buscar FII, devedor, securitizadora ou código IF" autocomplete="off">
+    </label>
+    <select id="gestora" class="sel" aria-label="Filtrar por gestora"><option value="">Todas as gestoras</option></select>
+    <div class="sevs" id="sevs" role="group" aria-label="Severidade">
+      <button type="button" data-sev="crit" aria-pressed="true"><i style="background:var(--crit)"></i>Urgente</button>
+      <button type="button" data-sev="warn" aria-pressed="true"><i style="background:var(--warn)"></i>Atenção</button>
+      <button type="button" data-sev="mon" aria-pressed="true"><i style="background:var(--mon)"></i>Acompanhar</button>
+    </div>
+  </div>
+  <div class="wrap frow">
+    <div class="periodo" id="periodo"></div>
+    <label class="tgl" for="mine"><input id="mine" type="checkbox">Só meus fundos</label>
+    <label class="tgl" for="listed"><input id="listed" type="checkbox">Só negociados em bolsa</label>
+  </div>
+</div>
+
+<main class="wrap">
+  <div class="grid">
+    <section id="eventos" aria-labelledby="h-ev">
+      <div class="head"><h2 id="h-ev">Eventos</h2><small id="count"></small></div>
+      <div class="panel"><ul class="list" id="feed"><li class="loading">Carregando eventos…</li></ul></div>
+      <button type="button" class="btn more" id="loadmore" hidden>Mostrar mais eventos</button>
+    </section>
+
+    <aside class="side">
+      <section class="panel" aria-labelledby="h-mine">
+        <h2 id="h-mine">Meus fundos</h2>
+        <p class="sub">Adicione os FIIs que você acompanha para ver primeiro o que afeta sua carteira. Fica salvo só neste navegador.</p>
+        <form class="add" id="add-form">
+          <label for="add-input" class="sr">Fundo para acompanhar</label>
+          <input id="add-input" list="fundos-list" placeholder="Digite o ticker ou o nome" autocomplete="off">
+          <datalist id="fundos-list"></datalist>
+          <button class="btn" type="submit">Adicionar</button>
+        </form>
+        <div class="mine-list" id="mine-list"></div>
+        <p class="mine-empty" id="mine-empty">Nenhum fundo adicionado ainda.</p>
+      </section>
+
+      <section class="panel" aria-labelledby="h-expo">
+        <h2 id="h-expo">Fundos mais expostos</h2>
+        <p class="sub" id="expo-sub">Parte do PL aplicada em CRIs que tiveram evento no período.</p>
+        <ul class="expo" id="expo"></ul>
+        <div class="scale" id="scale"></div>
+        <a class="link-btn" href="fundos.html" style="display:inline-block;text-decoration:none">Ver o ranking completo</a>
+      </section>
+
+      <section class="panel" aria-labelledby="h-ag">
+        <h2 id="h-ag">Próximas assembleias</h2>
+        <p class="sub">Convocadas para tratar de crédito, com a data lida do edital.</p>
+        <ul class="agenda" id="agenda-list"></ul>
+        <a class="link-btn" href="assembleias.html" style="display:inline-block;text-decoration:none">Ver todas as assembleias</a>
+      </section>
+    </aside>
+  </div>
+</main>

@@ -1,0 +1,35 @@
+    <div class="hero compact">
+      <h1 id="headline">Assembleias</h1>
+      <p id="subline">Assembleias de titulares de CRIs que estão na carteira de FIIs, convocadas para tratar de crédito.</p>
+      <p class="updated" id="updated"></p>
+    </div>
+  </div>
+</header>
+
+<div class="filters">
+  <div class="wrap frow" role="search">
+    <label class="search" for="q"><span class="sr">Buscar</span>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+      <input id="q" type="search" placeholder="Buscar FII, devedor ou securitizadora" autocomplete="off">
+    </label>
+    <select id="gestora" class="sel" aria-label="Filtrar por gestora"><option value="">Todas as gestoras</option></select>
+  </div>
+  <div class="wrap frow">
+    <div class="periodo" id="periodo"></div>
+    <label class="tgl" for="mine"><input id="mine" type="checkbox">Só meus fundos</label>
+    <label class="tgl" for="listed"><input id="listed" type="checkbox">Só negociados em bolsa</label>
+  </div>
+</div>
+
+<main class="wrap">
+  <section class="ag-group" aria-labelledby="h-prox">
+    <div class="head"><h2 id="h-prox">Próximas assembleias</h2><small id="n-prox"></small></div>
+    <p class="note" style="margin:0 0 10px">Datas lidas dos editais de convocação. Confirme no documento: a assembleia pode ser adiada ou ter segunda convocação.</p>
+    <div class="panel"><div class="list" id="prox"><p class="loading">Carregando…</p></div></div>
+  </section>
+  <section class="ag-group" aria-labelledby="h-per">
+    <div class="head"><h2 id="h-per">Documentos de assembleia no período</h2><small id="n-per"></small></div>
+    <p class="note" style="margin:0 0 10px">Editais, propostas, atas e sumários das decisões publicados no período escolhido.</p>
+    <div class="panel"><div class="list" id="periodo-lista"></div></div>
+  </section>
+</main>

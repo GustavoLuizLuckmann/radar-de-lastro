@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Assembleias · Radar de Lastro</title>
+<meta name="description" content="Assembleias de titulares de CRIs que estão na carteira dos FIIs, com data e pauta.">
+<meta property="og:title" content="Assembleias · Radar de Lastro">
+<meta property="og:description" content="Assembleias de titulares de CRIs que estão na carteira dos FIIs, com data e pauta.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://radardelastro.com.br/assembleias.html">
+<meta name="theme-color" content="#173F31">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23173F31'/%3E%3Cg fill='none' stroke='%23CFE6D9' stroke-width='1.6'%3E%3Ccircle cx='16' cy='16' r='10'/%3E%3Ccircle cx='16' cy='16' r='6' opacity='.6'/%3E%3C/g%3E%3Cpath d='M16 16 L24 9' stroke='%23D9A441' stroke-width='2.2' stroke-linecap='round'/%3E%3Ccircle cx='16' cy='16' r='2' fill='%23D9A441'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&display=swap">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<header class="band">
+  <div class="rings" aria-hidden="true"><div class="sweep"></div></div>
+  <div class="wrap">
+    <div class="topbar">
+      <a class="brand" href="index.html">
+        <svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="7" fill="var(--brand-2)"/><g fill="none" stroke="var(--brand-ink)" stroke-width="1.5"><circle cx="16" cy="16" r="10.5"/><circle cx="16" cy="16" r="6.5" opacity=".55"/></g><path d="M16 16 L24 8.8" stroke="var(--seal)" stroke-width="2.2" stroke-linecap="round"/><circle cx="16" cy="16" r="2.1" fill="var(--seal)"/></svg>
+        <b>Radar de Lastro</b>
+      </a>
+      <nav class="nav" aria-label="Páginas">
+        <a href="index.html">Eventos</a><a href="fundos.html">Fundos expostos</a><a href="assembleias.html">Assembleias</a><a href="como-funciona.html">Como funciona</a>
+      </nav>
+    </div>
+    <div class="hero compact">
+      <h1 id="headline">Assembleias</h1>
+      <p id="subline">Assembleias de titulares de CRIs que estão na carteira de FIIs, convocadas para tratar de crédito.</p>
+      <p class="updated" id="updated"></p>
+    </div>
+  </div>
+</header>
+
+<div class="filters">
+  <div class="wrap frow" role="search">
+    <label class="search" for="q"><span class="sr">Buscar</span>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+      <input id="q" type="search" placeholder="Buscar FII, devedor ou securitizadora" autocomplete="off">
+    </label>
+    <select id="gestora" class="sel" aria-label="Filtrar por gestora"><option value="">Todas as gestoras</option></select>
+  </div>
+  <div class="wrap frow">
+    <div class="periodo" id="periodo"></div>
+    <label class="tgl" for="mine"><input id="mine" type="checkbox">Só meus fundos</label>
+    <label class="tgl" for="listed"><input id="listed" type="checkbox">Só negociados em bolsa</label>
+  </div>
+</div>
+
+<main class="wrap">
+  <section class="ag-group" aria-labelledby="h-prox">
+    <div class="head"><h2 id="h-prox">Próximas assembleias</h2><small id="n-prox"></small></div>
+    <p class="note" style="margin:0 0 10px">Datas lidas dos editais de convocação. Confirme no documento: a assembleia pode ser adiada ou ter segunda convocação.</p>
+    <div class="panel"><div class="list" id="prox"><p class="loading">Carregando…</p></div></div>
+  </section>
+  <section class="ag-group" aria-labelledby="h-per">
+    <div class="head"><h2 id="h-per">Documentos de assembleia no período</h2><small id="n-per"></small></div>
+    <p class="note" style="margin:0 0 10px">Editais, propostas, atas e sumários das decisões publicados no período escolhido.</p>
+    <div class="panel"><div class="list" id="periodo-lista"></div></div>
+  </section>
+</main>
+<footer>
+  <div class="wrap" id="foot"><p>Fontes: Fundos.Net (B3 e CVM) e Portal de Dados Abertos da CVM.</p></div>
+</footer>
+<script src="assets/app.js"></script>
+<script>
+const P = { q:'', mine:store.get('rl-mine',false) };
+
+function passa(e){
+  if(!fundosVisiveis(e).length) return false;
+  if(P.mine && !afetaMeus(e)) return false;
+  const q=P.q.trim().toLowerCase();
+  if(q){
+    const hay=[e.tipo,e.operacao,e.securitizadora,secNome(e.securitizadora),...e.codigos_if,...e.fundos.map(f=>(f.ticker||'')+' '+f.fundo+' '+(f.gestor||''))].join(' ').toLowerCase();
+    if(!hay.includes(q)) return false;
+  }
+  return true;
+}
+
+function item(e, dataRef, extra){
+  const d=dia(dataRef), fs=fundosVisiveis(e).slice().sort((a,b)=>(b.pct_pl||0)-(a.pct_pl||0));
+  return `<a class="ag-row" href="index.html#${e.id}">
+    <div class="cal"><b>${d.getDate()}</b><span>${MESES[d.getMonth()]}</span></div>
+    <div><div class="ev-top"><span class="tag ${e.severidade}">${SEV[e.severidade]}</span><span class="what">${esc(e.tipo)}</span></div>
+      <div class="who">${esc(opNome(e.operacao))}, CRI da ${e.emissao}ª emissão, ${esc(secNome(e.securitizadora))}</div>
+      <div class="chips">${fs.slice(0,5).map(f=>`<span class="chip${S.carteira.has(f.cnpj_fundo)?' mine':''}"><b class="${f.ticker?'tk':''}">${esc(rotulo(f))}</b><span>${pct(f.pct_pl)}</span></span>`).join('')}${fs.length>5?`<span class="chip"><span>mais ${fs.length-5}</span></span>`:''}</div></div>
+    ${extra}
+  </a>`;
+}
+
+function render(){
+  const assem=DATA.eventos.filter(e=>e.categoria==='Assembleia' || e.data_assembleia);
+  montarGestoras(document.getElementById('gestora'), assem, render);
+  const hoje=isoHoje();
+  const prox=assem.filter(e=>e.data_assembleia && e.data_assembleia>=hoje && passa(e)).sort((a,b)=>a.data_assembleia.localeCompare(b.data_assembleia));
+  document.getElementById('n-prox').textContent=prox.length+(prox.length===1?' assembleia':' assembleias');
+  document.getElementById('prox').innerHTML=prox.length?prox.map(e=>{const n=diasEntre(hoje,e.data_assembleia);
+      return item(e,e.data_assembleia,`<span class="in${n<=7?' soon':''}">${n===0?'hoje':'em '+n+(n===1?' dia':' dias')}</span>`);}).join('<hr style="border:0;border-top:1px solid var(--line);margin:0">')
+    :'<p class="empty"><b>Nenhuma assembleia futura com data identificada.</b>Quando um edital novo for publicado, ele aparece aqui.</p>';
+
+  const per=assem.filter(e=>noPeriodo(e.data) && passa(e)).sort((a,b)=>b.data.localeCompare(a.data));
+  document.getElementById('h-per').textContent='Documentos de assembleia '+periodoTexto();
+  document.getElementById('n-per').textContent=per.length+(per.length===1?' documento':' documentos');
+  document.getElementById('periodo-lista').innerHTML=per.length?per.map(e=>item(e,e.data,`<span class="in" style="color:var(--muted)">${esc(fase(e))}</span>`)).join('<hr style="border:0;border-top:1px solid var(--line);margin:0">')
+    :'<p class="empty"><b>Nenhum documento de assembleia com esses filtros.</b>Amplie o período ou limpe a busca.</p>';
+}
+
+carregar().then(()=>{
+  montarPeriodo(document.getElementById('periodo'), render);
+  const q=document.getElementById('q'); q.addEventListener('input',()=>{P.q=q.value; render();});
+  const mine=document.getElementById('mine'); mine.checked=P.mine;
+  mine.addEventListener('change',()=>{P.mine=mine.checked; store.set('rl-mine',P.mine); render();});
+  ligarBolsa(document.getElementById('listed'), render);
+  render();
+}).catch(falhaCarga);
+</script>
+<!-- Cloudflare Web Analytics (sem cookies) -->
+<script type="module" src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "8320a7efa9a3461a9691bc75bac53d7b"}'></script>
+</body>
+</html>

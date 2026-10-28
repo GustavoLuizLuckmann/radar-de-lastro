@@ -1,19 +1,27 @@
-"""Lista documentos de CRI no Fundos.Net num intervalo de datas e grava os metadados."""
+"""Lista documentos de CRI no Fundos.Net e mantém um histórico acumulado dos metadados.
+
+Cada execução busca os últimos `dias` e junta ao histórico já salvo. Se o histórico estiver vazio
+ou começar depois de HISTORICO_MINIMO dias atrás, busca esse período inteiro uma vez (carga inicial).
+Documentos com mais de RETENCAO dias saem do histórico.
+"""
 import json
 import sys
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta
 from pathlib import Path
 
 from fnet import CATEGORIAS, Fnet, ler_descricao
 
 ROOT = Path(__file__).resolve().parent.parent
 OUT = ROOT / "raw" / "fnet" / "docs.json"
+HISTORICO_MINIMO = 90
+RETENCAO = 365
 
 
-def coletar(dias: int = 30, fim: date | None = None):
-    fim = fim or date.today()
-    inicio = fim - timedelta(days=dias)
-    api = Fnet()
+def _data(br: str) -> date:
+    return datetime.strptime((br or "01/01/1970")[:10], "%d/%m/%Y").date()
+
+
+def buscar(api: Fnet, inicio: date, fim: date) -> dict:
     docs = {}
     for cat, nome in CATEGORIAS.items():
         n = 0
@@ -31,13 +39,32 @@ def coletar(dias: int = 30, fim: date | None = None):
                 "alta_prioridade": bool(item.get("altaPrioridade")), **desc,
             }
             n += 1
-        print(f"{nome}: {n} documentos de CRI", file=sys.stderr)
-    return {"inicio": inicio.isoformat(), "fim": fim.isoformat(), "documentos": list(docs.values())}
+        print(f"{nome}: {n} documentos de CRI ({inicio:%d/%m} a {fim:%d/%m})", file=sys.stderr)
+    return docs
+
+
+def coletar(dias: int = 7, fim: date | None = None):
+    fim = fim or date.today()
+    antigo = json.loads(OUT.read_text()) if OUT.exists() else {"documentos": []}
+    docs = {d["id"]: d for d in antigo["documentos"]}
+    inicio_hist = date.fromisoformat(antigo["inicio"]) if antigo.get("inicio") else None
+
+    meta = fim - timedelta(days=HISTORICO_MINIMO)
+    inicio = fim - timedelta(days=dias)
+    if inicio_hist is None or inicio_hist > meta:
+        inicio = meta  # carga inicial do histórico
+    api = Fnet()
+    docs.update(buscar(api, inicio, fim))
+
+    corte = fim - timedelta(days=RETENCAO)
+    docs = {k: d for k, d in docs.items() if _data(d["data_entrega"]) >= corte}
+    novo_inicio = max(corte, min(inicio, inicio_hist or inicio))
+    return {"inicio": novo_inicio.isoformat(), "fim": fim.isoformat(), "documentos": list(docs.values())}
 
 
 if __name__ == "__main__":
-    dias = int(sys.argv[1]) if len(sys.argv) > 1 else 30
+    dias = int(sys.argv[1]) if len(sys.argv) > 1 else 7
     res = coletar(dias)
     OUT.parent.mkdir(parents=True, exist_ok=True)
     OUT.write_text(json.dumps(res, ensure_ascii=False, indent=1))
-    print(f"{len(res['documentos'])} documentos gravados em {OUT}", file=sys.stderr)
+    print(f"{len(res['documentos'])} documentos no histórico, de {res['inicio']} a {res['fim']}", file=sys.stderr)

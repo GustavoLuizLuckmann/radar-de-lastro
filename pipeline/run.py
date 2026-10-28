@@ -13,7 +13,7 @@ def etapa(*args):
 
 
 if __name__ == "__main__":
-    dias = sys.argv[1] if len(sys.argv) > 1 else "30"
+    dias = sys.argv[1] if len(sys.argv) > 1 else "7"
     etapa("holdings.py", str(date.today().year))
     etapa("collect.py", dias)
     etapa("fetch_docs.py")

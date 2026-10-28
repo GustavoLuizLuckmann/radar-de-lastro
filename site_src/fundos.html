@@ -1,0 +1,42 @@
+    <div class="hero compact">
+      <h1 id="headline">Fundos expostos</h1>
+      <p id="subline">FIIs com patrimônio aplicado em CRIs que tiveram eventos de crédito no período.</p>
+      <p class="updated" id="updated"></p>
+    </div>
+  </div>
+</header>
+
+<div class="filters">
+  <div class="wrap frow" role="search">
+    <label class="search" for="q"><span class="sr">Buscar fundo</span>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+      <input id="q" type="search" placeholder="Buscar FII ou gestora" autocomplete="off">
+    </label>
+    <select id="gestora" class="sel" aria-label="Filtrar por gestora"><option value="">Todas as gestoras</option></select>
+  </div>
+  <div class="wrap frow">
+    <div class="periodo" id="periodo"></div>
+    <label class="tgl" for="mine"><input id="mine" type="checkbox">Só meus fundos</label>
+    <label class="tgl" for="listed"><input id="listed" type="checkbox">Só negociados em bolsa</label>
+  </div>
+</div>
+
+<main class="wrap">
+  <div class="head"><h2 id="h-rank">Ranking</h2><small id="count"></small></div>
+  <p class="note" style="margin:0 0 12px">Cada coluna soma a parte do PL aplicada em CRIs com evento daquela severidade. Um CRI conta uma vez, pela pior severidade do período. Clique num fundo para ver os eventos.</p>
+  <div class="panel tbl-wrap">
+    <table class="rank">
+      <thead><tr>
+        <th scope="col">Fundo</th>
+        <th scope="col">Gestora</th>
+        <th scope="col" class="num" data-sort="eventos"><button type="button">Eventos</button></th>
+        <th scope="col" class="num" data-sort="crit"><button type="button">Urgente</button></th>
+        <th scope="col" class="num" data-sort="warn"><button type="button">Atenção</button></th>
+        <th scope="col" class="num" data-sort="mon"><button type="button">Acompanhar</button></th>
+        <th scope="col" class="num" data-sort="total" aria-sort="descending"><button type="button">Total do PL</button></th>
+        <th scope="col"><span class="sr">Acompanhar</span></th>
+      </tr></thead>
+      <tbody id="rank"><tr><td colspan="8" class="loading">Carregando fundos…</td></tr></tbody>
+    </table>
+  </div>
+</main>

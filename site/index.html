@@ -14,211 +14,19 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&display=swap">
-<style>
-/*
-  Identidade: papel de título de crédito. Verde de cautela, linhas concêntricas de radar que
-  lembram a gravação de segurança (guilhochê) de um certificado, selo ocre só na marca.
-  Layout: faixa verde com a frase do período; barra de filtros fixa; lista de eventos em linhas
-  à esquerda; carteira, fundos expostos e agenda à direita. Tudo alinhado à esquerda.
-*/
-:root{
-  --paper:#F4F6F3; --surface:#FFFFFF; --ink:#13221B; --muted:#5A6A61; --line:#DCE3DE; --soft:#EEF2EF;
-  --brand:#173F31; --brand-2:#245C47; --brand-ink:#EAF3EE; --brand-muted:#A9C7B8; --seal:#D9A441;
-  --accent:#1F6B4F; --accent-soft:#E3F0E9;
-  --crit:#B42318; --crit-soft:#FCECEA; --warn:#9A5B05; --warn-soft:#FDF2DE; --mon:#2C5D8A; --mon-soft:#E7EFF7;
-  --font:"Schibsted Grotesk","Helvetica Neue",Arial,sans-serif;
-  --r-lg:14px; --r-md:10px; --r-sm:6px;
-  color-scheme:light;
-}
-@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
-  --paper:#0D1411; --surface:#141E19; --ink:#E3EBE6; --muted:#96A79E; --line:#24332B; --soft:#1A2620;
-  --brand:#0F2A20; --brand-2:#1A3D30; --brand-ink:#E3EFE8; --brand-muted:#8FB3A1; --seal:#E2B158;
-  --accent:#7CC6A3; --accent-soft:#16352A;
-  --crit:#F08A80; --crit-soft:#3A1D1A; --warn:#EDB862; --warn-soft:#372812; --mon:#8EB6E3; --mon-soft:#192A3D;
-  color-scheme:dark}}
-:root[data-theme="dark"]{
-  --paper:#0D1411; --surface:#141E19; --ink:#E3EBE6; --muted:#96A79E; --line:#24332B; --soft:#1A2620;
-  --brand:#0F2A20; --brand-2:#1A3D30; --brand-ink:#E3EFE8; --brand-muted:#8FB3A1; --seal:#E2B158;
-  --accent:#7CC6A3; --accent-soft:#16352A;
-  --crit:#F08A80; --crit-soft:#3A1D1A; --warn:#EDB862; --warn-soft:#372812; --mon:#8EB6E3; --mon-soft:#192A3D;
-  color-scheme:dark}
-
-*{box-sizing:border-box}
-html{-webkit-text-size-adjust:100%}
-body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--font);font-size:15.5px;line-height:1.55;font-variant-numeric:tabular-nums}
-body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:30;background:var(--brand)}
-[hidden]{display:none!important}
-a{color:var(--accent)}
-button,input,select{font:inherit;color:inherit}
-:focus-visible{outline:2px solid var(--seal);outline-offset:2px}
-.wrap{max-width:1200px;margin:0 auto;padding-left:max(20px,env(safe-area-inset-left,0px));padding-right:max(20px,env(safe-area-inset-right,0px))}
-.tk{font-weight:700;letter-spacing:.02em}
-.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
-
-/* Faixa da marca */
-.band{background:var(--brand);color:var(--brand-ink);position:relative;overflow:hidden;padding-top:env(safe-area-inset-top,0px)}
-.rings{position:absolute;right:-160px;top:50%;width:620px;height:620px;transform:translateY(-50%);border-radius:50%;pointer-events:none;
-  background:repeating-radial-gradient(circle at center, transparent 0 21px, color-mix(in srgb,var(--brand-muted) 22%,transparent) 21px 22px);
-  -webkit-mask:radial-gradient(circle, #000 40%, transparent 70%);mask:radial-gradient(circle, #000 40%, transparent 70%)}
-.sweep{position:absolute;inset:0;border-radius:50%;background:conic-gradient(from 0deg, color-mix(in srgb,var(--seal) 34%,transparent), transparent 55deg)}
-@media (prefers-reduced-motion:no-preference){.sweep{animation:sweep 9s linear infinite}@keyframes sweep{to{transform:rotate(360deg)}}}
-.topbar{display:flex;align-items:center;justify-content:space-between;gap:12px 24px;flex-wrap:wrap;padding-block:16px;position:relative}
-.brand{display:flex;align-items:center;gap:12px;text-decoration:none;color:inherit}
-.brand svg{width:34px;height:34px;flex:none}
-.brand b{font-size:19px;font-weight:800;letter-spacing:-.01em}
-.nav{display:flex;gap:4px;flex-wrap:wrap}
-.nav a{color:var(--brand-ink);text-decoration:none;font-size:14.5px;font-weight:500;padding:6px 12px;border-radius:var(--r-sm);opacity:.85}
-.nav a:hover{opacity:1;background:color-mix(in srgb,var(--brand-ink) 10%,transparent)}
-.hero{position:relative;padding-block:28px 34px;max-width:760px}
-.hero h1{font-size:clamp(26px,4.6vw,42px);line-height:1.12;font-weight:800;letter-spacing:-.02em;margin:0;text-wrap:balance}
-.hero p{margin:12px 0 0;color:var(--brand-muted);font-size:16px;max-width:62ch}
-.tally{display:flex;flex-wrap:wrap;gap:10px 26px;margin-top:22px}
-.tally div{display:flex;align-items:baseline;gap:8px}
-.tally b{font-size:30px;font-weight:800;line-height:1}
-.tally span{font-size:14px;color:var(--brand-muted)}
-.tally i{width:10px;height:10px;border-radius:2px;display:inline-block;align-self:center}
-.updated{font-size:13px;color:var(--brand-muted)}
-
-/* Filtros */
-.filters{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:color-mix(in srgb,var(--paper) 92%,transparent);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
-.frow{display:flex;gap:10px;align-items:center;padding-block:12px;flex-wrap:wrap}
-.search{flex:1 1 260px;min-width:0;position:relative}
-.search svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);width:17px;height:17px;color:var(--muted)}
-.search input{width:100%;padding:10px 12px 10px 38px;border:1px solid var(--line);border-radius:var(--r-md);background:var(--surface)}
-.search input::placeholder{color:var(--muted)}
-.sel{padding:9px 32px 9px 12px;border:1px solid var(--line);border-radius:var(--r-md);background:var(--surface);max-width:240px;appearance:none;cursor:pointer;
-  background-image:linear-gradient(45deg,transparent 50%,var(--muted) 50%),linear-gradient(135deg,var(--muted) 50%,transparent 50%);background-position:calc(100% - 17px) 52%,calc(100% - 12px) 52%;background-size:5px 5px;background-repeat:no-repeat}
-.sel.on{border-color:var(--accent);color:var(--accent);font-weight:600}
-.sevs{display:inline-flex;border:1px solid var(--line);border-radius:var(--r-md);overflow:hidden;background:var(--surface)}
-.sevs button{border:0;background:none;padding:8px 12px;cursor:pointer;display:inline-flex;gap:7px;align-items:center;color:var(--muted);font-size:14px}
-.sevs button+button{border-left:1px solid var(--line)}
-.sevs button[aria-pressed="true"]{color:var(--ink);font-weight:600;background:var(--soft)}
-.sevs i{width:9px;height:9px;border-radius:2px;display:inline-block;opacity:.35}
-.sevs button[aria-pressed="true"] i{opacity:1}
-.tgl{display:inline-flex;gap:8px;align-items:center;font-size:14px;color:var(--muted);cursor:pointer;white-space:nowrap}
-.tgl input{accent-color:var(--accent);width:16px;height:16px;margin:0}
-
-/* Grade */
-main.wrap{padding-block:22px 48px}
-.grid{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:24px;align-items:start}
-@media (max-width:960px){.grid{grid-template-columns:minmax(0,1fr)}}
-.head{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin:0 0 10px}
-.head h2{font-size:20px;font-weight:800;margin:0;letter-spacing:-.01em}
-.head small{color:var(--muted);font-size:14px}
-.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg)}
-
-/* Lista de eventos */
-.list{list-style:none;margin:0;padding:0}
-.list>li+li{border-top:1px solid var(--line)}
-details.ev>summary{list-style:none;cursor:pointer;display:grid;grid-template-columns:64px minmax(0,1fr) auto;gap:4px 16px;padding:16px 18px;align-items:start}
-details.ev>summary::-webkit-details-marker{display:none}
-details.ev>summary:hover{background:color-mix(in srgb,var(--soft) 60%,transparent)}
-details.ev[open]>summary{background:var(--soft)}
-.when{font-size:13px;color:var(--muted);line-height:1.3;padding-top:2px}
-.when b{display:block;font-size:15px;color:var(--ink);font-weight:700}
-.ev-main{min-width:0}
-.ev-top{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center}
-.tag{font-size:12.5px;font-weight:700;padding:2px 8px;border-radius:var(--r-sm);white-space:nowrap}
-.tag.crit{color:var(--crit);background:var(--crit-soft)} .tag.warn{color:var(--warn);background:var(--warn-soft)} .tag.mon{color:var(--mon);background:var(--mon-soft)}
-.ev-title{font-size:16.5px;font-weight:700;line-height:1.3}
-.ev-op{font-size:14px;color:var(--muted);margin-top:3px}
-.ev-op strong{color:var(--ink);font-weight:600}
-.phase{font-size:13px;color:var(--muted)}
-.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px}
-.chip{display:inline-flex;gap:6px;align-items:baseline;font-size:13px;padding:3px 9px;border-radius:var(--r-sm);background:var(--soft);max-width:100%}
-.chip b{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:24ch}
-.chip span{color:var(--muted);white-space:nowrap}
-.chip.mine{background:var(--accent-soft);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--accent) 35%,transparent)}
-.chip em{font-style:normal;font-size:11.5px;color:var(--muted);border:1px solid var(--line);border-radius:4px;padding:0 4px}
-.max{text-align:right;font-size:13px;color:var(--muted);line-height:1.25;padding-top:2px;white-space:nowrap}
-.max b{display:block;font-size:17px;color:var(--ink)}
-@media (max-width:600px){
-  details.ev>summary{grid-template-columns:minmax(0,1fr) auto;padding:14px 16px}
-  .when{grid-column:1/-1;display:flex;gap:8px;align-items:baseline}
-  .when b{display:inline;font-size:14px}
-}
-.body{padding:2px 18px 20px 98px;display:grid;gap:14px}
-@media (max-width:600px){.body{padding:4px 16px 18px}}
-.body h3{font-size:13.5px;font-weight:700;margin:0 0 4px;color:var(--muted)}
-.body p{margin:0;max-width:70ch}
-.quote{border-left:3px solid var(--line);padding-left:12px;font-style:italic}
-.tbl-wrap{overflow-x:auto}
-table{border-collapse:collapse;width:100%;font-size:14px}
-th{font-weight:600;color:var(--muted);text-align:left;font-size:13px;padding:6px 10px 6px 0;border-bottom:1px solid var(--line)}
-td{padding:8px 10px 8px 0;border-bottom:1px solid var(--line);vertical-align:top}
-td.num,th.num{text-align:right;padding-right:0;white-space:nowrap}
-td small{display:block;color:var(--muted);font-size:12.5px}
-.links{display:flex;flex-wrap:wrap;gap:8px}
-.btn{display:inline-flex;align-items:center;gap:6px;font-size:14px;font-weight:600;text-decoration:none;padding:7px 12px;border-radius:var(--r-md);border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer}
-.btn.primary{background:var(--brand);border-color:var(--brand);color:var(--brand-ink)}
-.btn svg{width:15px;height:15px}
-.note{font-size:13px;color:var(--muted)}
-.empty{padding:36px 20px;color:var(--muted)}
-.empty b{display:block;color:var(--ink);margin-bottom:4px}
-.more{display:block;margin:14px auto 0}
-
-/* Lateral */
-.side{display:flex;flex-direction:column;gap:20px}
-.side .panel{padding:16px 18px}
-.side h2{font-size:17px;font-weight:800;margin:0}
-.side .sub{font-size:13.5px;color:var(--muted);margin:3px 0 12px}
-.add{display:flex;gap:8px}
-.add input{flex:1;min-width:0;padding:8px 10px;border:1px solid var(--line);border-radius:var(--r-md);background:var(--surface)}
-.mine-list{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
-.mine-list button{display:inline-flex;gap:6px;align-items:center;border:0;background:var(--accent-soft);color:var(--ink);padding:4px 6px 4px 10px;border-radius:var(--r-sm);font-size:13.5px;font-weight:600;cursor:pointer}
-.mine-list button span{color:var(--muted);font-weight:400;font-size:15px;line-height:1}
-.mine-empty{font-size:13.5px;color:var(--muted);margin:10px 0 0}
-.expo{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:12px}
-.expo li{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:5px 10px;align-items:baseline}
-.expo .fn{background:none;border:0;padding:0;text-align:left;cursor:pointer;min-width:0}
-.expo .fn b{display:block;font-size:14.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.expo .fn small{display:block;font-size:12.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.expo .tot{font-weight:700;font-size:15px;text-align:right}
-.bar{grid-column:1/-1;display:flex;height:6px;border-radius:3px;background:var(--soft);overflow:hidden}
-.bar i{display:block;height:100%}
-.bar .crit{background:var(--crit)} .bar .warn{background:var(--warn)} .bar .mon{background:var(--mon)}
-.scale{display:flex;justify-content:space-between;font-size:11.5px;color:var(--muted);margin-top:10px}
-.link-btn{border:0;background:none;padding:0;margin-top:12px;color:var(--accent);font-weight:600;cursor:pointer;font-size:14px}
-.agenda{list-style:none;margin:0;padding:0;display:flex;flex-direction:column}
-.agenda li+li{border-top:1px solid var(--line)}
-.agenda button{all:unset;cursor:pointer;display:grid;grid-template-columns:48px minmax(0,1fr);gap:12px;padding:10px 0;width:100%}
-.agenda button:focus-visible{outline:2px solid var(--seal);outline-offset:2px}
-.cal{text-align:center;border:1px solid var(--line);border-radius:var(--r-sm);padding:4px 0;line-height:1.1;align-self:start}
-.cal b{display:block;font-size:19px}
-.cal span{font-size:12px;color:var(--muted)}
-.agenda .what{font-weight:600;font-size:14px;line-height:1.3}
-.agenda .who{font-size:13px;color:var(--muted)}
-.agenda .in{font-size:12.5px;font-weight:600;color:var(--accent)}
-.agenda .in.soon{color:var(--crit)}
-
-/* Método e rodapé */
-.method{margin-top:40px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:24px}
-@media (max-width:820px){.method{grid-template-columns:minmax(0,1fr)}}
-.method h2{font-size:20px;font-weight:800;margin:0 0 10px}
-.steps{margin:0;padding-left:20px;display:grid;gap:10px}
-.steps b{display:block}
-.steps span{color:var(--muted);font-size:14.5px}
-dl.gloss{margin:0;display:grid;gap:10px}
-dl.gloss dt{font-weight:700}
-dl.gloss dd{margin:0;color:var(--muted);font-size:14.5px;max-width:62ch}
-footer{border-top:1px solid var(--line);margin-top:40px;padding-block:20px calc(28px + env(safe-area-inset-bottom,0px))}
-footer p{margin:0 0 8px;font-size:13.5px;color:var(--muted);max-width:90ch}
-.loading{padding:28px 20px;color:var(--muted)}
-@media (prefers-reduced-motion:no-preference){details.ev[open] .body{animation:in .18s ease-out}@keyframes in{from{opacity:0;transform:translateY(-3px)}to{opacity:1;transform:none}}}
-</style>
+<link rel="stylesheet" href="assets/style.css">
 </head>
 <body>
-
 <header class="band">
   <div class="rings" aria-hidden="true"><div class="sweep"></div></div>
   <div class="wrap">
     <div class="topbar">
-      <a class="brand" href="#">
+      <a class="brand" href="index.html">
         <svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="7" fill="var(--brand-2)"/><g fill="none" stroke="var(--brand-ink)" stroke-width="1.5"><circle cx="16" cy="16" r="10.5"/><circle cx="16" cy="16" r="6.5" opacity=".55"/></g><path d="M16 16 L24 8.8" stroke="var(--seal)" stroke-width="2.2" stroke-linecap="round"/><circle cx="16" cy="16" r="2.1" fill="var(--seal)"/></svg>
         <b>Radar de Lastro</b>
       </a>
-      <nav class="nav" aria-label="Seções">
-        <a href="#eventos">Eventos</a><a href="#fundos">Fundos expostos</a><a href="#agenda">Assembleias</a><a href="#metodo">Como funciona</a>
+      <nav class="nav" aria-label="Páginas">
+        <a href="index.html">Eventos</a><a href="fundos.html">Fundos expostos</a><a href="assembleias.html">Assembleias</a><a href="como-funciona.html">Como funciona</a>
       </nav>
     </div>
     <div class="hero">
@@ -241,20 +49,23 @@ footer p{margin:0 0 8px;font-size:13.5px;color:var(--muted);max-width:90ch}
       <input id="q" type="search" placeholder="Buscar FII, devedor, securitizadora ou código IF" autocomplete="off">
     </label>
     <select id="gestora" class="sel" aria-label="Filtrar por gestora"><option value="">Todas as gestoras</option></select>
-    <div class="sevs" role="group" aria-label="Severidade">
+    <div class="sevs" id="sevs" role="group" aria-label="Severidade">
       <button type="button" data-sev="crit" aria-pressed="true"><i style="background:var(--crit)"></i>Urgente</button>
       <button type="button" data-sev="warn" aria-pressed="true"><i style="background:var(--warn)"></i>Atenção</button>
       <button type="button" data-sev="mon" aria-pressed="true"><i style="background:var(--mon)"></i>Acompanhar</button>
     </div>
+  </div>
+  <div class="wrap frow">
+    <div class="periodo" id="periodo"></div>
     <label class="tgl" for="mine"><input id="mine" type="checkbox">Só meus fundos</label>
-    <label class="tgl" for="listed"><input id="listed" type="checkbox" checked>Só negociados em bolsa</label>
+    <label class="tgl" for="listed"><input id="listed" type="checkbox">Só negociados em bolsa</label>
   </div>
 </div>
 
 <main class="wrap">
   <div class="grid">
     <section id="eventos" aria-labelledby="h-ev">
-      <div class="head"><h2 id="h-ev">Eventos dos últimos 30 dias</h2><small id="count"></small></div>
+      <div class="head"><h2 id="h-ev">Eventos</h2><small id="count"></small></div>
       <div class="panel"><ul class="list" id="feed"><li class="loading">Carregando eventos…</li></ul></div>
       <button type="button" class="btn more" id="loadmore" hidden>Mostrar mais eventos</button>
     </section>
@@ -273,163 +84,79 @@ footer p{margin:0 0 8px;font-size:13.5px;color:var(--muted);max-width:90ch}
         <p class="mine-empty" id="mine-empty">Nenhum fundo adicionado ainda.</p>
       </section>
 
-      <section class="panel" id="fundos" aria-labelledby="h-expo">
+      <section class="panel" aria-labelledby="h-expo">
         <h2 id="h-expo">Fundos mais expostos</h2>
-        <p class="sub">Parte do PL aplicada em CRIs que tiveram evento no período.</p>
+        <p class="sub" id="expo-sub">Parte do PL aplicada em CRIs que tiveram evento no período.</p>
         <ul class="expo" id="expo"></ul>
         <div class="scale" id="scale"></div>
-        <button type="button" class="link-btn" id="showall">Ver todos</button>
+        <a class="link-btn" href="fundos.html" style="display:inline-block;text-decoration:none">Ver o ranking completo</a>
       </section>
 
-      <section class="panel" id="agenda" aria-labelledby="h-ag">
+      <section class="panel" aria-labelledby="h-ag">
         <h2 id="h-ag">Próximas assembleias</h2>
         <p class="sub">Convocadas para tratar de crédito, com a data lida do edital.</p>
         <ul class="agenda" id="agenda-list"></ul>
+        <a class="link-btn" href="assembleias.html" style="display:inline-block;text-decoration:none">Ver todas as assembleias</a>
       </section>
     </aside>
   </div>
-
-  <section class="method" id="metodo" aria-label="Como funciona">
-    <div>
-      <h2>Como funciona</h2>
-      <ol class="steps">
-        <li><b>Lemos os documentos dos CRIs</b><span>Duas vezes por dia, o radar baixa os fatos relevantes, comunicados, avisos e documentos de assembleia que as securitizadoras publicam no Fundos.Net.</span></li>
-        <li><b>Identificamos o tema</b><span>Regras procuram assuntos de crédito no corpo do comunicado ou na pauta da assembleia e definem a severidade.</span></li>
-        <li><b>Encontramos quem tem o CRI</b><span>A carteira de cada FII vem do informe trimestral da CVM. O evento é ligado ao fundo pelo código IF do CRI ou, sem ele, por securitizadora, emissão e série.</span></li>
-        <li><b>Calculamos o peso no fundo</b><span>O valor do CRI na carteira é dividido pelo patrimônio líquido do fundo no mesmo mês.</span></li>
-      </ol>
-    </div>
-    <div>
-      <h2>O que cada evento quer dizer</h2>
-      <dl class="gloss" id="gloss"></dl>
-    </div>
-  </section>
 </main>
-
 <footer>
-  <div class="wrap" id="foot">
-    <p>Fontes: Fundos.Net (B3 e CVM) e Portal de Dados Abertos da CVM.</p>
-  </div>
+  <div class="wrap" id="foot"><p>Fontes: Fundos.Net (B3 e CVM) e Portal de Dados Abertos da CVM.</p></div>
 </footer>
-
+<script src="assets/app.js"></script>
 <script>
-const SEV = {crit:'Urgente', warn:'Atenção', mon:'Acompanhar'};
-const MESES = ['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
-// explicação em linguagem simples de cada tipo de evento
-const EXPLICA = {
-  'Pagamento não realizado':'A parcela de juros ou amortização do CRI não foi paga na data. Costuma haver um prazo curto para regularizar antes de virar inadimplência formal.',
-  'Recuperação judicial ou falência do devedor':'O devedor do CRI pediu proteção na Justiça contra os credores, ou teve a falência decretada. Os pagamentos passam a depender das garantias e do plano de recuperação.',
-  'Vencimento antecipado declarado':'O CRI passou a valer como vencido de uma vez: o saldo inteiro fica cobrável, normalmente porque o devedor descumpriu alguma obrigação.',
-  'Execução de garantias':'A securitizadora está cobrando ou tomando as garantias da operação, como imóveis ou recebíveis, para pagar os investidores.',
-  'Assembleia sobre vencimento antecipado':'Os investidores vão decidir, ou decidiram, se cobram o CRI de forma antecipada ou se dão uma nova chance ao devedor.',
-  'Assembleia sobre inadimplemento':'Assembleia para tratar de pagamentos em atraso e das medidas que serão tomadas.',
-  'Uso do fundo de reserva':'O caixa de segurança da operação foi usado para pagar os investidores ou está abaixo do mínimo e precisa ser recomposto.',
-  'Pedido de waiver':'O devedor pede autorização dos investidores para descumprir uma regra da operação por um tempo, sem que isso gere vencimento antecipado.',
-  'Garantia ou covenant desenquadrado':'Algum limite da operação, como o valor das garantias ou um índice financeiro do devedor, ficou fora do combinado.',
-  'Repactuação ou carência':'Mudança nas condições de pagamento do CRI, como novo cronograma, prazo maior ou período sem pagamento de principal.',
-  'Rebaixamento de rating':'Uma agência de classificação de risco piorou a nota da operação ou do devedor.',
-  'Amortização extraordinária ou resgate antecipado':'Parte ou todo o saldo do CRI foi pago antes do prazo. Em geral reduz o risco, mas o fundo precisa reinvestir o dinheiro.',
-  'Troca de garantia':'Uma garantia da operação foi substituída ou liberada. Vale conferir se a nova cobertura é equivalente.',
-  'Troca de prestador da operação':'Mudou um prestador de serviço do CRI, como o agente fiduciário, que fiscaliza a operação em nome dos investidores.'
-};
-const ICON = {
-  ext:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M14 4h6v6"/><path d="M20 4 11 13"/><path d="M19 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h5"/></svg>'
-};
-const store = {
-  get(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}},
-  set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
-};
-const state = {
-  q:'', sev:new Set(['crit','warn','mon']), mine:store.get('rl-mine',false), listed:store.get('rl-listed',true),
-  carteira:new Set(store.get('rl-carteira',[])), limite:25, todosFundos:false, gestora:''
-};
-let DATA=null, HOJE=null, FUNDOS_IDX=new Map();
-
-const esc = s => String(s ?? '').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-function pct(x){ if(x==null) return '–'; const v=x*100; if(v>0 && v<0.1) return '< 0,1%'; return v.toLocaleString('pt-BR',{minimumFractionDigits:1,maximumFractionDigits:1})+'%'; }
-function brl(v){ if(v>=1e9) return 'R$ '+(v/1e9).toLocaleString('pt-BR',{maximumFractionDigits:1})+' bi'; if(v>=1e6) return 'R$ '+(v/1e6).toLocaleString('pt-BR',{maximumFractionDigits:1})+' mi'; return 'R$ '+Math.round(v/1e3).toLocaleString('pt-BR')+' mil'; }
-function titulo(s){ return s.toLowerCase().split(' ').map(w=>{ if(['de','da','do','das','dos','e'].includes(w)) return w; if(w.length<=3 && /^[a-z]+$/.test(w) && w!=='sul' && w!=='rio') return w.toUpperCase(); return w.charAt(0).toUpperCase()+w.slice(1);}).join(' '); }
-function nomeCurto(n){
-  if(!n) return 'FII sem nome';
-  let s=n.replace(/FUNDO DE INVESTIMENTO IMOBILI[ÁA]RIO|FUNDO DE INVESTIMENTO IMOB\.?|FUNDO DE INV\.? IMOB\.?|FDO\.? INV\.? IMOB\.?|RESPONSABILIDADE LIMITADA|RESP\.? LIMITADA|\bFII\b|\bFI IMOB\w*|CLASSE [ÚU]NICA/gi,' ').replace(/[-–,\s]+$/,'').replace(/\s+/g,' ').trim();
-  s=titulo(s);
-  if(s.length<=36) return s;
-  const corte=s.lastIndexOf(' ',34); return s.slice(0,corte>18?corte:34)+'…';
-}
-const rotulo = f => f.ticker || nomeCurto(f.fundo);
-function gestoraCurta(n){
-  if(!n) return 'Gestora não informada';
-  let t=n.replace(/\b(LTDA|S\/?A|S\.A|EIRELI)\b\.?/gi,' ').replace(/GEST(Ã|A)O DE RECURSOS|GESTORA DE RECURSOS|ADMINISTRA(Ç|C)(Ã|A)O DE RECURSOS|ASSET MANAGEMENT|GEST(Ã|A)O E CONSULTORIA DE INVESTIMENTOS|INVESTIMENTOS E PARTICIPA(Ç|C)(Õ|O)ES|\bGESTORA\b|INVESTIMENTOS|\bDTVM\b|DISTRIBUIDORA DE T(Í|I)TULOS E VALORES MOBILI(Á|A)RIOS|CORRETORA DE T(Í|I)TULOS E VALORES MOBILI(Á|A)RIOS/gi,' ');
-  t=t.replace(/[.,\-–\s]+$/,'').replace(/\s+/g,' ').trim().split(' ').map(w=>{const l=w.toLowerCase(); if(['de','da','do','das','dos','e'].includes(l)) return l; if(w.length<=3) return w.toUpperCase(); return l.charAt(0).toUpperCase()+l.slice(1);}).join(' ');
-  return t||n;
-}
-const dia = s => new Date(s.slice(0,10)+'T00:00:00-03:00');
-const diasAtras = iso => Math.round((HOJE-dia(iso))/864e5);
-function dataLonga(iso){const d=dia(iso); return d.getDate()+' de '+['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'][d.getMonth()];}
-function dataCurta(iso){const d=dia(iso); return d.getDate().toString().padStart(2,'0')+'/'+(d.getMonth()+1).toString().padStart(2,'0');}
-function relativo(iso){const n=diasAtras(iso); return n<=0?'hoje':n===1?'ontem':'há '+n+' dias';}
-function fase(e){
-  if(e.fase==='convocada') return e.data_assembleia ? 'Assembleia marcada para '+dataCurta(e.data_assembleia) : 'Assembleia convocada';
-  if(e.fase==='deliberada') return 'Assembleia realizada';
-  return e.categoria;
-}
-const SECS={'OPEA':'Opea','PROVINCIA':'Província','CANAL SEC':'Canal','ISEC':'Virgo','VIRGO':'Virgo','HABITASEC':'Habitasec','FORTE CAP':'Forte','BARI SEC':'Bari','BRAZILIAN SC':'Brazilian Securities','LEVERAGE SEC':'Leverage','Lever':'Leverage','VERTCIASEC':'Vert','REIT SEC':'Reit','TRAVESSIASEC':'Travessia','CASAPEDRASEC':'Casa de Pedra','PLAYBANCOSEC':'Playbanco','ÉXES':'Éxes','RBCAPITALRES':'RB Capital','OURINVESTSEC':'Ourinvest','PATRIA SEC':'Pátria','OCTANTE SEC':'Octante','BSIP':'BSI Capital','REAG SECURIT':'Reag','CIBRASEC':'Cibrasec','POLO CAP SEC':'Polo Capital','BAMBOO SEC':'Bamboo','BASESEC':'Base','LOGOS CIA':'Logos','B.SEC':'B.Sec'};
-const secNome = s => SECS[s] || titulo(s||'');
-// nome da operação no Fundos.Net vem truncado e com mês/ano de emissão no fim
-function opNome(o){ let t=(o||'').replace(/\s+\d{2}\/\d{4}\s*$/,'').trim(); if(!t) return 'Operação sem nome'; if(t===t.toUpperCase()) t=titulo(t); return t; }
-function serieTxt(e){ return e.outras_series ? `séries ${e.serie} a ${+e.serie+e.outras_series}` : `${e.serie}ª série`; }
-
-// "em bolsa" = tem código de negociação; o campo de mercado da CVM marca também cotas só registradas na B3
-const emBolsa = f => !!f.ticker;
-const passaFundo = f => (!state.listed || emBolsa(f)) && (!state.gestora || f.gestor===state.gestora);
-const fundosVisiveis = e => e.fundos.filter(passaFundo);
-const afetaMeus = e => e.fundos.some(f=>state.carteira.has(f.cnpj_fundo));
+const P = { q:'', sev:new Set(['crit','warn','mon']), mine:store.get('rl-mine',false), limite:25, forcar:null };
 
 function filtrar(){
-  const q=state.q.trim().toLowerCase();
+  const q=P.q.trim().toLowerCase();
   return DATA.eventos.filter(e=>{
-    if(!state.sev.has(e.severidade)) return false;
+    if(e.id===P.forcar) return true;
+    if(!noPeriodo(e.data)) return false;
+    if(!P.sev.has(e.severidade)) return false;
     if(!fundosVisiveis(e).length) return false;
-    if(state.mine && !afetaMeus(e)) return false;
+    if(P.mine && !afetaMeus(e)) return false;
     if(q){
-      const hay=[e.tipo,e.securitizadora,e.operacao,e.trecho,...e.codigos_if,...e.fundos.map(f=>(f.ticker||'')+' '+f.fundo+' '+(f.gestor||''))].join(' ').toLowerCase();
+      const hay=[e.tipo,e.securitizadora,secNome(e.securitizadora),e.operacao,e.trecho,...e.codigos_if,...e.fundos.map(f=>(f.ticker||'')+' '+f.fundo+' '+(f.gestor||''))].join(' ').toLowerCase();
       if(!hay.includes(q)) return false;
     }
     return true;
-  }).sort((a,b)=>(state.carteira.size?(afetaMeus(b)-afetaMeus(a)):0) || b.data.localeCompare(a.data));
+  }).sort((a,b)=>(S.carteira.size?(afetaMeus(b)-afetaMeus(a)):0) || b.data.localeCompare(a.data));
 }
+const doPeriodo = () => DATA.eventos.filter(e=>noPeriodo(e.data) && fundosVisiveis(e).length);
 
 function renderHero(){
-  const base=DATA.eventos.filter(e=>fundosVisiveis(e).length);
+  const base=doPeriodo();
   const c={crit:0,warn:0,mon:0}; base.forEach(e=>c[e.severidade]++);
   for(const k in c) document.getElementById('n-'+k).textContent=c[k];
   const nf=new Set(base.flatMap(e=>fundosVisiveis(e).map(f=>f.cnpj_fundo))).size;
-  const h=document.getElementById('headline'), s=document.getElementById('subline');
-  if(state.carteira.size){
-    const meus=base.filter(afetaMeus);
-    const mc=meus.filter(e=>e.severidade==='crit').length;
+  const h=document.getElementById('headline'), s=document.getElementById('subline'), per=periodoTexto();
+  if(S.carteira.size){
+    const meus=base.filter(afetaMeus), mc=meus.filter(e=>e.severidade==='crit').length;
     h.textContent = meus.length
-      ? `Seus fundos tiveram ${meus.length} ${meus.length===1?'evento':'eventos'} de crédito nos últimos 30 dias${mc?`, ${mc} ${mc===1?'urgente':'urgentes'}`:''}.`
-      : 'Nenhum CRI dos seus fundos teve evento de crédito nos últimos 30 dias.';
-    s.textContent=`No mercado todo foram ${base.length} eventos, em CRIs de ${nf} FIIs.`;
+      ? `Seus fundos tiveram ${meus.length} ${meus.length===1?'evento':'eventos'} de crédito ${per}${mc?`, ${mc} ${mc===1?'urgente':'urgentes'}`:''}.`
+      : `Nenhum CRI dos seus fundos teve evento de crédito ${per}.`;
+    s.textContent=`No mercado todo foram ${base.length} ${base.length===1?'evento':'eventos'}, em CRIs de ${nf} FIIs.`;
   } else {
-    h.textContent=`${base.length} eventos de crédito atingiram CRIs de ${nf} FIIs nos últimos 30 dias.`;
+    h.textContent = base.length
+      ? `${base.length} ${base.length===1?'evento de crédito atingiu':'eventos de crédito atingiram'} CRIs de ${nf} ${nf===1?'FII':'FIIs'} ${per}.`
+      : `Nenhum evento de crédito em CRIs de FIIs ${per}.`;
     s.textContent='Inadimplência, assembleias, waivers e outros eventos publicados pelas securitizadoras, ligados aos fundos que têm cada CRI na carteira.';
   }
 }
 
 function chips(e){
-  const fs=fundosVisiveis(e).slice().sort((a,b)=>(state.carteira.has(b.cnpj_fundo)-state.carteira.has(a.cnpj_fundo))||((b.pct_pl||0)-(a.pct_pl||0)));
+  const fs=fundosVisiveis(e).slice().sort((a,b)=>(S.carteira.has(b.cnpj_fundo)-S.carteira.has(a.cnpj_fundo))||((b.pct_pl||0)-(a.pct_pl||0)));
   const vis=fs.slice(0,4);
-  let h=vis.map(f=>`<span class="chip${state.carteira.has(f.cnpj_fundo)?' mine':''}"><b class="${f.ticker?'tk':''}">${esc(rotulo(f))}</b>${f.ticker?'':'<em>balcão</em>'}<span>${pct(f.pct_pl)}</span></span>`).join('');
+  let h=vis.map(f=>`<span class="chip${S.carteira.has(f.cnpj_fundo)?' mine':''}"><b class="${f.ticker?'tk':''}">${esc(rotulo(f))}</b>${f.ticker?'':'<em>balcão</em>'}<span>${pct(f.pct_pl)}</span></span>`).join('');
   if(fs.length>vis.length) h+=`<span class="chip"><span>mais ${fs.length-vis.length}</span></span>`;
   return h;
 }
 
 function linha(e){
   const fs=fundosVisiveis(e).slice().sort((a,b)=>(b.pct_pl||0)-(a.pct_pl||0));
-  const maior=fs[0]?.pct_pl;
-  const d=dia(e.data);
+  const lista=fs.length?fs:e.fundos;
+  const maior=lista[0]?.pct_pl, d=dia(e.data);
   const historico=e.historico.slice(0,3).map(x=>`<a class="btn" href="${esc(x.url)}" target="_blank" rel="noopener">${esc(x.especie)} de ${dataCurta(x.data)}</a>`).join('');
   return `<li><details class="ev" id="${e.id}">
     <summary>
@@ -447,7 +174,7 @@ function linha(e){
       ${e.data_assembleia?`<div><h3>Próximo passo</h3><p>Assembleia marcada para ${dataLonga(e.data_assembleia)}, segundo o edital.</p></div>`:''}
       <div><h3>FIIs com esse CRI na carteira</h3>
         <div class="tbl-wrap"><table><thead><tr><th>Fundo</th><th>Gestora</th><th class="num">Valor</th><th class="num">% do PL</th></tr></thead><tbody>
-        ${fs.map(f=>`<tr><td><b class="${f.ticker?'tk':''}">${esc(rotulo(f))}</b><small>${f.ticker?esc(nomeCurto(f.fundo)):'Sem negociação em bolsa'}</small></td><td>${esc(gestoraCurta(f.gestor))}</td><td class="num">${brl(f.valor)}</td><td class="num"><b>${pct(f.pct_pl)}</b></td></tr>`).join('')}
+        ${lista.map(f=>`<tr><td><b class="${f.ticker?'tk':''}">${esc(rotulo(f))}</b><small>${f.ticker?esc(nomeCurto(f.fundo)):'Sem negociação em bolsa'}</small></td><td>${esc(gestoraCurta(f.gestor))}</td><td class="num">${brl(f.valor)}</td><td class="num"><b>${pct(f.pct_pl)}</b></td></tr>`).join('')}
         </tbody></table></div>
       </div>
       <div class="links"><a class="btn primary" href="${esc(e.url)}" target="_blank" rel="noopener">${ICON.ext}Abrir documento no Fundos.Net</a>${historico}</div>
@@ -460,130 +187,93 @@ function linha(e){
 
 function renderFeed(){
   const lista=filtrar();
+  document.getElementById('h-ev').textContent='Eventos '+periodoTexto();
   document.getElementById('count').textContent=lista.length+(lista.length===1?' evento':' eventos');
   const feed=document.getElementById('feed');
   if(!lista.length){
-    feed.innerHTML=`<li class="empty"><b>Nenhum evento com esses filtros.</b>${state.mine&&!state.carteira.size?'Adicione seus fundos no painel ao lado ou desligue "Só meus fundos".':'Limpe a busca, troque a gestora ou inclua outras severidades.'}</li>`;
+    const dica = P.mine && !S.carteira.size ? 'Adicione seus fundos no painel ao lado ou desligue "Só meus fundos".'
+      : S.periodo.modo==='hoje' ? 'Ainda não saiu nenhum evento hoje. Veja os últimos 7 dias.'
+      : 'Amplie o período, limpe a busca, troque a gestora ou inclua outras severidades.';
+    feed.innerHTML=`<li class="empty"><b>Nenhum evento com esses filtros.</b>${dica}</li>`;
     document.getElementById('loadmore').hidden=true; return;
   }
-  feed.innerHTML=lista.slice(0,state.limite).map(linha).join('');
+  feed.innerHTML=lista.slice(0,P.limite).map(linha).join('');
   const lm=document.getElementById('loadmore');
-  lm.hidden=lista.length<=state.limite;
-  lm.textContent='Mostrar mais '+Math.min(25,lista.length-state.limite)+' eventos';
+  lm.hidden=lista.length<=P.limite;
+  lm.textContent='Mostrar mais '+Math.min(25,lista.length-P.limite)+' eventos';
 }
 
 function renderExpo(){
-  const fs=DATA.fundos.filter(passaFundo);
-  const peso=f=>f.expo.crit*10+f.expo.warn*3+f.expo.mon, tot=f=>f.expo.crit+f.expo.warn+f.expo.mon;
+  const fs=calcExpo(doPeriodo()).filter(passaFundo);
+  const peso=f=>f.expo.crit*10+f.expo.warn*3+f.expo.mon;
   fs.sort((a,b)=>peso(b)-peso(a));
-  const vis=state.todosFundos?fs:fs.slice(0,10);
-  const maxV=Math.max(...vis.map(tot),0.0001);
+  const vis=fs.slice(0,8);
+  const maxV=Math.max(...vis.map(f=>f.total),0.0001);
   const passo=[0.01,0.02,0.05,0.1,0.15,0.2,0.25,0.5,1].find(p=>p*4>=maxV)||1;
   document.getElementById('expo').innerHTML=vis.length?vis.map(f=>`<li>
       <button type="button" class="fn" data-q="${esc(f.ticker||f.fundo)}" title="Ver eventos deste fundo"><b class="${f.ticker?'tk':''}">${esc(rotulo(f))}</b><small>${esc(gestoraCurta(f.gestor))}${f.ticker?'':', balcão'}, ${f.eventos} ${f.eventos===1?'evento':'eventos'}</small></button>
-      <span class="tot">${pct(tot(f))}</span>
+      <span class="tot">${pct(f.total)}</span>
       <div class="bar" role="img" aria-label="Urgente ${pct(f.expo.crit)}, atenção ${pct(f.expo.warn)}, acompanhar ${pct(f.expo.mon)}">${['crit','warn','mon'].filter(s=>f.expo[s]>0).map(s=>`<i class="${s}" style="width:${Math.min(100,f.expo[s]/(passo*4)*100).toFixed(2)}%"></i>`).join('')}</div>
-    </li>`).join(''):'<li class="note">Nenhum fundo com esses filtros.</li>';
+    </li>`).join(''):'<li class="note">Nenhum fundo com eventos no período.</li>';
   document.getElementById('scale').innerHTML=vis.length?[0,1,2,3,4].map(i=>`<span>${(passo*i*100).toLocaleString('pt-BR',{maximumFractionDigits:1})}%</span>`).join(''):'';
-  const b=document.getElementById('showall'); b.hidden=fs.length<=10; b.textContent=state.todosFundos?'Mostrar menos':'Ver todos os '+fs.length+' fundos';
 }
 
 function renderAgenda(){
-  const prox=DATA.eventos.filter(e=>e.data_assembleia && dia(e.data_assembleia)>=HOJE && fundosVisiveis(e).length)
-    .sort((a,b)=>a.data_assembleia.localeCompare(b.data_assembleia)).slice(0,8);
+  const hoje=isoHoje();
+  const prox=DATA.eventos.filter(e=>e.data_assembleia && e.data_assembleia>=hoje && fundosVisiveis(e).length)
+    .sort((a,b)=>a.data_assembleia.localeCompare(b.data_assembleia)).slice(0,4);
   const el=document.getElementById('agenda-list');
-  if(!prox.length){el.innerHTML='<li class="note">Nenhuma assembleia futura com data identificada nos editais do período.</li>';return}
-  el.innerHTML=prox.map(e=>{const d=dia(e.data_assembleia), n=Math.round((d-HOJE)/864e5);
+  if(!prox.length){el.innerHTML='<li class="note">Nenhuma assembleia futura com data identificada nos editais.</li>';return}
+  el.innerHTML=prox.map(e=>{const d=dia(e.data_assembleia), n=diasEntre(hoje,e.data_assembleia);
     return `<li><button type="button" data-ev="${e.id}"><div class="cal"><b>${d.getDate()}</b><span>${MESES[d.getMonth()]}</span></div>
-      <div><div class="what">${esc(e.tipo)}</div><div class="who">${esc(opNome(e.operacao))}, ${esc(fundosVisiveis(e).map(rotulo).slice(0,3).join(', '))}</div><div class="in${n<=7?' soon':''}">${n===0?'hoje':'em '+n+(n===1?' dia':' dias')}</div></div></button></li>`}).join('');
+      <div><div class="what">${esc(e.tipo)}</div><div class="who">${esc(opNome(e.operacao))}, ${esc((fundosVisiveis(e).length?fundosVisiveis(e):e.fundos).map(rotulo).slice(0,3).join(', '))}</div><div class="in${n<=7?' soon':''}">${n===0?'hoje':'em '+n+(n===1?' dia':' dias')}</div></div></button></li>`}).join('');
 }
 
 function renderCarteira(){
-  const box=document.getElementById('mine-list');
-  const itens=[...state.carteira].map(c=>FUNDOS_IDX.get(c)).filter(Boolean);
-  box.innerHTML=itens.map(f=>`<button type="button" data-rm="${esc(f.cnpj_fundo)}" aria-label="Remover ${esc(rotulo(f))}">${esc(rotulo(f))}<span aria-hidden="true">×</span></button>`).join('');
+  const itens=[...S.carteira].map(c=>FUNDOS_IDX.get(c)).filter(Boolean);
+  document.getElementById('mine-list').innerHTML=itens.map(f=>`<button type="button" data-rm="${esc(f.cnpj_fundo)}" aria-label="Remover ${esc(rotulo(f))}">${esc(rotulo(f))}<span aria-hidden="true">×</span></button>`).join('');
   document.getElementById('mine-empty').hidden=itens.length>0;
 }
 
-function renderGestoras(){
-  const sel=document.getElementById('gestora');
-  const cont=new Map();
-  DATA.eventos.forEach(e=>new Set(e.fundos.filter(f=>!state.listed||emBolsa(f)).map(f=>f.gestor).filter(Boolean)).forEach(g=>cont.set(g,(cont.get(g)||0)+1)));
-  const lista=[...cont.entries()].sort((a,b)=>b[1]-a[1]||gestoraCurta(a[0]).localeCompare(gestoraCurta(b[0])));
-  if(state.gestora && !cont.has(state.gestora)) state.gestora='';
-  sel.innerHTML='<option value="">Todas as gestoras</option>'+lista.map(([g,n])=>`<option value="${esc(g)}"${g===state.gestora?' selected':''}>${esc(gestoraCurta(g))} (${n})</option>`).join('');
-  sel.classList.toggle('on',!!state.gestora);
-}
-
-function renderGlossario(){
-  const usados=new Set(DATA.eventos.map(e=>e.tipo));
-  document.getElementById('gloss').innerHTML=Object.entries(EXPLICA).filter(([t])=>usados.has(t)).map(([t,x])=>`<div><dt>${esc(t)}</dt><dd>${esc(x)}</dd></div>`).join('');
-}
-
-function renderFoot(){
-  const c=DATA.carteira, v=c.valor_por_metodo||{};
-  const dref=dia(c.data_referencia).toLocaleDateString('pt-BR');
-  document.getElementById('foot').innerHTML=`
-    <p>A carteira de referência é o informe trimestral de ${dref}: ${c.fundos_com_cri} FIIs com ${brl(c.valor_total)} em CRI e CRA. Nesse informe, ${pct(v.if||0)} do valor traz o código IF do ativo, ${pct(v.reserva||0)} só tem emissão e série, e ${pct(v.sem_chave||0)} não tem dado suficiente para o cruzamento. Compras e vendas posteriores não aparecem.</p>
-    <p>A classificação é automática e pode errar. Abra sempre o documento original antes de qualquer decisão. O Radar de Lastro reúne informação pública e não faz recomendação de investimento.</p>
-    <p>Fontes: Fundos.Net (B3 e CVM) e Portal de Dados Abertos da CVM. Documentos de ${dia(DATA.janela.inicio).toLocaleDateString('pt-BR')} a ${dia(DATA.janela.fim).toLocaleDateString('pt-BR')}.</p>`;
-}
-
-function render(){renderGestoras();renderHero();renderFeed();renderExpo();renderAgenda();renderCarteira();}
-
-function adicionar(texto){
-  const t=texto.trim().toLowerCase(); if(!t) return false;
-  const f=DATA.fundos.concat([...FUNDOS_IDX.values()]).find(x=>(x.ticker||'').toLowerCase()===t)
-       || [...FUNDOS_IDX.values()].find(x=>(x.ticker||'').toLowerCase()===t || (x.fundo||'').toLowerCase().includes(t) || rotulo(x).toLowerCase()===t);
-  if(!f) return false;
-  state.carteira.add(f.cnpj_fundo); store.set('rl-carteira',[...state.carteira]); return true;
-}
+function render(){ montarGestoras(document.getElementById('gestora'), doPeriodoSemGestora(), ()=>{P.limite=25; render();}); renderHero(); renderFeed(); renderExpo(); renderAgenda(); renderCarteira(); }
+const doPeriodoSemGestora = () => DATA.eventos.filter(e=>noPeriodo(e.data));
 
 function abrirEvento(id){
-  const el=document.getElementById(id);
-  if(!el){ state.q=''; document.getElementById('q').value=''; state.limite=999; renderFeed(); }
+  if(!document.getElementById(id)){ P.forcar=id; P.limite=999; renderFeed(); }
   const d=document.getElementById(id); if(!d) return;
   d.open=true; d.scrollIntoView({behavior:'smooth',block:'start'});
 }
 
-function ligar(){
-  document.querySelector('.sevs').addEventListener('click',ev=>{const b=ev.target.closest('button[data-sev]'); if(!b) return;
-    const v=b.dataset.sev; state.sev.has(v)?state.sev.delete(v):state.sev.add(v); b.setAttribute('aria-pressed',state.sev.has(v)); state.limite=25; renderFeed();});
-  const q=document.getElementById('q'); q.addEventListener('input',()=>{state.q=q.value;state.limite=25;renderFeed();});
-  const mine=document.getElementById('mine'); mine.checked=state.mine;
-  mine.addEventListener('change',()=>{state.mine=mine.checked;store.set('rl-mine',state.mine);state.limite=25;renderFeed();});
-  const listed=document.getElementById('listed'); listed.checked=state.listed;
-  listed.addEventListener('change',()=>{state.listed=listed.checked;store.set('rl-listed',state.listed);render();});
-  const gs=document.getElementById('gestora'); gs.addEventListener('change',()=>{state.gestora=gs.value;state.limite=25;render();});
-  document.getElementById('loadmore').addEventListener('click',()=>{state.limite+=25;renderFeed();});
-  document.getElementById('showall').addEventListener('click',()=>{state.todosFundos=!state.todosFundos;renderExpo();});
+carregar().then(()=>{
+  const params=new URLSearchParams(location.search);
+  const q=document.getElementById('q');
+  if(params.get('q')){ P.q=params.get('q'); q.value=P.q; }
+  document.getElementById('fundos-list').innerHTML=[...FUNDOS_IDX.values()].sort((a,b)=>rotulo(a).localeCompare(rotulo(b)))
+    .map(f=>`<option value="${esc(f.ticker||nomeCurto(f.fundo))}">${esc(f.ticker?nomeCurto(f.fundo):'Sem negociação em bolsa')}</option>`).join('');
+
+  montarPeriodo(document.getElementById('periodo'), ()=>{P.limite=25; P.forcar=null; render();});
+  document.getElementById('sevs').addEventListener('click',ev=>{const b=ev.target.closest('button[data-sev]'); if(!b) return;
+    const v=b.dataset.sev; P.sev.has(v)?P.sev.delete(v):P.sev.add(v); b.setAttribute('aria-pressed',P.sev.has(v)); P.limite=25; renderFeed();});
+  q.addEventListener('input',()=>{P.q=q.value; P.limite=25; renderFeed();});
+  const mine=document.getElementById('mine'); mine.checked=P.mine;
+  mine.addEventListener('change',()=>{P.mine=mine.checked; store.set('rl-mine',P.mine); P.limite=25; renderFeed();});
+  ligarBolsa(document.getElementById('listed'), render);
+  document.getElementById('loadmore').addEventListener('click',()=>{P.limite+=25; renderFeed();});
   document.getElementById('expo').addEventListener('click',ev=>{const t=ev.target.closest('.fn'); if(!t) return;
-    q.value=t.dataset.q; state.q=t.dataset.q; state.limite=25; renderFeed(); document.getElementById('eventos').scrollIntoView({behavior:'smooth',block:'start'});});
+    q.value=t.dataset.q; P.q=t.dataset.q; P.limite=25; renderFeed(); document.getElementById('eventos').scrollIntoView({behavior:'smooth',block:'start'});});
   document.getElementById('agenda-list').addEventListener('click',ev=>{const b=ev.target.closest('button[data-ev]'); if(b) abrirEvento(b.dataset.ev);});
   const form=document.getElementById('add-form'), inp=document.getElementById('add-input');
   form.addEventListener('submit',ev=>{ev.preventDefault();
-    if(adicionar(inp.value)){inp.value='';inp.setCustomValidity('');render();}
-    else{inp.setCustomValidity('Não encontramos esse fundo entre os FIIs com CRI na carteira.');inp.reportValidity();}});
+    const f=acharFundo(inp.value);
+    if(f){ S.carteira.add(f.cnpj_fundo); salvarCarteira(); inp.value=''; inp.setCustomValidity(''); render(); }
+    else { inp.setCustomValidity('Não encontramos esse fundo entre os FIIs com eventos no histórico.'); inp.reportValidity(); }});
   inp.addEventListener('input',()=>inp.setCustomValidity(''));
   document.getElementById('mine-list').addEventListener('click',ev=>{const b=ev.target.closest('button[data-rm]'); if(!b) return;
-    state.carteira.delete(b.dataset.rm); store.set('rl-carteira',[...state.carteira]); render();});
-}
+    S.carteira.delete(b.dataset.rm); salvarCarteira(); render();});
 
-fetch('data.json',{cache:'no-cache'}).then(r=>{if(!r.ok) throw new Error(r.status); return r.json();}).then(d=>{
-  DATA=d; HOJE=dia(d.janela.fim);
-  // índice de todos os fundos citados, para o campo "Meus fundos"
-  d.eventos.forEach(e=>e.fundos.forEach(f=>{ if(!FUNDOS_IDX.has(f.cnpj_fundo)) FUNDOS_IDX.set(f.cnpj_fundo,f); }));
-  document.getElementById('fundos-list').innerHTML=[...FUNDOS_IDX.values()].sort((a,b)=>rotulo(a).localeCompare(rotulo(b)))
-    .map(f=>`<option value="${esc(f.ticker||nomeCurto(f.fundo))}">${esc(f.ticker?nomeCurto(f.fundo):'Sem negociação em bolsa')}</option>`).join('');
-  const g=new Date(d.gerado_em);
-  document.getElementById('updated').textContent='Atualizado em '+g.toLocaleDateString('pt-BR')+' às '+g.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})+'.';
-  ligar(); render(); renderGlossario(); renderFoot();
+  render();
   if(/^#e\d+$/.test(location.hash)) abrirEvento(location.hash.slice(1));
-}).catch(()=>{
-  document.getElementById('headline').textContent='Os dados não carregaram.';
-  document.getElementById('subline').textContent='Recarregue a página. Se o problema continuar, a atualização pode estar em andamento.';
-  document.getElementById('feed').innerHTML='<li class="empty"><b>Sem eventos para mostrar agora.</b>Tente de novo em alguns minutos.</li>';
-});
+}).catch(falhaCarga);
 </script>
 <!-- Cloudflare Web Analytics (sem cookies) -->
 <script type="module" src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "8320a7efa9a3461a9691bc75bac53d7b"}'></script>

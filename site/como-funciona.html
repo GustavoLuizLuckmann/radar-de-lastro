@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Como funciona · Radar de Lastro</title>
+<meta name="description" content="De onde vêm os dados do Radar de Lastro, como os eventos são classificados e o que cada um significa.">
+<meta property="og:title" content="Como funciona · Radar de Lastro">
+<meta property="og:description" content="De onde vêm os dados do Radar de Lastro, como os eventos são classificados e o que cada um significa.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://radardelastro.com.br/como-funciona.html">
+<meta name="theme-color" content="#173F31">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23173F31'/%3E%3Cg fill='none' stroke='%23CFE6D9' stroke-width='1.6'%3E%3Ccircle cx='16' cy='16' r='10'/%3E%3Ccircle cx='16' cy='16' r='6' opacity='.6'/%3E%3C/g%3E%3Cpath d='M16 16 L24 9' stroke='%23D9A441' stroke-width='2.2' stroke-linecap='round'/%3E%3Ccircle cx='16' cy='16' r='2' fill='%23D9A441'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&display=swap">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<header class="band">
+  <div class="rings" aria-hidden="true"><div class="sweep"></div></div>
+  <div class="wrap">
+    <div class="topbar">
+      <a class="brand" href="index.html">
+        <svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="7" fill="var(--brand-2)"/><g fill="none" stroke="var(--brand-ink)" stroke-width="1.5"><circle cx="16" cy="16" r="10.5"/><circle cx="16" cy="16" r="6.5" opacity=".55"/></g><path d="M16 16 L24 8.8" stroke="var(--seal)" stroke-width="2.2" stroke-linecap="round"/><circle cx="16" cy="16" r="2.1" fill="var(--seal)"/></svg>
+        <b>Radar de Lastro</b>
+      </a>
+      <nav class="nav" aria-label="Páginas">
+        <a href="index.html">Eventos</a><a href="fundos.html">Fundos expostos</a><a href="assembleias.html">Assembleias</a><a href="como-funciona.html">Como funciona</a>
+      </nav>
+    </div>
+    <div class="hero compact">
+      <h1 id="headline">Como funciona</h1>
+      <p id="subline">De onde vêm os dados, como os eventos são classificados e o que cada um significa.</p>
+      <p class="updated" id="updated"></p>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="prose">
+    <h2>O caminho dos dados</h2>
+    <ol class="steps">
+      <li><b>Lemos os documentos dos CRIs</b><span>Duas vezes por dia, às 7h17 e às 19h17, o radar baixa os fatos relevantes, comunicados, avisos e documentos de assembleia que as securitizadoras publicam no Fundos.Net.</span></li>
+      <li><b>Identificamos o tema</b><span>Regras procuram assuntos de crédito no corpo do comunicado ou na pauta da assembleia, como inadimplência, vencimento antecipado, waiver e fundo de reserva, e definem a severidade.</span></li>
+      <li><b>Encontramos quem tem o CRI</b><span>A carteira de cada FII vem do informe trimestral estruturado, publicado nos dados abertos da CVM. O evento é ligado ao fundo pelo código IF do CRI ou, quando o documento não traz o código, por securitizadora, emissão e série.</span></li>
+      <li><b>Calculamos o peso no fundo</b><span>O valor do CRI na carteira é dividido pelo patrimônio líquido do fundo no mesmo mês, informado no informe mensal. A gestora vem do cadastro de fundos da CVM.</span></li>
+    </ol>
+
+    <h2>A base hoje</h2>
+    <div class="facts" id="facts"></div>
+
+    <h2>Severidade</h2>
+    <dl class="gloss">
+      <div><dt><span class="tag crit">Urgente</span></dt><dd>Algo já deu errado com o pagamento ou as garantias: parcela não paga, recuperação judicial, vencimento antecipado declarado, execução de garantias.</dd></div>
+      <div><dt><span class="tag warn">Atenção</span></dt><dd>Sinal de deterioração que ainda está sendo tratado: assembleia sobre vencimento antecipado ou atraso, waiver, fundo de reserva usado, limites desenquadrados, repactuação, rebaixamento de rating.</dd></div>
+      <div><dt><span class="tag mon">Acompanhar</span></dt><dd>Mudanças na operação que não indicam problema por si só: amortização extraordinária, troca de garantia, troca de prestador.</dd></div>
+    </dl>
+
+    <h2>O que cada evento quer dizer</h2>
+    <dl class="gloss" id="gloss"></dl>
+
+    <h2>Limitações</h2>
+    <ul>
+      <li>A carteira dos fundos vem do informe trimestral, que é uma foto com alguns meses de atraso. Compras e vendas posteriores não aparecem.</li>
+      <li>Parte dos informes não traz o código IF do CRI. Nesses casos o cruzamento usa emissão e série, que é menos preciso, e o evento avisa isso.</li>
+      <li>A classificação é feita por regras e pode errar. Todo evento tem o link do documento original.</li>
+      <li>Fundos sem código de negociação aparecem como "balcão": as cotas estão registradas na B3, mas não são negociadas em pregão.</li>
+    </ul>
+
+    <h2>Aviso</h2>
+    <p>O Radar de Lastro reúne informação pública e não faz recomendação de investimento. Antes de qualquer decisão, leia o documento original e, se precisar, procure um profissional.</p>
+  </div>
+</main>
+<footer>
+  <div class="wrap" id="foot"><p>Fontes: Fundos.Net (B3 e CVM) e Portal de Dados Abertos da CVM.</p></div>
+</footer>
+<script src="assets/app.js"></script>
+<script>
+carregar().then(d=>{
+  const c=d.carteira, v=c.valor_por_metodo||{};
+  const fatos=[
+    [c.fundos_com_cri, 'FIIs com CRI ou CRA na carteira'],
+    [brl(c.valor_total), 'aplicados em CRI e CRA'],
+    [pct(v.if||0), 'do valor com código IF no informe'],
+    [d.eventos.length, 'eventos no histórico'],
+    [dia(c.data_referencia).toLocaleDateString('pt-BR'), 'data da carteira de referência'],
+    [dia(d.janela.inicio).toLocaleDateString('pt-BR'), 'início do histórico de documentos'],
+  ];
+  document.getElementById('facts').innerHTML=fatos.map(([n,t])=>`<div><b>${esc(n)}</b><span>${esc(t)}</span></div>`).join('');
+  document.getElementById('gloss').innerHTML=Object.entries(EXPLICA).map(([t,x])=>`<div><dt>${esc(t)}</dt><dd>${esc(x)}</dd></div>`).join('');
+}).catch(()=>{
+  document.getElementById('gloss').innerHTML=Object.entries(EXPLICA).map(([t,x])=>`<div><dt>${esc(t)}</dt><dd>${esc(x)}</dd></div>`).join('');
+});
+</script>
+<!-- Cloudflare Web Analytics (sem cookies) -->
+<script type="module" src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "8320a7efa9a3461a9691bc75bac53d7b"}'></script>
+</body>
+</html>
