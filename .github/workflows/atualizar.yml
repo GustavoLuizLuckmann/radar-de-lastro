@@ -1,0 +1,55 @@
+name: Atualizar Radar de Lastro
+
+on:
+  schedule:
+    - cron: "17 10,22 * * *"   # 07h17 e 19h17 em Brasília
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: radar
+  cancel-in-progress: false
+
+jobs:
+  atualizar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Instalar dependências
+        run: |
+          sudo apt-get update -y && sudo apt-get install -y poppler-utils
+          pip install -r requirements.txt
+
+      # textos já extraídos ficam em cache entre execuções; só documentos novos são baixados
+      - uses: actions/cache@v4
+        with:
+          path: raw/fnet/txt
+          key: textos-${{ github.run_id }}
+          restore-keys: textos-
+
+      - name: Rodar pipeline
+        run: python pipeline/run.py 30
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+  publicar:
+    needs: atualizar
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - id: deploy
+        uses: actions/deploy-pages@v4

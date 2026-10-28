@@ -1,0 +1,440 @@
+<title>Radar de Lastro</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="Eventos de crédito nos CRIs da carteira dos FIIs, com dados públicos do Fundos.Net e da CVM.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=DM+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: resumo em frase, filtros em chips, eventos em cards; lateral com fundos expostos e assembleias */
+:root{
+  --bg:#F4F6FA; --surface:#FFFFFF; --soft:#EEF2F8; --ink:#1C2333; --muted:#5F6B80; --line:#E2E7EF;
+  --accent:#0E7C70; --accent-soft:#E1F3F0;
+  --crit:#C93B3B; --crit-soft:#FDECEC; --warn:#B76A00; --warn-soft:#FFF3DD; --mon:#3767AE; --mon-soft:#E8F0FB;
+  --shadow:0 1px 2px rgba(28,35,51,.05),0 6px 18px rgba(28,35,51,.06);
+  --display:"Bricolage Grotesque","Avenir Next","Segoe UI",sans-serif;
+  --body:"DM Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"DM Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#10151D; --surface:#18202B; --soft:#1F2936; --ink:#E8EDF4; --muted:#9AA7B8; --line:#273242;
+  --accent:#4FC7B6; --accent-soft:#163430;
+  --crit:#F28B8B; --crit-soft:#3B1F22; --warn:#F2BA62; --warn-soft:#3A2C14; --mon:#8DB4F0; --mon-soft:#1C2A40;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 6px 18px rgba(0,0,0,.25);
+  color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#10151D; --surface:#18202B; --soft:#1F2936; --ink:#E8EDF4; --muted:#9AA7B8; --line:#273242;
+  --accent:#4FC7B6; --accent-soft:#163430;
+  --crit:#F28B8B; --crit-soft:#3B1F22; --warn:#F2BA62; --warn-soft:#3A2C14; --mon:#8DB4F0; --mon-soft:#1C2A40;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 6px 18px rgba(0,0,0,.25);
+  color-scheme:dark}
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.55}
+.wrap{max-width:1180px;margin:0 auto;padding-block:22px 56px;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+button{font:inherit;color:inherit}
+a{color:var(--accent)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.tk{font-family:var(--mono);font-weight:500;letter-spacing:.01em}
+
+.top{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;justify-content:space-between;margin-bottom:16px}
+.logo{display:flex;gap:12px;align-items:center}
+.mark{width:40px;height:40px;border-radius:12px;background:var(--accent-soft);display:grid;place-items:center;flex:none}
+.mark svg{width:24px;height:24px}
+h1{font-family:var(--display);font-weight:800;font-size:clamp(24px,5vw,30px);margin:0;line-height:1.1;letter-spacing:-.01em}
+.tag{font-size:13px;color:var(--muted);margin:2px 0 0}
+.fresh{font-size:12.5px;color:var(--muted);background:var(--surface);border:1px solid var(--line);padding:6px 12px;border-radius:999px}
+.fresh b{color:var(--ink);font-weight:600}
+
+.hello{background:var(--surface);border-radius:20px;box-shadow:var(--shadow);padding:20px 22px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:16px 24px;align-items:center;margin-bottom:18px}
+.hello h2{font-family:var(--display);font-weight:700;font-size:clamp(19px,3.6vw,23px);line-height:1.3;margin:0;text-wrap:balance;max-width:38ch}
+.hello h2 .c{color:var(--crit)} .hello h2 .w{color:var(--warn)}
+.hello p{margin:6px 0 0;color:var(--muted);font-size:14px}
+.counts{display:flex;gap:10px}
+.count{border-radius:14px;padding:10px 14px;min-width:88px;display:flex;flex-direction:column}
+.count b{font-family:var(--display);font-size:26px;line-height:1.1;font-variant-numeric:tabular-nums}
+.count span{font-size:12.5px;font-weight:600}
+.count.crit{background:var(--crit-soft);color:var(--crit)} .count.warn{background:var(--warn-soft);color:var(--warn)} .count.mon{background:var(--mon-soft);color:var(--mon)}
+@media (max-width:640px){.hello{grid-template-columns:minmax(0,1fr)} .count{flex:1 1 0;min-width:0}}
+
+.filters{display:flex;flex-direction:column;gap:10px;margin-bottom:16px}
+.search{position:relative;display:flex}
+.search svg{position:absolute;left:14px;top:50%;transform:translateY(-50%);width:18px;height:18px;color:var(--muted)}
+.search input{width:100%;font:inherit;padding:12px 14px 12px 42px;border:1px solid var(--line);border-radius:14px;background:var(--surface);color:var(--ink)}
+.search input::placeholder{color:var(--muted)}
+.row{display:flex;gap:8px;overflow-x:auto;padding-bottom:2px;scrollbar-width:none;align-items:center}
+.row::-webkit-scrollbar{display:none}
+.chip{flex:none;border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:7px 14px;font-size:13.5px;font-weight:500;cursor:pointer;color:var(--muted);display:inline-flex;gap:7px;align-items:center}
+.chip[aria-pressed="true"]{background:var(--sevbg,var(--ink));border-color:transparent;color:var(--sevfg,var(--surface))}
+.chip .dot{width:8px;height:8px;border-radius:50%;background:var(--sevfg)}
+.divider{flex:none;width:1px;height:22px;background:var(--line);margin:0 4px}
+.switch{flex:none;display:inline-flex;gap:8px;align-items:center;font-size:13.5px;font-weight:500;color:var(--muted);cursor:pointer;padding:6px 4px}
+.switch input{appearance:none;width:34px;height:20px;border-radius:999px;background:var(--line);position:relative;cursor:pointer;margin:0;transition:background .15s;flex:none}
+.switch input::after{content:"";position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:var(--surface);box-shadow:0 1px 2px rgba(0,0,0,.2);transition:transform .15s}
+.switch input:checked{background:var(--accent)} .switch input:checked::after{transform:translateX(14px)}
+
+.grid{display:grid;grid-template-columns:minmax(0,1fr) 360px;gap:20px;align-items:start}
+@media (max-width:940px){.grid{grid-template-columns:minmax(0,1fr)}}
+.sec-title{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin:0 2px 10px}
+.sec-title h3{font-family:var(--display);font-size:18px;font-weight:700;margin:0}
+.sec-title small{font-size:13px;color:var(--muted)}
+
+.feed{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:12px}
+.card{background:var(--surface);border-radius:18px;box-shadow:var(--shadow)}
+details.ev>summary{list-style:none;cursor:pointer;padding:16px 18px;display:flex;flex-direction:column;gap:10px;border-radius:18px}
+details.ev>summary::-webkit-details-marker{display:none}
+.ev-head{display:flex;justify-content:space-between;gap:8px 10px;align-items:center;flex-wrap:wrap}
+.pills{display:flex;gap:6px;flex-wrap:wrap}
+.pill{font-size:12.5px;font-weight:700;padding:4px 10px;border-radius:999px;display:inline-flex;gap:6px;align-items:center}
+.pill::before{content:"";width:7px;height:7px;border-radius:50%;background:currentColor}
+.pill.crit{color:var(--crit);background:var(--crit-soft)} .pill.warn{color:var(--warn);background:var(--warn-soft)} .pill.mon{color:var(--mon);background:var(--mon-soft)}
+.phase{font-size:12.5px;font-weight:600;color:var(--muted);background:var(--soft);padding:4px 10px;border-radius:999px}
+.when{font-size:13px;color:var(--muted)}
+.ev-title{font-family:var(--display);font-weight:700;font-size:18px;line-height:1.3;margin:0}
+.ev-sub{font-size:13.5px;color:var(--muted);margin-top:2px}
+.ev-sub b{color:var(--ink);font-weight:600}
+.funds{display:flex;flex-wrap:wrap;gap:8px}
+.fund{display:inline-flex;align-items:center;gap:6px;background:var(--soft);border-radius:10px;padding:5px 10px;font-size:13px;max-width:100%}
+.fund.mine{background:var(--accent-soft)}
+.fund b{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:22ch}
+.fund span{color:var(--muted);white-space:nowrap}
+.fund.more{color:var(--muted)}
+.more-link{font-size:13px;font-weight:600;color:var(--accent);display:inline-flex;align-items:center;gap:4px}
+.more-link svg{width:14px;height:14px;transition:transform .2s}
+details[open] .more-link svg{transform:rotate(180deg)}
+.ev-body{padding:0 18px 18px;display:grid;gap:12px}
+.box{background:var(--soft);border-radius:14px;padding:12px 14px}
+.box h4{margin:0 0 4px;font-size:12.5px;font-weight:700;color:var(--muted);letter-spacing:.02em}
+.box p{margin:0;max-width:72ch;font-size:14.5px}
+.quote{font-size:14.5px;border-left:3px solid var(--line);padding-left:10px;margin:0}
+.box.next{background:var(--accent-soft)} .box.next h4{color:var(--accent)}
+.exp-table{width:100%;border-collapse:collapse;font-size:13.5px;font-variant-numeric:tabular-nums}
+.exp-table td{padding:5px 0;border-top:1px solid var(--line);vertical-align:top}
+.exp-table tr:first-child td{border-top:0}
+.exp-table td:last-child{text-align:right;white-space:nowrap;padding-left:12px}
+.exp-table small{color:var(--muted)}
+.links{display:flex;flex-wrap:wrap;gap:8px 16px;font-size:13.5px;align-items:center}
+.links a{font-weight:600;text-decoration:none;display:inline-flex;gap:5px;align-items:center}
+.links a svg{width:14px;height:14px}
+.how-matched{font-size:12.5px;color:var(--muted)}
+.empty{background:var(--surface);border-radius:18px;padding:28px 18px;text-align:center;color:var(--muted)}
+.loadmore{display:block;margin:14px auto 0;border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:9px 18px;font-weight:600;cursor:pointer}
+
+.side{display:flex;flex-direction:column;gap:20px}
+.panel{background:var(--surface);border-radius:18px;box-shadow:var(--shadow);padding:16px 18px}
+.panel h3{font-family:var(--display);font-size:17px;font-weight:700;margin:0}
+.panel .note{font-size:12.5px;color:var(--muted);margin:2px 0 12px}
+.expo{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:14px}
+.expo li{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:6px 10px;align-items:center}
+.star{border:0;background:var(--soft);width:30px;height:30px;border-radius:9px;cursor:pointer;display:grid;place-items:center;color:var(--muted)}
+.star svg{width:16px;height:16px}
+.star[aria-pressed="true"]{background:var(--accent-soft);color:var(--accent)}
+.fname{min-width:0;background:none;border:0;padding:0;text-align:left;cursor:pointer}
+.fname .tk{display:block;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fname small{display:block;font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tot{font-family:var(--display);font-weight:700;font-size:16px;font-variant-numeric:tabular-nums;text-align:right}
+.tot small{display:block;font-family:var(--body);font-weight:400;font-size:11.5px;color:var(--muted)}
+.bar{grid-column:1/-1;display:flex;gap:2px;height:10px;border-radius:999px;background:var(--soft);overflow:hidden}
+.bar i{display:block;height:100%}
+.bar i:first-child{border-radius:999px 0 0 999px} .bar i:last-child{border-radius:0 999px 999px 0}
+.bar .crit{background:var(--crit)} .bar .warn{background:var(--warn)} .bar .mon{background:var(--mon)}
+.scale{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-top:10px;font-variant-numeric:tabular-nums}
+.legend{display:flex;flex-wrap:wrap;gap:12px;font-size:12px;color:var(--muted);margin-top:10px}
+.legend span{display:inline-flex;gap:6px;align-items:center}
+.legend i{width:8px;height:8px;border-radius:50%;display:inline-block}
+.showall{margin-top:12px;border:0;background:none;color:var(--accent);font-weight:600;cursor:pointer;padding:0;font-size:13.5px}
+
+.agenda{list-style:none;margin:12px 0 0;padding:0;display:flex;flex-direction:column;gap:12px}
+.agenda li{display:grid;grid-template-columns:50px minmax(0,1fr);gap:12px;align-items:center}
+.cal{border-radius:12px;background:var(--soft);text-align:center;padding:6px 0;line-height:1.05}
+.cal b{display:block;font-family:var(--display);font-size:20px}
+.cal span{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+.agenda .what{font-weight:600;font-size:14px;line-height:1.3}
+.agenda .sub{font-size:12.5px;color:var(--muted)}
+.agenda .in{font-size:12px;font-weight:700;color:var(--accent)}
+.agenda .in.soon{color:var(--crit)}
+.agenda button{all:unset;cursor:pointer;display:contents}
+
+.how{margin-top:28px}
+.how h3{font-family:var(--display);font-size:20px;margin:0 0 12px}
+.steps{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;counter-reset:s}
+@media (max-width:880px){.steps{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:480px){.steps{grid-template-columns:minmax(0,1fr)}}
+.steps li{counter-increment:s;background:var(--surface);border-radius:16px;padding:16px;box-shadow:var(--shadow)}
+.steps li::before{content:counter(s);display:grid;place-items:center;width:28px;height:28px;border-radius:9px;background:var(--accent-soft);color:var(--accent);font-weight:700;font-size:14px;margin-bottom:8px}
+.steps b{display:block;margin-bottom:4px}
+.steps p{margin:0;font-size:13.5px;color:var(--muted)}
+.foot{margin-top:16px;font-size:12.5px;color:var(--muted);max-width:86ch}
+.foot p{margin:0 0 6px}
+.loading{padding:40px 0;text-align:center;color:var(--muted)}
+@media (prefers-reduced-motion:no-preference){details.ev[open] .ev-body{animation:in .2s ease-out}@keyframes in{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}}
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div class="logo">
+      <div class="mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5" opacity=".55"/><path d="M12 12 L18.5 6.5"/><circle cx="12" cy="12" r="1.4" fill="var(--accent)" stroke="none"/></svg></div>
+      <div>
+        <h1>Radar de Lastro</h1>
+        <p class="tag">Eventos de crédito nos CRIs que estão na carteira dos FIIs</p>
+      </div>
+    </div>
+    <span class="fresh" id="fresh">Carregando dados…</span>
+  </header>
+
+  <section class="hello" aria-label="Resumo do período">
+    <div><h2 id="headline">Carregando eventos…</h2><p id="subline"></p></div>
+    <div class="counts">
+      <div class="count crit"><b id="n-crit">–</b><span>Urgente</span></div>
+      <div class="count warn"><b id="n-warn">–</b><span>Atenção</span></div>
+      <div class="count mon"><b id="n-mon">–</b><span>Acompanhar</span></div>
+    </div>
+  </section>
+
+  <div class="filters">
+    <label class="search" for="q">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+      <input id="q" type="search" placeholder="Buscar FII, operação, securitizadora ou código IF" autocomplete="off">
+    </label>
+    <div class="row" id="row" role="group" aria-label="Filtros">
+      <label class="switch" for="mine"><input id="mine" type="checkbox">Só meus fundos</label>
+      <label class="switch" for="listed"><input id="listed" type="checkbox" checked>Só FIIs listados</label>
+      <span class="divider" aria-hidden="true"></span>
+      <button type="button" class="chip" data-sev="crit" aria-pressed="true" style="--sevbg:var(--crit-soft);--sevfg:var(--crit)"><span class="dot"></span>Urgente</button>
+      <button type="button" class="chip" data-sev="warn" aria-pressed="true" style="--sevbg:var(--warn-soft);--sevfg:var(--warn)"><span class="dot"></span>Atenção</button>
+      <button type="button" class="chip" data-sev="mon" aria-pressed="true" style="--sevbg:var(--mon-soft);--sevfg:var(--mon)"><span class="dot"></span>Acompanhar</button>
+    </div>
+  </div>
+
+  <div class="grid">
+    <section aria-labelledby="h-feed">
+      <div class="sec-title"><h3 id="h-feed">Eventos</h3><small id="count"></small></div>
+      <ul class="feed" id="feed"><li class="loading">Carregando…</li></ul>
+      <button type="button" class="loadmore" id="loadmore" hidden>Mostrar mais eventos</button>
+    </section>
+
+    <aside class="side">
+      <section class="panel" aria-labelledby="h-expo">
+        <h3 id="h-expo">FIIs mais expostos</h3>
+        <p class="note" id="expo-note">Soma do % do PL em CRIs com evento no período.</p>
+        <ul class="expo" id="expo"></ul>
+        <div class="scale" id="scale"></div>
+        <div class="legend"><span><i style="background:var(--crit)"></i>Urgente</span><span><i style="background:var(--warn)"></i>Atenção</span><span><i style="background:var(--mon)"></i>Acompanhar</span></div>
+        <button type="button" class="showall" id="showall">Ver todos os fundos</button>
+      </section>
+      <section class="panel" aria-labelledby="h-ag">
+        <h3 id="h-ag">Próximas assembleias</h3>
+        <p class="note">Convocadas sobre temas de crédito, com data lida do edital.</p>
+        <ul class="agenda" id="agenda"></ul>
+      </section>
+    </aside>
+  </div>
+
+  <section class="how" aria-labelledby="h-how">
+    <h3 id="h-how">Como funciona</h3>
+    <ol class="steps">
+      <li><b>Documentos dos CRIs</b><p>Todo dia, o radar lê os fatos relevantes, comunicados, avisos e documentos de assembleia que as securitizadoras publicam no Fundos.Net.</p></li>
+      <li><b>Classificação</b><p>Regras procuram temas de crédito no corpo do comunicado ou na pauta da assembleia: inadimplência, vencimento antecipado, waiver, fundo de reserva, repactuação e outros.</p></li>
+      <li><b>Carteira dos FIIs</b><p>A posição de cada FII vem do informe trimestral estruturado nos dados abertos da CVM, e o PL vem do informe mensal do mesmo mês.</p></li>
+      <li><b>Cruzamento</b><p>O evento é ligado ao fundo pelo código IF do CRI. Quando o documento não traz o código, usa securitizadora, emissão e série.</p></li>
+    </ol>
+    <div class="foot" id="foot"></div>
+  </section>
+</div>
+
+<script>
+const SEV = {crit:'Urgente', warn:'Atenção', mon:'Acompanhar'};
+const ORD = {crit:0, warn:1, mon:2};
+const MESES = ['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
+const ICON = {
+  star:'<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 3.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.9l-5.2 2.7 1-5.8L3.5 9.7l5.9-.9z"/></svg>',
+  starO:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.9l-5.2 2.7 1-5.8L3.5 9.7l5.9-.9z"/></svg>',
+  chev:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>',
+  ext:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M14 4h6v6"/><path d="M20 4 11 13"/><path d="M19 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h5"/></svg>'
+};
+const store = {
+  get(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}},
+  set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
+};
+const state = {
+  q:'', sev:new Set(['crit','warn','mon']), mine:store.get('rl-mine',false), listed:store.get('rl-listed',true),
+  carteira:new Set(store.get('rl-carteira',[])), limite:25, todosFundos:false
+};
+let DATA=null, HOJE=null;
+
+const esc = s => String(s ?? '').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function pct(x){ if(x==null) return '—'; const v=x*100; if(v>0 && v<0.1) return '<0,1%'; return v.toLocaleString('pt-BR',{minimumFractionDigits:1,maximumFractionDigits:1})+'%'; }
+function brl(v){ if(v>=1e9) return 'R$ '+(v/1e9).toLocaleString('pt-BR',{maximumFractionDigits:1})+' bi'; if(v>=1e6) return 'R$ '+(v/1e6).toLocaleString('pt-BR',{maximumFractionDigits:1})+' mi'; return 'R$ '+Math.round(v/1e3).toLocaleString('pt-BR')+' mil'; }
+function nomeCurto(n){
+  if(!n) return 'FII sem nome';
+  let s=n.replace(/FUNDO DE INVESTIMENTO IMOBILI[ÁA]RIO|FUNDO DE INVESTIMENTO IMOB\.?|FUNDO DE INV\.? IMOB\.?|FDO\.? INV\.? IMOB\.?|RESPONSABILIDADE LIMITADA|RESP\.? LIMITADA|\bFII\b|\bFI IMOB\w*|CLASSE [ÚU]NICA|\s-\s*$/gi,' ').replace(/\s+/g,' ').replace(/[-–\s]+$/,'').trim();
+  s=s.toLowerCase().replace(/(^|\s)(\S)/g,(m,a,b)=>a+b.toUpperCase());
+  return s.length>34? s.slice(0,32)+'…' : s;
+}
+const rotulo = f => f.ticker || nomeCurto(f.fundo);
+const dia = s => new Date(s.slice(0,10)+'T00:00:00-03:00');
+function quando(iso){
+  const n=Math.round((HOJE-dia(iso))/864e5), h=iso.slice(11,16);
+  if(n<=0) return 'Hoje, '+h; if(n===1) return 'Ontem, '+h;
+  const d=dia(iso); return d.getDate()+' '+MESES[d.getMonth()]+' · há '+n+' dias';
+}
+function dataCurta(iso){const d=dia(iso); return d.getDate().toString().padStart(2,'0')+'/'+(d.getMonth()+1).toString().padStart(2,'0');}
+function ordinal(n){return n+'ª'}
+function fase(e){
+  if(e.fase==='convocada') return e.data_assembleia ? 'Assembleia em '+dataCurta(e.data_assembleia) : 'Assembleia convocada';
+  if(e.fase==='deliberada') return 'Assembleia realizada';
+  return e.categoria;
+}
+function fundosVisiveis(e){ return e.fundos.filter(f=>!state.listed || f.listado); }
+function afetaMeus(e){ return e.fundos.some(f=>state.carteira.has(f.cnpj_fundo)); }
+
+function filtrar(){
+  const q=state.q.trim().toLowerCase();
+  return DATA.eventos.filter(e=>{
+    if(!state.sev.has(e.severidade)) return false;
+    if(!fundosVisiveis(e).length) return false;
+    if(state.mine && !afetaMeus(e)) return false;
+    if(q){
+      const hay=[e.tipo,e.securitizadora,e.operacao,e.trecho,...e.codigos_if,...e.fundos.map(f=>(f.ticker||'')+' '+f.fundo)].join(' ').toLowerCase();
+      if(!hay.includes(q)) return false;
+    }
+    return true;
+  });
+}
+
+function renderResumo(){
+  const base=DATA.eventos.filter(e=>fundosVisiveis(e).length);
+  const c={crit:0,warn:0,mon:0}; base.forEach(e=>c[e.severidade]++);
+  for(const k in c) document.getElementById('n-'+k).textContent=c[k];
+  const nf=new Set(base.flatMap(e=>fundosVisiveis(e).map(f=>f.cnpj_fundo))).size;
+  const h=document.getElementById('headline'), s=document.getElementById('subline');
+  const j=DATA.janela;
+  if(state.carteira.size){
+    const meus=base.filter(afetaMeus), mc=meus.filter(e=>e.severidade==='crit').length, mw=meus.filter(e=>e.severidade==='warn').length;
+    if(!meus.length) h.textContent='Nenhum CRI dos seus fundos teve evento no período.';
+    else{
+      const p=[]; if(mc) p.push(`<span class="c">${mc} ${mc===1?'urgente':'urgentes'}</span>`); if(mw) p.push(`<span class="w">${mw} de atenção</span>`);
+      const r=meus.length-mc-mw; if(r) p.push(r+' para acompanhar');
+      h.innerHTML='Seus fundos tiveram '+p.join(', ').replace(/, ([^,]*)$/,' e $1')+' nos últimos 30 dias.';
+    }
+    s.textContent='Você acompanha '+state.carteira.size+(state.carteira.size===1?' fundo':' fundos')+'. No mercado todo foram '+base.length+' eventos em CRIs de '+nf+' FIIs.';
+  } else {
+    h.innerHTML=`<span class="c">${c.crit} ${c.crit===1?'evento urgente':'eventos urgentes'}</span> e <span class="w">${c.warn} de atenção</span> em CRIs de ${nf} FIIs nos últimos 30 dias.`;
+    s.textContent='Marque a estrela dos seus fundos na lista ao lado para ver só o que afeta a sua carteira.';
+  }
+}
+
+function chipsFundos(e){
+  const fs=fundosVisiveis(e).slice().sort((a,b)=>(state.carteira.has(b.cnpj_fundo)-state.carteira.has(a.cnpj_fundo))||((b.pct_pl||0)-(a.pct_pl||0)));
+  const vis=fs.slice(0,5);
+  let html=vis.map(f=>`<span class="fund${state.carteira.has(f.cnpj_fundo)?' mine':''}"><b class="${f.ticker?'tk':''}">${esc(rotulo(f))}</b><span>${pct(f.pct_pl)}</span></span>`).join('');
+  if(fs.length>vis.length) html+=`<span class="fund more">+${fs.length-vis.length} ${fs.length-vis.length===1?'fundo':'fundos'}</span>`;
+  return html;
+}
+
+function renderFeed(){
+  const lista=filtrar();
+  document.getElementById('count').textContent=lista.length+(lista.length===1?' evento':' eventos');
+  const feed=document.getElementById('feed');
+  if(!lista.length){feed.innerHTML='<li class="empty">Nenhum evento com esses filtros. Limpe a busca ou inclua outras severidades.</li>';document.getElementById('loadmore').hidden=true;return}
+  feed.innerHTML=lista.slice(0,state.limite).map(e=>{
+    const fs=fundosVisiveis(e).slice().sort((a,b)=>(b.pct_pl||0)-(a.pct_pl||0));
+    const serie = e.outras_series ? `séries ${e.serie} a ${+e.serie+e.outras_series}` : `${ordinal(e.serie)} série`;
+    return `<li class="card"><details class="ev" id="${e.id}">
+      <summary>
+        <div class="ev-head"><div class="pills"><span class="pill ${e.severidade}">${SEV[e.severidade]}</span><span class="phase">${esc(fase(e))}</span></div><span class="when">${quando(e.data)}</span></div>
+        <div><p class="ev-title">${esc(e.tipo)}</p>
+          <div class="ev-sub"><b>${esc(e.operacao||'Operação sem nome')}</b> · CRI ${ordinal(e.emissao)} emissão, ${serie} · ${esc(e.securitizadora)}</div></div>
+        <div class="funds">${chipsFundos(e)}</div>
+        <span class="more-link">Ver detalhes ${ICON.chev}</span>
+      </summary>
+      <div class="ev-body">
+        ${e.trecho?`<div class="box"><h4>Trecho do documento</h4><p class="quote">${esc(e.trecho)}</p></div>`:''}
+        <div class="box"><h4>FIIs com esse CRI na carteira</h4>
+          <table class="exp-table"><tbody>${fs.map(f=>`<tr><td><b class="${f.ticker?'tk':''}">${esc(rotulo(f))}</b><br><small>${esc(nomeCurto(f.fundo))}</small></td><td>${pct(f.pct_pl)} do PL<br><small>${brl(f.valor)}</small></td></tr>`).join('')}</tbody></table>
+        </div>
+        ${e.data_assembleia?`<div class="box next"><h4>Próximo passo</h4><p>Assembleia marcada para ${dia(e.data_assembleia).toLocaleDateString('pt-BR')}, segundo o edital.</p></div>`:''}
+        <div class="links">
+          <a href="${esc(e.url)}" target="_blank" rel="noopener">${ICON.ext}Abrir documento no Fundos.Net</a>
+          ${e.historico.slice(0,4).map(x=>`<a href="${esc(x.url)}" target="_blank" rel="noopener">${esc(x.especie)} de ${dataCurta(x.data)}</a>`).join('')}
+        </div>
+        <p class="how-matched">${e.cruzamento==='emissao_serie'?'Ligado aos fundos por securitizadora, emissão e série (o documento não cita código IF). Confira antes de agir.':'Ligado aos fundos pelo código IF'+(e.codigos_if.length?' '+esc(e.codigos_if.slice(0,4).join(', ')):'')+'.'}</p>
+      </div>
+    </details></li>`}).join('');
+  const lm=document.getElementById('loadmore');
+  lm.hidden = lista.length<=state.limite;
+  lm.textContent = 'Mostrar mais '+Math.min(25,lista.length-state.limite)+' eventos';
+}
+
+function renderExpo(){
+  let fs=DATA.fundos.filter(f=>!state.listed||f.listado);
+  const peso=f=>f.expo.crit*10+f.expo.warn*3+f.expo.mon;
+  fs.sort((a,b)=>(state.carteira.has(b.cnpj_fundo)-state.carteira.has(a.cnpj_fundo))||(peso(b)-peso(a)));
+  const vis=state.todosFundos?fs:fs.slice(0,12);
+  const tot=f=>f.expo.crit+f.expo.warn+f.expo.mon;
+  const maxV=Math.max(...vis.map(tot),0.0001);
+  const passo=[0.01,0.02,0.05,0.1,0.2,0.25,0.5,1].find(p=>p*4>=maxV)||1;
+  const maxEsc=passo*4;
+  document.getElementById('expo').innerHTML=vis.map(f=>{
+    const m=state.carteira.has(f.cnpj_fundo);
+    return `<li>
+      <button type="button" class="star" data-f="${f.cnpj_fundo}" aria-pressed="${m}" aria-label="${m?'Remover':'Marcar'} ${esc(rotulo(f))} como meu fundo">${m?ICON.star:ICON.starO}</button>
+      <button type="button" class="fname" data-q="${esc(f.ticker||f.fundo)}" title="Ver eventos deste fundo"><span class="${f.ticker?'tk':''}">${esc(rotulo(f))}</span><small>${esc(nomeCurto(f.fundo))} · ${f.eventos} ${f.eventos===1?'evento':'eventos'}</small></button>
+      <span class="tot">${pct(tot(f))}<small>do PL</small></span>
+      <div class="bar" role="img" aria-label="Urgente ${pct(f.expo.crit)}, atenção ${pct(f.expo.warn)}, acompanhar ${pct(f.expo.mon)}">${['crit','warn','mon'].filter(s=>f.expo[s]>0).map(s=>`<i class="${s}" style="width:${Math.min(100,f.expo[s]/maxEsc*100).toFixed(2)}%"></i>`).join('')}</div>
+    </li>`}).join('');
+  document.getElementById('scale').innerHTML=[0,1,2,3,4].map(i=>`<span>${(passo*i*100).toLocaleString('pt-BR',{maximumFractionDigits:1})}%</span>`).join('');
+  const b=document.getElementById('showall'); b.hidden=fs.length<=12; b.textContent=state.todosFundos?'Mostrar menos':'Ver todos os '+fs.length+' fundos';
+}
+
+function renderAgenda(){
+  const prox=DATA.eventos.filter(e=>e.data_assembleia && dia(e.data_assembleia)>=HOJE && fundosVisiveis(e).length)
+    .sort((a,b)=>a.data_assembleia.localeCompare(b.data_assembleia)).slice(0,8);
+  const el=document.getElementById('agenda');
+  if(!prox.length){el.innerHTML='<li><span></span><span class="sub">Nenhuma assembleia futura com data identificada.</span></li>';return}
+  el.innerHTML=prox.map(e=>{const d=dia(e.data_assembleia), n=Math.round((d-HOJE)/864e5);
+    return `<li><div class="cal"><b>${d.getDate()}</b><span>${MESES[d.getMonth()]}</span></div>
+      <div><div class="what">${esc(e.tipo)}</div><div class="sub">${esc(e.operacao)} · ${esc(e.securitizadora)}</div><div class="in${n<=7?' soon':''}">${n===0?'hoje':'em '+n+(n===1?' dia':' dias')} · ${fundosVisiveis(e).map(rotulo).slice(0,3).join(', ')}</div></div></li>`}).join('');
+}
+
+function renderFoot(){
+  const c=DATA.carteira, v=c.valor_por_metodo||{};
+  const dref=dia(c.data_referencia).toLocaleDateString('pt-BR');
+  document.getElementById('foot').innerHTML=`
+    <p>Carteira de referência: informe trimestral de ${dref}, com ${c.fundos_com_cri} FIIs e ${brl(c.valor_total)} em CRI/CRA. Nesse informe, ${pct(v.if||0)} do valor traz o código IF do ativo, ${pct(v.reserva||0)} só tem emissão e série, e ${pct(v.sem_chave||0)} não tem dado suficiente para cruzar. Posições compradas ou vendidas depois dessa data não aparecem.</p>
+    <p>Classificação automática por regras, que pode errar: sempre abra o documento original antes de tomar qualquer decisão. Isto não é recomendação de investimento.</p>
+    <p>Fontes: Fundos.Net (B3/CVM) e Portal de Dados Abertos da CVM. Documentos de ${dia(DATA.janela.inicio).toLocaleDateString('pt-BR')} a ${dia(DATA.janela.fim).toLocaleDateString('pt-BR')}.</p>`;
+}
+
+function render(){renderResumo();renderFeed();renderExpo();renderAgenda();}
+
+function ligar(){
+  const row=document.getElementById('row');
+  row.addEventListener('click',ev=>{const b=ev.target.closest('button[data-sev]'); if(!b) return;
+    const v=b.dataset.sev; state.sev.has(v)?state.sev.delete(v):state.sev.add(v); b.setAttribute('aria-pressed',state.sev.has(v)); state.limite=25; renderFeed();});
+  const q=document.getElementById('q'); q.addEventListener('input',()=>{state.q=q.value;state.limite=25;renderFeed();});
+  const mine=document.getElementById('mine'); mine.checked=state.mine;
+  mine.addEventListener('change',()=>{state.mine=mine.checked;store.set('rl-mine',state.mine);state.limite=25;renderFeed();});
+  const listed=document.getElementById('listed'); listed.checked=state.listed;
+  listed.addEventListener('change',()=>{state.listed=listed.checked;store.set('rl-listed',state.listed);render();});
+  document.getElementById('loadmore').addEventListener('click',()=>{state.limite+=25;renderFeed();});
+  document.getElementById('showall').addEventListener('click',()=>{state.todosFundos=!state.todosFundos;renderExpo();});
+  document.getElementById('expo').addEventListener('click',ev=>{
+    const s=ev.target.closest('.star');
+    if(s){const f=s.dataset.f; state.carteira.has(f)?state.carteira.delete(f):state.carteira.add(f); store.set('rl-carteira',[...state.carteira]); render(); return}
+    const t=ev.target.closest('.fname');
+    if(t){q.value=t.dataset.q;state.q=t.dataset.q;state.limite=25;renderFeed();document.getElementById('h-feed').scrollIntoView({behavior:'smooth',block:'start'});}
+  });
+}
+
+fetch('data.json').then(r=>{if(!r.ok) throw new Error(r.status); return r.json();}).then(d=>{
+  DATA=d;
+  HOJE=dia(d.janela.fim);
+  const g=new Date(d.gerado_em);
+  document.getElementById('fresh').innerHTML='Atualizado em <b>'+g.toLocaleDateString('pt-BR')+'</b> · dados públicos';
+  ligar(); render(); renderFoot();
+}).catch(err=>{
+  document.getElementById('headline').textContent='Não foi possível carregar os dados.';
+  document.getElementById('subline').textContent='Recarregue a página. Se continuar, os dados podem estar sendo atualizados.';
+  document.getElementById('feed').innerHTML='<li class="empty">Sem dados para mostrar agora.</li>';
+});
+</script>
