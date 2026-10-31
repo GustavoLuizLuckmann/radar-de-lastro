@@ -20,7 +20,7 @@ SITE = ROOT / "site"
 SEV = {"crit": "Urgente", "warn": "Atenção", "mon": "Acompanhar"}
 MESES = ["jan", "fev", "mar", "abr", "mai", "jun", "jul", "ago", "set", "out", "nov", "dez"]
 CONECTIVOS = {"de", "da", "do", "das", "dos", "e"}
-SECS = {"OPEA": "Opea", "PROVINCIA": "Província", "CANAL SEC": "Canal", "ISEC": "Virgo", "VIRGO": "Virgo",
+SECS = {"OPEA": "Opea", "PROVINCIA": "Província", "CANAL SEC": "Canal", "ISEC": "Riza (ex-Virgo)", "VIRGO": "Riza (ex-Virgo)", "RIZA SEC": "Riza (ex-Virgo)",
         "HABITASEC": "Habitasec", "FORTE CAP": "Forte", "BARI SEC": "Bari", "BRAZILIAN SC": "Brazilian Securities",
         "LEVERAGE SEC": "Leverage", "Lever": "Leverage", "VERTCIASEC": "Vert", "REIT SEC": "Reit",
         "TRAVESSIASEC": "Travessia", "CASAPEDRASEC": "Casa de Pedra", "PLAYBANCOSEC": "Playbanco", "ÉXES": "Éxes",

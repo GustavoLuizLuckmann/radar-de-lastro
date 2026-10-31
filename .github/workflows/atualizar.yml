@@ -2,7 +2,9 @@ name: Atualizar Radar de Lastro
 
 on:
   schedule:
-    - cron: "17 10,22 * * *"   # 07h17 e 19h17 em Brasília
+    # de hora em hora, das 6h às 23h em Brasília (o GitHub pode atrasar execuções agendadas;
+    # rodar com frequência garante que os dados não fiquem muitas horas parados)
+    - cron: "23 9-23,0-2 * * *"
   workflow_dispatch:
 
 permissions:
@@ -34,9 +36,14 @@ jobs:
       # só documentos novos são baixados. Se o cache sumir, a primeira execução refaz 90 dias.
       - uses: actions/cache@v4
         with:
-          path: raw/fnet
-          key: fnet-${{ github.run_id }}
-          restore-keys: fnet-
+          path: |
+            raw/fnet
+            raw/cvm
+            data
+          key: dados-${{ github.run_id }}
+          restore-keys: |
+            dados-
+            fnet-
 
       - name: Rodar pipeline
         run: python pipeline/run.py 7

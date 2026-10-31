@@ -35,7 +35,7 @@ def emissor_curto(nome: str) -> str:
 
 # nomes conferidos das securitizadoras mais comuns nos informes (CNPJ só com dígitos)
 EMISSORES_MANUAIS = {
-    "02773542000122": "Opea", "08769451000108": "Riza", "12130744000100": "True", "25005683000109": "Vert",
+    "02773542000122": "Opea", "08769451000108": "Riza (ex-Virgo)", "12130744000100": "True", "25005683000109": "Vert",
     "04200649000107": "Província", "09304427000158": "Habitasec", "41811375000119": "Canal", "12979898000170": "Forte",
     "10608405000160": "Bari", "10608405000241": "Bari", "48415978000140": "Leverage", "53192655000175": "Leverage",
     "03559006000191": "RB Capital", "03559006000272": "RB Capital", "02916265000160": "RB Capital",
@@ -46,7 +46,7 @@ EMISSORES_MANUAIS = {
     "03767538000114": "Brazilian Securities", "55085811000124": "Éxes", "40446476000175": "Playbanco",
     "60746948000112": "Bradesco", "61194353000164": "Itaú Corretora", "12113074000100": "True", "51319586000192": "Rock",
     "54414102000182": "Liqi", "49947676000186": "Creditcorp", "52890908000111": "Artesanal",
-    "08769451000180": "Riza",  # CNPJ da Riza/Virgo digitado com os dígitos trocados em alguns informes
+    "08769451000180": "Riza (ex-Virgo)",  # CNPJ da Riza/Virgo digitado com os dígitos trocados em alguns informes
     "20502525000132": "Emissor não identificado",  # CNPJ usado para CRIs de securitizadoras diferentes
 
 }

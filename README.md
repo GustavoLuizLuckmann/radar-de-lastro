@@ -11,7 +11,7 @@ Site que acompanha eventos de crédito nos CRIs da carteira dos FIIs, só com da
 5. `pipeline/classify.py` classifica o evento por regras e define a severidade.
 6. `pipeline/build.py` grava `site/data.json`, que o `site/index.html` lê.
 
-`python pipeline/run.py 30` roda tudo. O workflow em `.github/workflows/atualizar.yml` roda duas vezes por dia e publica o site no GitHub Pages.
+`python pipeline/run.py 30` roda tudo. O workflow em `.github/workflows/atualizar.yml` roda de hora em hora (6h às 23h) e publica o site no GitHub Pages.
 
 ## Limitações conhecidas
 
