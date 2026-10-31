@@ -349,3 +349,8 @@ footer.rodape{background:var(--brand);color:var(--brand-ink);border-top:0;margin
   .head{flex-wrap:wrap}
 }
 @media (max-width:600px){.filters .sel{width:100%;min-width:0;flex:0 0 100%}}
+
+.ph-badge.neutro{color:var(--muted);background:var(--soft)}
+.panel.vazio{padding:22px 24px}
+.panel.vazio h2{font-size:19px;font-weight:800;margin:0 0 8px}
+.panel.vazio p{margin:0 0 10px;max-width:68ch;color:var(--muted)}

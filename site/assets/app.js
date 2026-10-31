@@ -211,7 +211,7 @@ function iniciarBusca(form){
     const principal = x.t==='f' ? (x.k||x.n) : x.k;
     const segundo = x.t==='f' ? (x.k?x.n:'Sem negociação em bolsa') : x.n;
     const detalhe = x.t==='f'
-      ? `Gestão ${x.s}, ${x.c} ${x.c===1?'CRI':'CRIs'} na carteira`
+      ? (x.c ? `Gestão ${x.s}, ${x.c} ${x.c===1?'CRI':'CRIs'} na carteira` : `Gestão ${x.s}. Sem CRI na carteira`)
       : `${x.s}. Em ${x.f} ${x.f===1?'FII':'FIIs'}`;
     const tag = x.t==='f' ? '<span class="gq-t">FII</span>' : (x.e?`<span class="gq-t ev">${x.e} ${x.e===1?'evento':'eventos'}</span>`:'<span class="gq-t">CRI</span>');
     return `<li role="option" id="${pre}${i}" aria-selected="${i===ativo}"><a href="${esc(x.u)}"><span class="gq-k">${marca(principal,q)}</span><span class="gq-n">${marca(segundo,q)}</span>${tag}<span class="gq-s">${esc(detalhe)}</span></a></li>`;

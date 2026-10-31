@@ -143,20 +143,16 @@ def montar(ano: int, data_ref: str | None = None) -> dict:
 
     # PL e dados do fundo no mês de referência do trimestre
     mes = data_ref[:7]
-    geral = ultima_versao(ler_zip(zmen, "inf_mensal_fii_geral_"))
-    comp = ultima_versao(ler_zip(zmen, "inf_mensal_fii_complemento_"))
-    geral = geral[geral["Data_Referencia"].str[:7] <= mes].sort_values("Data_Referencia").groupby("CNPJ_Fundo_Classe").tail(1)
+    geral_todos = ultima_versao(ler_zip(zmen, "inf_mensal_fii_geral_"))
+    comp_todos = ultima_versao(ler_zip(zmen, "inf_mensal_fii_complemento_"))
+    comp = comp_todos
+    geral = geral_todos[geral_todos["Data_Referencia"].str[:7] <= mes].sort_values("Data_Referencia").groupby("CNPJ_Fundo_Classe").tail(1)
     comp = comp[comp["Data_Referencia"].str[:7] == mes]
     comp = comp.assign(pl=pd.to_numeric(comp["Patrimonio_Liquido"], errors="coerce"))[["CNPJ_Fundo_Classe", "pl"]]
     fundos = geral[["CNPJ_Fundo_Classe", "Nome_Fundo_Classe", "Codigo_ISIN", "Mercado_Negociacao_Bolsa",
                     "Segmento_Atuacao", "Nome_Administrador"]].merge(comp, on="CNPJ_Fundo_Classe", how="left")
     fundos["ticker"] = fundos["Codigo_ISIN"].map(ticker_do_isin)
-    # tickers conferidos à mão para ISINs fora do padrão (CNPJ -> código de negociação)
-    manuais = Path(__file__).with_name("tickers_manuais.json")
-    if manuais.exists():
-        # valor vazio força "sem ticker": o ISIN do fundo às vezes repete o código de outro fundo
-        mapa = {k: (v or None) for k, v in json.loads(manuais.read_text()).items() if not k.startswith("_")}
-        fundos["ticker"] = [mapa[c] if c in mapa else t for c, t in zip(fundos["CNPJ_Fundo_Classe"], fundos["ticker"])]
+    fundos["ticker"] = aplicar_manuais(fundos["CNPJ_Fundo_Classe"], fundos["ticker"])
 
     ges = gestores(RAW / "registro_fundo_classe.zip")
     achado = [ges.get(so_digitos(c).zfill(14), (None, None)) for c in fundos["CNPJ_Fundo_Classe"]]
@@ -188,7 +184,45 @@ def montar(ano: int, data_ref: str | None = None) -> dict:
             "pl": None if pd.isna(r.pl) else round(float(r.pl), 2),
             "pct_pl": None if pd.isna(r.pct_pl) else round(float(r.pct_pl), 6),
         })
-    return {"resumo": resumo, "posicoes": registros}
+    # cadastro de todos os FIIs que importam para a busca: os negociados em bolsa e os que têm CRI
+    ult = geral_todos.sort_values("Data_Referencia").groupby("CNPJ_Fundo_Classe").tail(1)
+    limite = (pd.Timestamp(data_ref) - pd.DateOffset(months=6)).strftime("%Y-%m-%d")
+    ult = ult[ult["Data_Referencia"] >= limite].copy()  # só fundos que seguem entregando o informe mensal
+    ult["ticker"] = aplicar_manuais(ult["CNPJ_Fundo_Classe"], ult["Codigo_ISIN"].map(ticker_do_isin))
+    pl_ult = (comp_todos.assign(pl=pd.to_numeric(comp_todos["Patrimonio_Liquido"], errors="coerce"))
+              .sort_values("Data_Referencia").groupby("CNPJ_Fundo_Classe").tail(1)
+              .set_index("CNPJ_Fundo_Classe")[["pl", "Data_Referencia"]])
+    com_cri = set(pos["CNPJ_Fundo_Classe"])
+    entregou_trimestral = set(ativo.loc[ativo["Data_Referencia"] == data_ref, "CNPJ_Fundo_Classe"])
+    n_cri = pos.groupby("CNPJ_Fundo_Classe")["chave"].nunique().to_dict()
+    pl_ref = pos.groupby("CNPJ_Fundo_Classe")["pl"].first().to_dict()
+    cadastro = []
+    for r in ult.itertuples(index=False):
+        c = r.CNPJ_Fundo_Classe
+        tk = limpo(r.ticker)
+        if not tk and c not in com_cri:
+            continue  # fundo fora da bolsa e sem CRI: fica de fora para não encher o site de páginas vazias
+        g, cg = ges.get(so_digitos(c).zfill(14), (None, None))
+        pl = pl_ref.get(c) if c in com_cri else (pl_ult["pl"].get(c) if c in pl_ult.index else None)
+        cadastro.append({
+            "cnpj_fundo": c, "ticker": tk, "fundo": limpo(r.Nome_Fundo_Classe), "gestor": limpo(g), "cnpj_gestor": limpo(cg),
+            "administrador": limpo(r.Nome_Administrador), "segmento": limpo(r.Segmento_Atuacao),
+            "listado": r.Mercado_Negociacao_Bolsa == "S", "tem_cri": c in com_cri, "n_cri": int(n_cri.get(c, 0)),
+            "entregou_trimestral": c in entregou_trimestral,
+            "pl": None if pl is None or pd.isna(pl) else round(float(pl), 2),
+            "data_pl": data_ref[:7] if c in com_cri else (pl_ult["Data_Referencia"].get(c, "")[:7] if c in pl_ult.index else None),
+        })
+    resumo["fundos_no_cadastro"] = len(cadastro)
+    return {"resumo": resumo, "posicoes": registros, "fundos": cadastro}
+
+
+def aplicar_manuais(cnpjs, tickers):
+    """Tickers conferidos à mão (CNPJ -> código). Valor vazio força "sem ticker": o ISIN às vezes repete o de outro fundo."""
+    manuais = Path(__file__).with_name("tickers_manuais.json")
+    if not manuais.exists():
+        return list(tickers)
+    mapa = {k: (v or None) for k, v in json.loads(manuais.read_text()).items() if not k.startswith("_")}
+    return [mapa[c] if c in mapa else t for c, t in zip(cnpjs, tickers)]
 
 
 if __name__ == "__main__":

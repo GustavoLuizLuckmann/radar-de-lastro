@@ -178,6 +178,9 @@ def escrever_busca(holdings: dict, busca_cri: list):
     """Índice leve para a barra de busca do site."""
     slugs = mapa_slugs(holdings)
     fundos = {}
+    for p in holdings.get("fundos", []):
+        fundos[p["cnpj_fundo"]] = {"t": "f", "k": p["ticker"] or "", "n": nome_curto(p["fundo"]),
+                                   "s": gestora_curta(p.get("gestor")), "u": f"/fii/{slugs[p['cnpj_fundo']]}/", "c": 0}
     for p in holdings["posicoes"]:
         f = fundos.setdefault(p["cnpj_fundo"], {"t": "f", "k": p["ticker"] or "", "n": nome_curto(p["fundo"]),
                                                 "s": gestora_curta(p.get("gestor")), "u": f"/fii/{slugs[p['cnpj_fundo']]}/", "c": 0})
