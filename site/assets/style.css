@@ -348,3 +348,4 @@ footer.rodape{background:var(--brand);color:var(--brand-ink);border-top:0;margin
   .filters .sel{flex:1 1 100%;max-width:none}
   .head{flex-wrap:wrap}
 }
+@media (max-width:600px){.filters .sel{width:100%;min-width:0;flex:0 0 100%}}
