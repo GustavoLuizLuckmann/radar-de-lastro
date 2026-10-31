@@ -8,6 +8,7 @@ from pathlib import Path
 from classify import classificar
 from match import Indice, expor
 from paginas_fundos import gerar as gerar_paginas_fundos, mapa_slugs
+from paginas_cri import EMISSORES, emissores_por_cnpj, escrever_busca, gerar as gerar_paginas_cri
 
 ROOT = Path(__file__).resolve().parent.parent
 TXT = ROOT / "raw" / "fnet" / "txt"
@@ -49,6 +50,7 @@ def main():
 
     stats = defaultdict(int)
     brutos = []
+    ops = {}  # código IF -> dados da operação no Fundos.Net (documento mais recente que cita o código)
     for d in coleta["documentos"]:
         arq = TXT / f"{d['id']}.txt"
         texto = arq.read_text(errors="ignore") if arq.exists() else ""
@@ -59,6 +61,12 @@ def main():
         if not metodo:
             continue
         stats["casados_" + metodo] += 1
+        if metodo in ("if", "if_texto"):
+            for p in pos:
+                c = p["codigo_if"]
+                if c and (c not in ops or data_iso(d["data_entrega"]) > ops[c]["data"]):
+                    ops[c] = {"operacao": d["operacao"], "securitizadora": d["securitizadora"], "emissao": d["emissao"],
+                              "serie": d["serie"], "doc_id": d["id"], "data": data_iso(d["data_entrega"])}
         c = classificar(d, texto)
         if not c:
             stats["rotina"] += 1
@@ -121,8 +129,12 @@ def main():
     }
     SITE.mkdir(exist_ok=True)
     (SITE / "data.json").write_text(json.dumps(saida, ensure_ascii=False))
-    paginas = gerar_paginas_fundos(saida, h)
-    escrever_sitemap(saida["gerado_em"][:10], paginas)
+    EMISSORES.update(emissores_por_cnpj(h["posicoes"]))
+    paginas = gerar_paginas_fundos(saida, h, ops)
+    paginas_cri, busca_cri = gerar_paginas_cri(saida, h, ops)
+    stats["paginas_cri"] = len(paginas_cri)
+    stats["itens_busca"] = escrever_busca(h, busca_cri)
+    escrever_sitemap(saida["gerado_em"][:10], paginas + paginas_cri)
     print(json.dumps({"eventos": len(eventos), "fundos": len(fundos), **stats}, ensure_ascii=False), file=sys.stderr)
 
 

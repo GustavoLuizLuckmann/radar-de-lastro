@@ -23,13 +23,20 @@
 </head>
 <body>
 <header class="band">
-  <div class="rings" aria-hidden="true"><div class="sweep"></div></div>
+  <div class="rings-clip" aria-hidden="true"><div class="rings"><div class="sweep"></div></div></div>
   <div class="wrap">
     <div class="topbar">
       <a class="brand" href="/">
         <img src="/assets/logo-emblema.png" alt="" width="44" height="44">
         <b>Radar de Lastro</b>
       </a>
+      <form class="gsearch" role="search" action="/" method="get" autocomplete="off">
+        <label for="gq" class="sr">Buscar fundo ou CRI</label>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        <input id="gq" name="q" type="search" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="gq-list" placeholder="Buscar FII ou CRI: ticker, código IF, operação ou gestora">
+        <kbd aria-hidden="true">/</kbd>
+        <ul id="gq-list" class="gq-list" role="listbox" aria-label="Resultados" hidden></ul>
+      </form>
       <nav class="nav" aria-label="Páginas">
         <a href="/" aria-current="page">Eventos</a><a href="/fundos.html">Fundos expostos</a><a href="/assembleias.html">Próximas assembleias</a><a href="/como-funciona.html">Como funciona</a>
       </nav>
@@ -51,7 +58,7 @@
   <div class="wrap frow" role="search">
     <label class="search" for="q"><span class="sr">Buscar</span>
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
-      <input id="q" type="search" placeholder="Buscar FII, devedor, securitizadora ou código IF" autocomplete="off">
+      <input id="q" type="search" placeholder="Filtrar esta lista: FII, operação, securitizadora ou código IF" autocomplete="off">
     </label>
     <select id="gestora" class="sel" aria-label="Filtrar por gestora"><option value="">Todas as gestoras</option></select>
     <div class="sevs" id="sevs" role="group" aria-label="Severidade">

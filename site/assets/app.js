@@ -178,3 +178,91 @@ function falhaCarga(){
   const h=document.getElementById('headline'); if(h) h.textContent='Os dados não carregaram.';
   const s=document.getElementById('subline'); if(s) s.textContent='Recarregue a página. Se o problema continuar, a atualização pode estar em andamento.';
 }
+
+/* ---------- busca global (barra no topo de todas as páginas) ---------- */
+(function(){
+  const form=document.querySelector('.gsearch'); if(!form) return;
+  const inp=form.querySelector('input'), lista=form.querySelector('.gq-list');
+  const norm=s=>String(s||'').normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase();
+  let itens=null, carregando=null, ativo=-1, achados=[];
+
+  function carregar(){
+    if(itens||carregando) return carregando;
+    carregando=fetch('/busca.json').then(r=>r.json()).then(d=>{
+      itens=d.map(x=>({...x, kn:norm(x.k), nn:norm(x.n), hay:norm([x.k,x.n,x.s].join(' '))}));
+      if(inp.value.trim()) buscar();
+    }).catch(()=>{ itens=[]; });
+    return carregando;
+  }
+  function pontua(x,q,tokens){
+    if(x.kn && x.kn===q) return 1000;
+    if(x.kn && x.kn.startsWith(q)) return 800-x.kn.length;
+    if(!tokens.every(t=>x.hay.includes(t))) return -1;
+    let p=300;
+    if(x.nn.startsWith(q)) p+=200;
+    else if((' '+x.nn).includes(' '+tokens[0])) p+=100;
+    if(x.t==='f') p+=60;
+    // número digitado que é a emissão ("opea 333" acha a 333ª emissão, não um código que contém 333)
+    if(tokens.some(t=>/^\d+$/.test(t) && x.hay.includes(t+'ª emissao'))) p+=250;
+    if(x.e) p+=20;
+    return p+Math.min(x.f||x.c||0,20);
+  }
+  const marca=(txt,q)=>{ const t=esc(txt); if(!q) return t; const i=norm(txt).indexOf(q); return i<0?t:esc(txt.slice(0,i))+'<mark>'+esc(txt.slice(i,i+q.length))+'</mark>'+esc(txt.slice(i+q.length)); };
+  function linha(x,i,q){
+    const principal = x.t==='f' ? (x.k||x.n) : x.k;
+    const segundo = x.t==='f' ? (x.k?x.n:'Sem negociação em bolsa') : x.n;
+    const detalhe = x.t==='f'
+      ? `Gestão ${x.s}, ${x.c} ${x.c===1?'CRI':'CRIs'} na carteira`
+      : `${x.s}. Em ${x.f} ${x.f===1?'FII':'FIIs'}`;
+    const tag = x.t==='f' ? '<span class="gq-t">FII</span>' : (x.e?`<span class="gq-t ev">${x.e} ${x.e===1?'evento':'eventos'}</span>`:'<span class="gq-t">CRI</span>');
+    return `<li role="option" id="gq-o${i}" aria-selected="${i===ativo}"><a href="${esc(x.u)}"><span class="gq-k">${marca(principal,q)}</span><span class="gq-n">${marca(segundo,q)}</span>${tag}<span class="gq-s">${esc(detalhe)}</span></a></li>`;
+  }
+  function mostrar(){
+    const q=norm(inp.value.trim());
+    if(!q){ fechar(); return; }
+    if(!itens){ lista.innerHTML='<li class="gq-empty">Carregando…</li>'; abrir(); return; }
+    let html='';
+    const fs=achados.filter(x=>x.t==='f'), cs=achados.filter(x=>x.t==='c');
+    let i=0;
+    if(fs.length){ html+='<li class="gq-head" role="presentation">Fundos</li>'+fs.map(x=>linha(x,i++,q)).join(''); }
+    if(cs.length){ html+='<li class="gq-head" role="presentation">CRIs</li>'+cs.map(x=>linha(x,i++,q)).join(''); }
+    if(!achados.length) html=`<li class="gq-empty">Nada encontrado para “${esc(inp.value.trim())}”. Tente o ticker (ex.: RBHY11), o código IF do CRI ou o nome da operação. Enter busca na lista de eventos.</li>`;
+    lista.innerHTML=html; abrir();
+    inp.setAttribute('aria-activedescendant', ativo>=0?'gq-o'+ativo:'');
+  }
+  function buscar(){
+    const q=norm(inp.value.trim()); ativo=-1;
+    if(!q||!itens){ achados=[]; mostrar(); return; }
+    const tokens=q.split(/\s+/).filter(Boolean);
+    const ord=itens.map(x=>[pontua(x,q,tokens),x]).filter(([p])=>p>=0).sort((a,b)=>b[0]-a[0]);
+    const fs=ord.filter(([,x])=>x.t==='f').slice(0,5).map(([,x])=>x);
+    const cs=ord.filter(([,x])=>x.t==='c').slice(0,fs.length?5:8).map(([,x])=>x);
+    achados=[...fs,...cs];  // mesma ordem em que mostrar() exibe: fundos, depois CRIs
+    // destaca de início o melhor resultado, seja fundo ou CRI
+    if(achados.length) ativo=achados.indexOf(ord[0][1]);
+    mostrar();
+  }
+  function abrir(){ lista.hidden=false; inp.setAttribute('aria-expanded','true'); }
+  function fechar(){ lista.hidden=true; inp.setAttribute('aria-expanded','false'); ativo=-1; }
+
+  inp.addEventListener('focus',()=>{ carregar(); if(inp.value.trim()) buscar(); });
+  inp.addEventListener('input',()=>{ carregar(); buscar(); });
+  inp.addEventListener('keydown',ev=>{
+    if(ev.key==='ArrowDown'||ev.key==='ArrowUp'){
+      if(!achados.length) return; ev.preventDefault();
+      ativo=(ativo+(ev.key==='ArrowDown'?1:-1)+achados.length)%achados.length; mostrar();
+      const el=document.getElementById('gq-o'+ativo); if(el) el.scrollIntoView({block:'nearest'});
+    } else if(ev.key==='Escape'){ fechar(); inp.blur(); }
+  });
+  form.addEventListener('submit',ev=>{
+    if(ativo>=0 && achados[ativo]){ ev.preventDefault(); location.href=achados[ativo].u; }
+    // sem resultado escolhido: segue o envio normal para /?q=, que filtra a lista de eventos
+  });
+  lista.addEventListener('mousedown',ev=>ev.preventDefault()); // mantém o foco ao clicar num resultado
+  inp.addEventListener('blur',()=>setTimeout(fechar,120));
+  document.addEventListener('keydown',ev=>{
+    if(ev.key!=='/'||ev.ctrlKey||ev.metaKey||ev.altKey) return;
+    const t=ev.target; if(t&&(t.tagName==='INPUT'||t.tagName==='TEXTAREA'||t.tagName==='SELECT'||t.isContentEditable)) return;
+    ev.preventDefault(); inp.focus();
+  });
+})();

@@ -117,8 +117,10 @@ def op_nome(o):
     return titulo(t) if t == t.upper() else t
 
 
-def gerar(saida: dict, holdings: dict) -> list[str]:
+def gerar(saida: dict, holdings: dict, ops: dict | None = None) -> list[str]:
     """Escreve as páginas e devolve os caminhos (para o sitemap)."""
+    from paginas_cri import nome_operacao  # evita import circular
+    ops = ops or {}
     destino = SITE / "fii"
     if destino.exists():
         shutil.rmtree(destino)
@@ -169,7 +171,7 @@ def gerar(saida: dict, holdings: dict) -> list[str]:
         ) or '<li class="empty"><b>Nenhum evento no período.</b>Os CRIs da carteira não tiveram fatos relevantes, avisos ou assembleias de crédito no histórico do radar.</li>'
 
         linhas_pos = "".join(
-            f"""<tr><td><b>{e_(p['codigo_if'] or '–')}</b><small>{e_(p['descricao'][:60])}</small></td>
+            f"""<tr><td>{f'<a href="/cri/{e_(p["codigo_if"])}/"><b>{e_(p["codigo_if"])}</b></a>' if p['codigo_if'] else '<b>–</b>'}<small>{e_(nome_operacao(p, ops))}</small></td>
         <td>{e_(p['emissao'] or '–')}ª / {e_(p['serie'] or '–')}ª</td>{f"<td>{data_br(p['vencimento'])}</td>" if tem_venc else ""}
         <td class="num">{brl(p['valor'])}</td><td class="num"><b>{pct(p['pct_pl'])}</b></td>
         <td>{'<span class="tag warn">Com evento</span>' if p['codigo_if'] and p['codigo_if'] in com_evento else ''}</td></tr>"""
