@@ -166,7 +166,7 @@ def gerar(saida: dict, holdings: dict, ops: dict | None = None) -> list[str]:
         com_evento = {c for ev, _ in evs for c in ev["codigos_if"]}
 
         if not pos:
-            resumo = (f"Não possui CRI nem CRA na carteira, segundo o informe trimestral de {data_br(data_ref)}."
+            resumo = (f"Não possui CRI na carteira, segundo o informe trimestral de {data_br(data_ref)}."
                       if info.get("entregou_trimestral") else
                       f"O informe trimestral de {data_br(data_ref)} deste fundo não foi encontrado na CVM, então não há carteira de CRIs para mostrar.")
         elif evs:
@@ -215,7 +215,7 @@ def gerar(saida: dict, holdings: dict, ops: dict | None = None) -> list[str]:
                 f'<i class="warn"></i>{cont["warn"]} de atenção<i class="mon"></i>{cont["mon"]} para acompanhar</span>')
         kpis = f"""<div class="kpis">
       <div><span>Patrimônio líquido</span><b>{brl(pl) if pl else '–'}</b><small>{'informe de ' + mes_br(info.get('data_pl')) if info.get('data_pl') else 'mês do informe'}</small></div>
-      <div><span>Em CRI e CRA</span><b>{(pct(total_cri / pl) if pl else '–') if pos else '0%'}</b><small>{brl(total_cri) if pos else 'nenhum CRI declarado'}</small></div>
+      <div><span>Em CRI</span><b>{(pct(total_cri / pl) if pl else '–') if pos else '0%'}</b><small>{brl(total_cri) if pos else 'nenhum CRI declarado'}</small></div>
       <div><span>CRIs na carteira</span><b>{len(pos)}</b><small>informe de {data_br(data_ref)}</small></div>
       <div><span>Eventos de crédito</span><b>{len(evs)}</b><small>desde {data_br(saida['janela']['inicio'])}</small></div>
     </div>"""
@@ -240,7 +240,7 @@ def gerar(saida: dict, holdings: dict, ops: dict | None = None) -> list[str]:
         {f'<a class="btn" style="margin-top:14px" href="/?q={e_(info["ticker"] or info["fundo"])}">Filtrar eventos de {e_(rot)} no radar</a>' if pos else ''}
       </section>"""
         if not pos:
-            motivo = ("não declarou CRI nem CRA" if info.get("entregou_trimestral")
+            motivo = ("não declarou CRI" if info.get("entregou_trimestral")
                       else "não tem informe trimestral disponível na CVM")
             corpo = cab + f"""<main class="wrap">
   <div class="grid">
@@ -269,13 +269,13 @@ def gerar(saida: dict, holdings: dict, ops: dict | None = None) -> list[str]:
       <section id="p-cart" role="tabpanel" aria-labelledby="t-cart">
         <div class="panel tbl-wrap"><table class="rank"><thead><tr><th>CRI</th><th>Emissão / série</th>{"<th>Vencimento</th>" if tem_venc else ""}<th class="num">Valor</th><th class="num">% do PL</th><th><span class="sr">Situação</span></th></tr></thead>
           <tbody>{linhas_pos}</tbody></table></div>
-        <p class="note">Posições de CRI e CRA declaradas no informe trimestral estruturado do fundo, na CVM, em {data_br(data_ref)}. Compras e vendas posteriores não aparecem.</p>
+        <p class="note">Posições de CRI declaradas no informe trimestral estruturado do fundo, na CVM, em {data_br(data_ref)}. Compras e vendas posteriores não aparecem.</p>
       </section>
     </div>
     <aside class="side">
       <section class="panel">
         <h2>Carteira de CRIs por securitizadora</h2>
-        <p class="sub">Parte do valor em CRI e CRA de cada emissor.</p>
+        <p class="sub">Parte do valor em CRI de cada emissor.</p>
         <ul class="comp">{linhas_comp}</ul>
       </section>
       {ficha}
@@ -300,7 +300,7 @@ def gerar(saida: dict, holdings: dict, ops: dict | None = None) -> list[str]:
     )
     corpo = cabeca("Todos os FIIs",
                    f"{len(indice)} fundos imobiliários: todos os negociados em bolsa e os de balcão com CRI na carteira. "
-                   f"{sum(1 for x in indice if x[5])} deles declararam CRI ou CRA no informe trimestral de {data_br(data_ref)}.",
+                   f"{sum(1 for x in indice if x[5])} deles declararam CRI no informe trimestral de {data_br(data_ref)}.",
                    trilha='<a href="/">Início</a><span aria-hidden="true">/</span><span>Fundos</span>') + f"""<main class="wrap">
   <div class="panel" style="padding:18px 20px"><ul style="columns:3 260px;column-gap:28px;margin:0;padding-left:18px;line-height:1.9">{itens}</ul></div>
 </main>"""
