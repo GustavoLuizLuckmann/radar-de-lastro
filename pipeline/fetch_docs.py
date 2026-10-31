@@ -31,7 +31,9 @@ def main():
     docs = json.loads((ROOT / "raw" / "fnet" / "docs.json").read_text())["documentos"]
     # todos os documentos de CRI: o código IF citado no texto é a melhor chave de cruzamento
     alvo = [d for d in docs if not (TXT / f"{d['id']}.txt").exists()]
-    api = Fnet(pausa=0.2)
+    # no máximo 400 por rodada, os mais recentes primeiro; o restante entra nas próximas
+    alvo = sorted(alvo, key=lambda d: d["id"], reverse=True)[:400]
+    api = Fnet(pausa=0.5)
 
     def um(d):
         try:
@@ -43,7 +45,7 @@ def main():
             print(f"falhou {d['id']}: {e}", file=sys.stderr)
             return False
 
-    with ThreadPoolExecutor(max_workers=4) as ex:
+    with ThreadPoolExecutor(max_workers=2) as ex:
         ok = sum(ex.map(um, alvo))
     print(f"{ok}/{len(alvo)} documentos com texto", file=sys.stderr)
 

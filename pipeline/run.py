@@ -8,9 +8,14 @@ from pathlib import Path
 AQUI = Path(__file__).resolve().parent
 
 
+LIMITE = {"holdings.py": 15, "collect.py": 15, "fetch_docs.py": 25, "build.py": 15}  # minutos
+
+
 def etapa(*args):
+    inicio = time.time()
     print("→", " ".join(args), flush=True)
-    subprocess.run([sys.executable, *args], cwd=AQUI, check=True)
+    subprocess.run([sys.executable, *args], cwd=AQUI, check=True, timeout=LIMITE.get(args[0], 15) * 60)
+    print(f"  ok em {time.time() - inicio:.0f}s", flush=True)
 
 
 if __name__ == "__main__":
