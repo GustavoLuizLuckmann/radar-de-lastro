@@ -8,7 +8,9 @@ AQUI = Path(__file__).resolve().parent
 SITE = AQUI.parent / "site"
 
 PAGINAS = {
-    "index.html": ("Radar de Lastro", "Eventos de crédito nos CRIs da carteira dos FIIs, com dados públicos do Fundos.Net e da CVM."),
+    "index.html": ("Radar de Lastro: eventos de crédito nos CRIs dos FIIs",
+                   "Acompanhe inadimplência, assembleias, waivers e vencimento antecipado dos CRIs na carteira dos FIIs, "
+                   "com o peso de cada um no PL do fundo. Dados públicos do Fundos.Net e da CVM, atualizados duas vezes por dia."),
     "fundos.html": ("Fundos expostos · Radar de Lastro", "Ranking dos FIIs com mais patrimônio em CRIs que tiveram eventos de crédito."),
     "assembleias.html": ("Próximas assembleias · Radar de Lastro", "Próximas assembleias de titulares de CRIs que estão na carteira dos FIIs, com data, pauta e fundos expostos."),
     "como-funciona.html": ("Como funciona · Radar de Lastro", "De onde vêm os dados do Radar de Lastro, como os eventos são classificados e o que cada um significa."),
@@ -29,8 +31,10 @@ HEAD = """<!doctype html>
 <meta property="og:image" content="https://radardelastro.com.br/assets/og.png">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="theme-color" content="#0C2E54">
-<link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png">
-<link rel="icon" type="image/png" sizes="64x64" href="/assets/favicon-64.png">
+<link rel="icon" href="/favicon.ico" sizes="48x48">
+<link rel="icon" type="image/png" sizes="96x96" href="/assets/favicon-96.png">
+<link rel="icon" type="image/png" sizes="192x192" href="/assets/favicon-192.png">
+<link rel="manifest" href="/site.webmanifest">{dados_estruturados}
 <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -80,7 +84,18 @@ def pagina(url: str, titulo: str, descricao: str, corpo: str, script: str, nav: 
     atual = {v: "" for v in NAV.values()}
     if nav in NAV:
         atual[NAV[nav]] = ' aria-current="page"'
-    return HEAD.format(titulo=titulo, descricao=descricao, arquivo=url, **atual) + corpo.rstrip() + "\n" + FIM.format(script=script)
+    # na página inicial, dados estruturados com nome do site, logo e caixa de busca para o Google
+    dados = ""
+    if url == "":
+        dados = """
+<script type="application/ld+json">
+{{"@context":"https://schema.org","@graph":[
+ {{"@type":"WebSite","@id":"https://radardelastro.com.br/#site","name":"Radar de Lastro","url":"https://radardelastro.com.br/","inLanguage":"pt-BR",
+   "potentialAction":{{"@type":"SearchAction","target":"https://radardelastro.com.br/?q={{search_term_string}}","query-input":"required name=search_term_string"}}}},
+ {{"@type":"Organization","@id":"https://radardelastro.com.br/#org","name":"Radar de Lastro","url":"https://radardelastro.com.br/","logo":"https://radardelastro.com.br/assets/favicon-512.png"}}
+]}}
+</script>""".format()
+    return HEAD.format(titulo=titulo, descricao=descricao, arquivo=url, dados_estruturados=dados, **atual) + corpo.rstrip() + "\n" + FIM.format(script=script)
 
 
 if __name__ == "__main__":
