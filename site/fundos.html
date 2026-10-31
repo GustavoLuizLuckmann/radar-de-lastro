@@ -23,9 +23,10 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&display=swap">
 <link rel="stylesheet" href="/assets/style.css">
 </head>
-<body>
+<body class="pg-fundos">
+<a class="skip" href="#conteudo">Pular para o conteúdo</a>
 <header class="band">
-  <div class="rings-clip" aria-hidden="true"><div class="rings"><div class="sweep"></div></div></div>
+
   <div class="wrap">
     <div class="topbar">
       <a class="brand" href="/">
@@ -35,7 +36,7 @@
       <form class="gsearch" role="search" action="/" method="get" autocomplete="off">
         <label for="gq" class="sr">Buscar fundo ou CRI</label>
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
-        <input id="gq" name="q" type="search" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="gq-list" placeholder="Buscar FII ou CRI: ticker, código IF, operação ou gestora">
+        <input id="gq" name="q" type="search" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="gq-list" placeholder="Buscar FII ou CRI">
         <kbd aria-hidden="true">/</kbd>
         <ul id="gq-list" class="gq-list" role="listbox" aria-label="Resultados" hidden></ul>
       </form>
@@ -43,13 +44,15 @@
         <a href="/">Eventos</a><a href="/fundos.html" aria-current="page">Fundos expostos</a><a href="/assembleias.html">Próximas assembleias</a><a href="/como-funciona.html">Como funciona</a>
       </nav>
     </div>
-    <div class="hero compact">
+  </div>
+</header>
+<section class="pagehead" id="conteudo">
+  <div class="wrap">
       <h1 id="headline">Fundos expostos</h1>
       <p id="subline">FIIs com patrimônio aplicado em CRIs que tiveram eventos de crédito no período.</p>
       <p class="updated" id="updated"></p>
-    </div>
   </div>
-</header>
+</section>
 
 <div class="filters">
   <div class="wrap frow" role="search">
@@ -86,8 +89,19 @@
   </div>
   <p class="note" style="margin-top:14px">Procura um fundo que não teve evento? Veja a <a href="/fii/">lista de todos os FIIs com CRI na carteira</a>, com a carteira de cada um.</p>
 </main>
-<footer>
-  <div class="wrap" id="foot"><p>Fontes: Fundos.Net (B3 e CVM) e Portal de Dados Abertos da CVM.</p></div>
+<footer class="rodape">
+  <div class="wrap">
+    <div class="cols">
+      <div class="col-marca">
+        <a class="brand" href="/"><img src="/assets/logo-emblema.png" alt="" width="36" height="36"><b>Radar de Lastro</b></a>
+        <p>Eventos de crédito nos CRIs da carteira dos FIIs, com dados públicos do Fundos.Net e da CVM, atualizados duas vezes por dia.</p>
+      </div>
+      <nav aria-label="Radar"><h2>Radar</h2><a href="/">Eventos</a><a href="/fundos.html">Fundos expostos</a><a href="/assembleias.html">Próximas assembleias</a><a href="/fii/">Todos os FIIs com CRI</a></nav>
+      <nav aria-label="Dados"><h2>Dados</h2><a href="/como-funciona.html">Como funciona</a><a href="/como-funciona.html#limitacoes">Limitações</a><a href="https://dados.cvm.gov.br/" target="_blank" rel="noopener">Dados abertos da CVM</a><a href="https://fnet.bmfbovespa.com.br/fnet/publico/abrirGerenciadorDocumentosCVM" target="_blank" rel="noopener">Fundos.Net</a></nav>
+      <nav aria-label="Institucional"><h2>Institucional</h2><a href="/sobre.html">Sobre</a><a href="/termos.html">Termos de uso</a><a href="/privacidade.html">Privacidade</a></nav>
+    </div>
+    <div class="legal" id="foot"><p>O Radar de Lastro reúne informação pública e não faz recomendação de investimento. Não tem relação com a B3 nem com a CVM.</p></div>
+  </div>
 </footer>
 <script src="/assets/app.js"></script>
 <script>

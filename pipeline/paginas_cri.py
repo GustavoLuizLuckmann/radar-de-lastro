@@ -9,6 +9,7 @@ import re
 import shutil
 from collections import Counter, defaultdict
 
+from gerar import cabeca  # noqa: E402
 from paginas_fundos import (MESES, SECS, SEV, SITE, brl, data_br, e_, gestora_curta, mapa_slugs, nome_curto,
                             op_nome, pagina, pct, titulo)
 
@@ -45,6 +46,9 @@ EMISSORES_MANUAIS = {
     "03767538000114": "Brazilian Securities", "55085811000124": "Éxes", "40446476000175": "Playbanco",
     "60746948000112": "Bradesco", "61194353000164": "Itaú Corretora", "12113074000100": "True", "51319586000192": "Rock",
     "54414102000182": "Liqi", "49947676000186": "Creditcorp", "52890908000111": "Artesanal",
+    "08769451000180": "Riza",  # CNPJ da Riza/Virgo digitado com os dígitos trocados em alguns informes
+    "20502525000132": "Emissor não identificado",  # CNPJ usado para CRIs de securitizadoras diferentes
+
 }
 
 
@@ -125,20 +129,15 @@ def gerar(saida: dict, holdings: dict, ops: dict) -> list[str]:
             for p in fundos
         )
         doc = op.get("doc_id")
-        corpo = f"""    <div class="hero compact">
-      <p class="updated"><a href="/fii/" style="color:inherit">Fundos</a> / {tipo} {e_(codigo)}</p>
-      <h1 id="headline">{tipo} {e_(codigo)}</h1>
-      <p id="subline">{e_(linha)}. {e_(resumo)}</p>
-      <div class="tally" aria-label="Eventos por severidade">
-        <div><i style="background:var(--crit)"></i><b>{cont['crit']}</b><span>urgentes</span></div>
-        <div><i style="background:var(--warn)"></i><b>{cont['warn']}</b><span>de atenção</span></div>
-        <div><i style="background:var(--mon)"></i><b>{cont['mon']}</b><span>para acompanhar</span></div>
-      </div>
-    </div>
-  </div>
-</header>
-
-<main class="wrap">
+        kpis = f"""<div class="kpis">
+      <div><span>FIIs com este {tipo}</span><b>{len(fundos)}</b><small>informe de {data_br(data_ref)}</small></div>
+      <div><span>Em carteira de FIIs</span><b>{brl(total)}</b><small>soma das posições</small></div>
+      <div><span>Maior exposição</span><b>{pct(fundos[0]['pct_pl'])}</b><small>do PL de {e_(fundos[0]['ticker'] or nome_curto(fundos[0]['fundo']))}</small></div>
+      <div><span>Eventos de crédito</span><b>{len(evs)}</b><small>desde {data_br(saida['janela']['inicio'])}</small></div>
+    </div>"""
+        corpo = cabeca(f'{tipo} {e_(codigo)}<span class="ph-badge">{e_(sec)}</span>', e_(linha) + ".",
+                       trilha=f'<a href="/fii/">Fundos</a><span aria-hidden="true">/</span><span>{tipo} {e_(codigo)}</span>',
+                       extra=kpis) + f"""<main class="wrap">
   <div class="grid">
     <section aria-labelledby="h-f">
       <div class="head"><h2 id="h-f">FIIs com este {tipo}</h2><small>informe de {data_br(data_ref)}</small></div>

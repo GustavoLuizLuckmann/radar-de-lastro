@@ -2,6 +2,7 @@
 
 Rode `python site_src/gerar.py` depois de editar qualquer arquivo em site_src/.
 """
+import re
 from pathlib import Path
 
 AQUI = Path(__file__).resolve().parent
@@ -13,6 +14,9 @@ PAGINAS = {
                    "com o peso de cada um no PL do fundo. Dados públicos do Fundos.Net e da CVM, atualizados duas vezes por dia."),
     "fundos.html": ("Fundos expostos · Radar de Lastro", "Ranking dos FIIs com mais patrimônio em CRIs que tiveram eventos de crédito."),
     "assembleias.html": ("Próximas assembleias · Radar de Lastro", "Próximas assembleias de titulares de CRIs que estão na carteira dos FIIs, com data, pauta e fundos expostos."),
+    "sobre.html": ("Sobre · Radar de Lastro", "O que é o Radar de Lastro, o problema que resolve, para quem é e de onde vêm os dados."),
+    "termos.html": ("Termos de uso · Radar de Lastro", "Condições de uso do Radar de Lastro: informação pública, sem recomendação de investimento."),
+    "privacidade.html": ("Privacidade · Radar de Lastro", "Como o Radar de Lastro trata dados: sem cadastro, sem cookies de rastreamento, preferências só no navegador."),
     "como-funciona.html": ("Como funciona · Radar de Lastro", "De onde vêm os dados do Radar de Lastro, como os eventos são classificados e o que cada um significa."),
 }
 
@@ -41,9 +45,10 @@ HEAD = """<!doctype html>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&display=swap">
 <link rel="stylesheet" href="/assets/style.css">
 </head>
-<body>
+<body class="pg-{pg}">
+<a class="skip" href="#conteudo">Pular para o conteúdo</a>
 <header class="band">
-  <div class="rings-clip" aria-hidden="true"><div class="rings"><div class="sweep"></div></div></div>
+{aneis}
   <div class="wrap">
     <div class="topbar">
       <a class="brand" href="/">
@@ -53,7 +58,7 @@ HEAD = """<!doctype html>
       <form class="gsearch" role="search" action="/" method="get" autocomplete="off">
         <label for="gq" class="sr">Buscar fundo ou CRI</label>
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
-        <input id="gq" name="q" type="search" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="gq-list" placeholder="Buscar FII ou CRI: ticker, código IF, operação ou gestora">
+        <input id="gq" name="q" type="search" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="gq-list" placeholder="Buscar FII ou CRI">
         <kbd aria-hidden="true">/</kbd>
         <ul id="gq-list" class="gq-list" role="listbox" aria-label="Resultados" hidden></ul>
       </form>
@@ -61,10 +66,21 @@ HEAD = """<!doctype html>
         <a href="/"{a_index}>Eventos</a><a href="/fundos.html"{a_fundos}>Fundos expostos</a><a href="/assembleias.html"{a_assembleias}>Próximas assembleias</a><a href="/como-funciona.html"{a_como}>Como funciona</a>
       </nav>
     </div>
-"""
+{fecha_header}"""
 
-FIM = """<footer>
-  <div class="wrap" id="foot"><p>Fontes: Fundos.Net (B3 e CVM) e Portal de Dados Abertos da CVM.</p></div>
+FIM = """<footer class="rodape">
+  <div class="wrap">
+    <div class="cols">
+      <div class="col-marca">
+        <a class="brand" href="/"><img src="/assets/logo-emblema.png" alt="" width="36" height="36"><b>Radar de Lastro</b></a>
+        <p>Eventos de crédito nos CRIs da carteira dos FIIs, com dados públicos do Fundos.Net e da CVM, atualizados duas vezes por dia.</p>
+      </div>
+      <nav aria-label="Radar"><h2>Radar</h2><a href="/">Eventos</a><a href="/fundos.html">Fundos expostos</a><a href="/assembleias.html">Próximas assembleias</a><a href="/fii/">Todos os FIIs com CRI</a></nav>
+      <nav aria-label="Dados"><h2>Dados</h2><a href="/como-funciona.html">Como funciona</a><a href="/como-funciona.html#limitacoes">Limitações</a><a href="https://dados.cvm.gov.br/" target="_blank" rel="noopener">Dados abertos da CVM</a><a href="https://fnet.bmfbovespa.com.br/fnet/publico/abrirGerenciadorDocumentosCVM" target="_blank" rel="noopener">Fundos.Net</a></nav>
+      <nav aria-label="Institucional"><h2>Institucional</h2><a href="/sobre.html">Sobre</a><a href="/termos.html">Termos de uso</a><a href="/privacidade.html">Privacidade</a></nav>
+    </div>
+    <div class="legal" id="foot"><p>O Radar de Lastro reúne informação pública e não faz recomendação de investimento. Não tem relação com a B3 nem com a CVM.</p></div>
+  </div>
 </footer>
 <script src="/assets/app.js"></script>
 <script>
@@ -77,6 +93,23 @@ FIM = """<footer>
 """
 
 NAV = {"index": "a_index", "fundos": "a_fundos", "assembleias": "a_assembleias", "como-funciona": "a_como"}
+ANEIS = '  <div class="rings-clip" aria-hidden="true"><div class="rings"><div class="sweep"></div></div></div>'
+HERO_ANTIGO = re.compile(r'\s*<div class="hero compact">\n(.*?)\n    </div>\n  </div>\n</header>\n', re.S)
+
+
+def cabeca(titulo_h1: str, sub: str = "", trilha: str = "", extra: str = "", lado: str = "") -> str:
+    """Cabeçalho claro das páginas internas: trilha, título, subtítulo e, opcionalmente, indicadores."""
+    return f"""<section class="pagehead" id="conteudo">
+  <div class="wrap">
+    {f'<nav class="crumbs" aria-label="Você está em">{trilha}</nav>' if trilha else ''}
+    <div class="ph-top">
+      <div class="ph-id"><h1 id="headline">{titulo_h1}</h1>{f'<p class="ph-sub" id="subline">{sub}</p>' if sub else ''}</div>
+      {lado}
+    </div>
+    {extra}
+  </div>
+</section>
+"""
 
 
 def pagina(url: str, titulo: str, descricao: str, corpo: str, script: str, nav: str | None = None) -> str:
@@ -95,7 +128,15 @@ def pagina(url: str, titulo: str, descricao: str, corpo: str, script: str, nav: 
  {{"@type":"Organization","@id":"https://radardelastro.com.br/#org","name":"Radar de Lastro","url":"https://radardelastro.com.br/","logo":"https://radardelastro.com.br/assets/favicon-512.png"}}
 ]}}
 </script>""".format()
-    return HEAD.format(titulo=titulo, descricao=descricao, arquivo=url, dados_estruturados=dados, **atual) + corpo.rstrip() + "\n" + FIM.format(script=script)
+    inicio = nav == "index"
+    if not inicio:
+        # páginas internas: faixa azul só com logo, busca e menu; o título vai para um cabeçalho claro
+        m = HERO_ANTIGO.match(corpo)
+        if m:
+            corpo = '<section class="pagehead" id="conteudo">\n  <div class="wrap">\n' + m.group(1) + '\n  </div>\n</section>\n' + corpo[m.end():]
+    cab = HEAD.format(titulo=titulo, descricao=descricao, arquivo=url, dados_estruturados=dados, pg=nav or "outra",
+                      aneis=ANEIS if inicio else "", fecha_header="" if inicio else "  </div>\n</header>\n", **atual)
+    return cab + corpo.rstrip() + "\n" + FIM.format(script=script)
 
 
 if __name__ == "__main__":

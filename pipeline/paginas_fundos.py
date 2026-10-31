@@ -14,7 +14,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "site_src"))
-from gerar import pagina  # noqa: E402
+from gerar import cabeca, pagina  # noqa: E402
 
 SITE = ROOT / "site"
 SEV = {"crit": "Urgente", "warn": "Atenção", "mon": "Acompanhar"}
@@ -117,9 +117,17 @@ def op_nome(o):
     return titulo(t) if t == t.upper() else t
 
 
+SCRIPT_FUNDO = """const b=document.getElementById('seguir'), c=b.dataset.cnpj;
+const atual=()=>new Set(store.get('rl-carteira',[]));
+const pintar=()=>{const m=atual().has(c); b.textContent=m?'Acompanhando':'Acompanhar este fundo'; b.setAttribute('aria-pressed',m);};
+b.addEventListener('click',()=>{const s=atual(); s.has(c)?s.delete(c):s.add(c); store.set('rl-carteira',[...s]); pintar();});
+pintar();
+abas(document.querySelector('.tabs'), location.hash==='#carteira' ? 't-cart' : (document.querySelector('#p-ev .empty') ? 't-cart' : 't-ev'));"""
+
+
 def gerar(saida: dict, holdings: dict, ops: dict | None = None) -> list[str]:
     """Escreve as páginas e devolve os caminhos (para o sitemap)."""
-    from paginas_cri import nome_operacao  # evita import circular
+    from paginas_cri import EMISSORES, nome_operacao  # evita import circular
     ops = ops or {}
     destino = SITE / "fii"
     if destino.exists():
@@ -178,55 +186,70 @@ def gerar(saida: dict, holdings: dict, ops: dict | None = None) -> list[str]:
             for p in sorted(pos, key=lambda x: -x["valor"])
         )
 
-        corpo = f"""    <div class="hero compact">
-      <p class="updated"><a href="/fundos.html" style="color:inherit">Fundos expostos</a> / {e_(rot)}</p>
-      <h1 id="headline">{e_(rot)}{'' if not info['ticker'] else ''}</h1>
-      <p id="subline">{e_(nome if info['ticker'] else 'Sem negociação em bolsa')}, gestão {e_(gestora_curta(info.get('gestor')))}. {e_(resumo)}</p>
-      <div class="tally" aria-label="Eventos por severidade">
-        <div><i style="background:var(--crit)"></i><b>{cont['crit']}</b><span>urgentes</span></div>
-        <div><i style="background:var(--warn)"></i><b>{cont['warn']}</b><span>de atenção</span></div>
-        <div><i style="background:var(--mon)"></i><b>{cont['mon']}</b><span>para acompanhar</span></div>
-      </div>
-    </div>
-  </div>
-</header>
+        # composição da carteira de CRIs por securitizadora (ou emissor)
+        comp = defaultdict(float)
+        for p in pos:
+            comp[EMISSORES.get(p["cnpj_emissor"]) or "Outros"] += p["valor"]
+        comp = sorted(comp.items(), key=lambda kv: -kv[1])
+        if len(comp) > 7:
+            comp = comp[:6] + [("Outros", sum(v for _, v in comp[6:]))]
+        maior = (comp[0][1] if comp else 0) or 1
+        linhas_comp = "".join(
+            f'<li><span>{e_(n)}</span><b>{pct(v / total_cri) if total_cri else "–"}</b>'
+            f'<i class="cbar"><i style="width:{v / maior * 100:.1f}%"></i></i></li>' for n, v in comp)
 
-<main class="wrap">
+        sevs = (f'<span class="sevline"><i class="crit"></i>{cont["crit"]} {"urgente" if cont["crit"] == 1 else "urgentes"}'
+                f'<i class="warn"></i>{cont["warn"]} de atenção<i class="mon"></i>{cont["mon"]} para acompanhar</span>')
+        kpis = f"""<div class="kpis">
+      <div><span>Patrimônio líquido</span><b>{brl(pl) if pl else '–'}</b><small>mês do informe</small></div>
+      <div><span>Em CRI e CRA</span><b>{pct(total_cri / pl) if pl else '–'}</b><small>{brl(total_cri)}</small></div>
+      <div><span>CRIs na carteira</span><b>{len(pos)}</b><small>informe de {data_br(data_ref)}</small></div>
+      <div><span>Eventos de crédito</span><b>{len(evs)}</b><small>desde {data_br(saida['janela']['inicio'])}</small></div>
+    </div>"""
+        sub = (f"{e_(nome) if info['ticker'] else 'Sem negociação em bolsa'}. Gestão {e_(gestora_curta(info.get('gestor')))}."
+               f" {e_(resumo)}")
+        cab = cabeca(
+            f'{e_(rot)}<span class="ph-badge">{"FII" if info["ticker"] else "FII de balcão"}</span>', sub,
+            trilha=f'<a href="/fii/">Fundos</a><span aria-hidden="true">/</span><span>{e_(rot)}</span>',
+            extra=kpis + (f'<p class="ph-sev">{sevs}</p>' if evs else ""),
+            lado='<button type="button" class="btn primary" id="seguir" data-cnpj="' + e_(cnpj) + '">Acompanhar este fundo</button>')
+
+        corpo = cab + f"""<main class="wrap">
+  <div class="tabs" role="tablist" aria-label="Seções do fundo">
+    <button type="button" role="tab" id="t-ev" aria-controls="p-ev" aria-selected="true">Eventos de crédito <span>{len(evs)}</span></button>
+    <button type="button" role="tab" id="t-cart" aria-controls="p-cart" aria-selected="false">Carteira de CRIs <span>{len(pos)}</span></button>
+  </div>
   <div class="grid">
-    <section aria-labelledby="h-ev">
-      <div class="head"><h2 id="h-ev">Eventos de crédito</h2><small>{len(evs)} {'evento' if len(evs) == 1 else 'eventos'}</small></div>
-      <div class="panel"><ul class="list" style="list-style:none;margin:0;padding:0">{linhas_ev}</ul></div>
-      <div class="head" style="margin-top:28px"><h2>Carteira de CRIs</h2><small>informe de {data_br(data_ref)}</small></div>
-      <div class="panel tbl-wrap"><table class="rank"><thead><tr><th>Código IF</th><th>Emissão / série</th>{"<th>Vencimento</th>" if tem_venc else ""}<th class="num">Valor</th><th class="num">% do PL</th><th><span class="sr">Situação</span></th></tr></thead>
-        <tbody>{linhas_pos}</tbody></table></div>
-      <p class="note">Posições de CRI e CRA declaradas no informe trimestral estruturado do fundo, na CVM. Compras e vendas posteriores não aparecem.</p>
-    </section>
+    <div>
+      <section id="p-ev" role="tabpanel" aria-labelledby="t-ev">
+        <div class="panel"><ul class="list" style="list-style:none;margin:0;padding:0">{linhas_ev}</ul></div>
+      </section>
+      <section id="p-cart" role="tabpanel" aria-labelledby="t-cart">
+        <div class="panel tbl-wrap"><table class="rank"><thead><tr><th>CRI</th><th>Emissão / série</th>{"<th>Vencimento</th>" if tem_venc else ""}<th class="num">Valor</th><th class="num">% do PL</th><th><span class="sr">Situação</span></th></tr></thead>
+          <tbody>{linhas_pos}</tbody></table></div>
+        <p class="note">Posições de CRI e CRA declaradas no informe trimestral estruturado do fundo, na CVM, em {data_br(data_ref)}. Compras e vendas posteriores não aparecem.</p>
+      </section>
+    </div>
     <aside class="side">
       <section class="panel">
-        <h2>Resumo</h2>
-        <div class="facts" style="grid-template-columns:1fr 1fr">
-          <div><b>{brl(pl) if pl else '–'}</b><span>patrimônio líquido</span></div>
-          <div><b>{pct(total_cri / pl) if pl else '–'}</b><span>do PL em CRI e CRA</span></div>
-          <div><b>{len(pos)}</b><span>CRIs na carteira</span></div>
-          <div><b>{len(evs)}</b><span>eventos no histórico</span></div>
-        </div>
-        <p class="sub" style="margin-top:12px">Gestora: {e_(gestora_curta(info.get('gestor')))}<br>Administrador: {e_(titulo(info.get('administrador') or '–'))}<br>CNPJ: {e_(cnpj)}</p>
-        <button type="button" class="btn primary" id="seguir" data-cnpj="{e_(cnpj)}">Acompanhar este fundo</button>
-        <p class="note" style="margin-top:8px">O fundo passa a aparecer primeiro na página de eventos. Fica salvo só neste navegador.</p>
+        <h2>Carteira de CRIs por securitizadora</h2>
+        <p class="sub">Parte do valor em CRI e CRA de cada emissor.</p>
+        <ul class="comp">{linhas_comp}</ul>
       </section>
       <section class="panel">
-        <h2>Ver no radar</h2>
-        <p class="sub">Filtre a lista de eventos por este fundo, com período e severidade.</p>
-        <a class="btn" href="/?q={e_(info['ticker'] or info['fundo'])}">Abrir eventos de {e_(rot)}</a>
+        <h2>Ficha</h2>
+        <dl class="ficha">
+          <div><dt>Gestora</dt><dd>{e_(gestora_curta(info.get('gestor')))}</dd></div>
+          <div><dt>Administrador</dt><dd>{e_(gestora_curta(info.get('administrador')) if info.get('administrador') else '–')}</dd></div>
+          <div><dt>CNPJ</dt><dd>{e_(cnpj)}</dd></div>
+          <div><dt>Negociação</dt><dd>{'Bolsa (B3), código ' + e_(info['ticker']) if info['ticker'] else 'Sem negociação em bolsa'}</dd></div>
+        </dl>
+        <a class="btn" style="margin-top:14px" href="/?q={e_(info['ticker'] or info['fundo'])}">Filtrar eventos de {e_(rot)} no radar</a>
       </section>
     </aside>
   </div>
 </main>"""
-        script = """const b=document.getElementById('seguir'), c=b.dataset.cnpj;
-const atual=()=>new Set(store.get('rl-carteira',[]));
-const pintar=()=>{const m=atual().has(c); b.textContent=m?'Acompanhando':'Acompanhar este fundo'; b.setAttribute('aria-pressed',m);};
-b.addEventListener('click',()=>{const s=atual(); s.has(c)?s.delete(c):s.add(c); store.set('rl-carteira',[...s]); pintar();});
-pintar();"""
+        script = SCRIPT_FUNDO
         url = f"fii/{slug}/"
         titulo_pag = f"{rot}: eventos de crédito nos CRIs · Radar de Lastro"
         pasta = destino / slug
@@ -242,17 +265,13 @@ pintar();"""
         f'{f", {ev} eventos" if ev > 1 else (", 1 evento" if ev == 1 else "")}</span></li>'
         for r, n, u, ev, t in indice
     )
-    corpo = f"""    <div class="hero compact">
-      <h1 id="headline">Todos os FIIs com CRI na carteira</h1>
-      <p id="subline">{len(indice)} fundos imobiliários declararam CRI ou CRA no informe trimestral de {data_br(data_ref)}. Cada página mostra a carteira de CRIs e os eventos de crédito do fundo.</p>
-    </div>
-  </div>
-</header>
-<main class="wrap">
+    corpo = cabeca("Todos os FIIs com CRI na carteira",
+                   f"{len(indice)} fundos imobiliários declararam CRI ou CRA no informe trimestral de {data_br(data_ref)}. "
+                   "Cada página mostra a carteira de CRIs e os eventos de crédito do fundo.",
+                   trilha='<a href="/">Início</a><span aria-hidden="true">/</span><span>Fundos</span>') + f"""<main class="wrap">
   <div class="panel" style="padding:18px 20px"><ul style="columns:3 260px;column-gap:28px;margin:0;padding-left:18px;line-height:1.9">{itens}</ul></div>
 </main>"""
     (destino / "index.html").write_text(pagina("fii/", "Todos os FIIs com CRI · Radar de Lastro",
         f"Lista dos {len(indice)} FIIs com CRI na carteira, com links para a carteira de CRIs e os eventos de crédito de cada um.",
         corpo, "", nav="fundos"))
-    urls.append("fii/")
     return urls

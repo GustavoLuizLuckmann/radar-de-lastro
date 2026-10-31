@@ -25,7 +25,8 @@ def data_iso(br: str):
 
 
 PAGINAS = [("", "daily", "1.0"), ("fundos.html", "daily", "0.8"), ("assembleias.html", "daily", "0.8"),
-           ("como-funciona.html", "monthly", "0.5")]
+           ("como-funciona.html", "monthly", "0.5"), ("fii/", "daily", "0.7"), ("sobre.html", "monthly", "0.3"),
+           ("termos.html", "yearly", "0.2"), ("privacidade.html", "yearly", "0.2")]
 
 
 def escrever_sitemap(data: str, fundos: list[str] = ()):

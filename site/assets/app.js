@@ -180,19 +180,18 @@ function falhaCarga(){
 }
 
 /* ---------- busca global (barra no topo de todas as páginas) ---------- */
-(function(){
-  const form=document.querySelector('.gsearch'); if(!form) return;
-  const inp=form.querySelector('input'), lista=form.querySelector('.gq-list');
+function iniciarBusca(form){
+  const inp=form.querySelector('input'), lista=form.querySelector('.gq-list'), pre=lista.id+'-o';
   const norm=s=>String(s||'').normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase();
-  let itens=null, carregando=null, ativo=-1, achados=[];
+  let itens=null, ativo=-1, achados=[];
 
   function carregar(){
-    if(itens||carregando) return carregando;
-    carregando=fetch('/busca.json').then(r=>r.json()).then(d=>{
-      itens=d.map(x=>({...x, kn:norm(x.k), nn:norm(x.n), hay:norm([x.k,x.n,x.s].join(' '))}));
-      if(inp.value.trim()) buscar();
-    }).catch(()=>{ itens=[]; });
-    return carregando;
+    if(!_busca.carregando){
+      _busca.carregando=fetch('/busca.json').then(r=>r.json()).then(d=>{
+        _busca.itens=d.map(x=>({...x, kn:norm(x.k), nn:norm(x.n), hay:norm([x.k,x.n,x.s].join(' '))}));
+      }).catch(()=>{ _busca.itens=[]; });
+    }
+    return _busca.carregando.then(()=>{ const vazio=!itens; itens=_busca.itens; if(vazio && inp.value.trim()) buscar(); });
   }
   function pontua(x,q,tokens){
     if(x.kn && x.kn===q) return 1000;
@@ -215,7 +214,7 @@ function falhaCarga(){
       ? `Gestão ${x.s}, ${x.c} ${x.c===1?'CRI':'CRIs'} na carteira`
       : `${x.s}. Em ${x.f} ${x.f===1?'FII':'FIIs'}`;
     const tag = x.t==='f' ? '<span class="gq-t">FII</span>' : (x.e?`<span class="gq-t ev">${x.e} ${x.e===1?'evento':'eventos'}</span>`:'<span class="gq-t">CRI</span>');
-    return `<li role="option" id="gq-o${i}" aria-selected="${i===ativo}"><a href="${esc(x.u)}"><span class="gq-k">${marca(principal,q)}</span><span class="gq-n">${marca(segundo,q)}</span>${tag}<span class="gq-s">${esc(detalhe)}</span></a></li>`;
+    return `<li role="option" id="${pre}${i}" aria-selected="${i===ativo}"><a href="${esc(x.u)}"><span class="gq-k">${marca(principal,q)}</span><span class="gq-n">${marca(segundo,q)}</span>${tag}<span class="gq-s">${esc(detalhe)}</span></a></li>`;
   }
   function mostrar(){
     const q=norm(inp.value.trim());
@@ -228,7 +227,7 @@ function falhaCarga(){
     if(cs.length){ html+='<li class="gq-head" role="presentation">CRIs</li>'+cs.map(x=>linha(x,i++,q)).join(''); }
     if(!achados.length) html=`<li class="gq-empty">Nada encontrado para “${esc(inp.value.trim())}”. Tente o ticker (ex.: RBHY11), o código IF do CRI ou o nome da operação. Enter busca na lista de eventos.</li>`;
     lista.innerHTML=html; abrir();
-    inp.setAttribute('aria-activedescendant', ativo>=0?'gq-o'+ativo:'');
+    inp.setAttribute('aria-activedescendant', ativo>=0?pre+ativo:'');
   }
   function buscar(){
     const q=norm(inp.value.trim()); ativo=-1;
@@ -251,7 +250,7 @@ function falhaCarga(){
     if(ev.key==='ArrowDown'||ev.key==='ArrowUp'){
       if(!achados.length) return; ev.preventDefault();
       ativo=(ativo+(ev.key==='ArrowDown'?1:-1)+achados.length)%achados.length; mostrar();
-      const el=document.getElementById('gq-o'+ativo); if(el) el.scrollIntoView({block:'nearest'});
+      const el=document.getElementById(pre+ativo); if(el) el.scrollIntoView({block:'nearest'});
     } else if(ev.key==='Escape'){ fechar(); inp.blur(); }
   });
   form.addEventListener('submit',ev=>{
@@ -260,9 +259,29 @@ function falhaCarga(){
   });
   lista.addEventListener('mousedown',ev=>ev.preventDefault()); // mantém o foco ao clicar num resultado
   inp.addEventListener('blur',()=>setTimeout(fechar,120));
-  document.addEventListener('keydown',ev=>{
-    if(ev.key!=='/'||ev.ctrlKey||ev.metaKey||ev.altKey) return;
-    const t=ev.target; if(t&&(t.tagName==='INPUT'||t.tagName==='TEXTAREA'||t.tagName==='SELECT'||t.isContentEditable)) return;
-    ev.preventDefault(); inp.focus();
+}
+// a lista de itens é compartilhada entre as barras da página
+const _busca={itens:null,carregando:null};
+document.querySelectorAll('.gsearch').forEach(iniciarBusca);
+document.addEventListener('keydown',ev=>{
+  if(ev.key!=='/'||ev.ctrlKey||ev.metaKey||ev.altKey) return;
+  const t=ev.target; if(t&&(t.tagName==='INPUT'||t.tagName==='TEXTAREA'||t.tagName==='SELECT'||t.isContentEditable)) return;
+  // foca a barra visível: na página inicial, a do destaque; nas demais, a do topo
+  const alvo=[...document.querySelectorAll('.gsearch input')].find(i=>i.offsetParent!==null) || document.querySelector('.gsearch input');
+  if(alvo){ ev.preventDefault(); alvo.focus(); }
+});
+
+/* ---------- abas simples (páginas de fundo) ---------- */
+function abas(barra, inicial){
+  if(!barra) return;
+  const botoes=[...barra.querySelectorAll('[role=tab]')];
+  const ir=id=>botoes.forEach(b=>{ const on=b.id===id; b.setAttribute('aria-selected',on); b.tabIndex=on?0:-1;
+    const p=document.getElementById(b.getAttribute('aria-controls')); if(p) p.hidden=!on; });
+  botoes.forEach(b=>b.addEventListener('click',()=>ir(b.id)));
+  barra.addEventListener('keydown',ev=>{
+    if(ev.key!=='ArrowRight'&&ev.key!=='ArrowLeft') return;
+    const i=botoes.findIndex(b=>b.getAttribute('aria-selected')==='true');
+    const n=botoes[(i+(ev.key==='ArrowRight'?1:-1)+botoes.length)%botoes.length]; ir(n.id); n.focus();
   });
-})();
+  ir(inicial||botoes[0].id);
+}

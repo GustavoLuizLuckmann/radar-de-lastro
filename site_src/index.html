@@ -1,6 +1,13 @@
-    <div class="hero">
+    <div class="hero" id="conteudo">
       <h1 id="headline">Eventos de crédito nos CRIs da carteira dos FIIs</h1>
       <p id="subline">Inadimplência, assembleias, waivers e outros eventos de crédito dos CRIs, ligados aos FIIs que têm cada CRI na carteira. Dados públicos do Fundos.Net e da CVM, atualizados duas vezes por dia.</p>
+      <form class="gsearch hero-search" role="search" action="/" method="get" autocomplete="off">
+        <label for="gq-home" class="sr">Buscar fundo ou CRI</label>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        <input id="gq-home" name="q" type="search" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="gq-home-list" placeholder="Busque um FII ou CRI: RBHY11, KNSC11, 24G2775710, Opea…">
+        <kbd aria-hidden="true">/</kbd>
+        <ul id="gq-home-list" class="gq-list" role="listbox" aria-label="Resultados" hidden></ul>
+      </form>
       <div class="tally" aria-label="Eventos no período">
         <div><i style="background:var(--crit)"></i><b id="n-crit">–</b><span>urgentes</span></div>
         <div><i style="background:var(--warn)"></i><b id="n-warn">–</b><span>de atenção</span></div>
@@ -45,7 +52,7 @@
         <p class="sub">Adicione os FIIs que você acompanha para ver primeiro o que afeta sua carteira. Fica salvo só neste navegador.</p>
         <form class="add" id="add-form">
           <label for="add-input" class="sr">Fundo para acompanhar</label>
-          <input id="add-input" list="fundos-list" placeholder="Digite o ticker ou o nome" autocomplete="off">
+          <input id="add-input" list="fundos-list" placeholder="Ticker ou nome" autocomplete="off">
           <datalist id="fundos-list"></datalist>
           <button class="btn" type="submit">Adicionar</button>
         </form>
