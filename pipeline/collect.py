@@ -51,15 +51,16 @@ def coletar(dias: int = 7, fim: date | None = None):
 
     meta = fim - timedelta(days=HISTORICO_MINIMO)
     inicio = fim - timedelta(days=dias)
-    if inicio_hist is None or inicio_hist > meta:
-        inicio = meta  # carga inicial do histórico
+    if inicio_hist is None or inicio_hist > meta or "CRA" not in antigo.get("tipos", []):
+        inicio = meta  # carga inicial do histórico (e uma vez quando os CRAs passaram a entrar)
     api = Fnet()
     docs.update(buscar(api, inicio, fim))
 
     corte = fim - timedelta(days=RETENCAO)
     docs = {k: d for k, d in docs.items() if _data(d["data_entrega"]) >= corte}
     novo_inicio = max(corte, min(inicio, inicio_hist or inicio))
-    return {"inicio": novo_inicio.isoformat(), "fim": fim.isoformat(), "documentos": list(docs.values())}
+    return {"inicio": novo_inicio.isoformat(), "fim": fim.isoformat(), "tipos": ["CRI", "CRA"],
+            "documentos": list(docs.values())}
 
 
 if __name__ == "__main__":
