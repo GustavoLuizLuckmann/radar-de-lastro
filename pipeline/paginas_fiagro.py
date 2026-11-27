@@ -11,10 +11,11 @@ from collections import Counter, defaultdict
 
 from paginas_fundos import (MESES, SECS, SEV, SITE, brl, data_br, e_, gestora_curta, mes_br, op_nome, pct,
                             titulo)
+from paginas_cri import EMISSORES, emissor_curto  # noqa: E402
 from gerar import cabeca, pagina  # noqa: E402  (paginas_fundos põe site_src no caminho)
 
 URL_FNET = "https://fnet.bmfbovespa.com.br/fnet/publico/exibirDocumento?id={id}&cvm=true"
-METODO = {"codigo": "Código do CRA citado no relatório gerencial",
+METODO = {"carteira": "Na carteira entregue à CVM (CDA)", "codigo": "Código do CRA citado no relatório gerencial",
           "nome": "Devedor citado no relatório gerencial (pode ser outra série)"}
 
 SCRIPT_FIAGRO = """const b=document.getElementById('seguir'), c=b.dataset.cnpj;
@@ -25,12 +26,38 @@ pintar();
 abas(document.querySelector('.tabs'), location.hash==='#composicao' || document.querySelector('#p-ev .empty') ? 't-comp' : 't-ev');"""
 
 
+# securitizadoras de CRA mais comuns nos CDAs (o nome no CDA vem truncado ou com acentos quebrados)
+SEC_CRA = {"10753164000143": "Eco Securitizadora", "08769451000108": "Riza (ex-Virgo)", "02773542000122": "Opea",
+           "11945604000127": "Opea", "25005683000109": "Vert", "12130744000100": "True Securitizadora",
+           "04200649000107": "Província", "41811375000119": "Canal", "41534746000162": "Ceres",
+           "55085811000124": "Éxes", "26609050000164": "Travessia", "14876090000193": "Gaia"}
+INDEXADOR = {"DI1": "CDI", "CDI": "CDI", "IAP": "IPCA", "IPC": "IPCA", "IGP": "IGP-M", "PRE": "Pré"}
+
+
+def emissor_cra(c):
+    if c["cnpj_emissor"] in SEC_CRA:
+        return SEC_CRA[c["cnpj_emissor"]]
+    if c["cnpj_emissor"] in EMISSORES:
+        return EMISSORES[c["cnpj_emissor"]]
+    return emissor_curto(re.sub(r"SECURITIZ\S*(\s+O\b)?", "SECURITIZADORA", c["emissor"], flags=re.I))
+
+
+def taxa_cra(c):
+    idx = INDEXADOR.get((c.get("indexador") or "").upper(), "")
+    cup = f"{c['cupom']:.2f}".replace(".", ",") + "%" if c.get("cupom") else ""
+    return f"{idx} + {cup}" if idx and cup and idx != "Pré" else (f"{cup} a.a." if cup else idx)
+
+
 def nome_fiagro(n):
-    s = re.sub(r"FUNDO DE INVESTIMENTO NAS CADEIAS PRODUTIVAS (DO )?AGRO(INDUSTRIAIS|NEG[ÓO]CIO)?|FI NAS CADEIAS PROD\w*( DO AGRO)?|"
-               r"RESPONSABILIDADE LIMITADA|RESP\.? LIMITADA|RESP\.? LIM\.?|DE RESP\.?\b|CLASSE [ÚU]NICA( D[OE])?|"
-               r"\bFUNDO DE INVESTIMENTO\b|\bF\. DE I\.", " ", n or "", flags=re.I)
+    s = re.sub(r"\b(FUNDO DE INVESTIMENTO|F\.? ?I\.?)\s+(NAS|EM)\s+CADEIAS(\s+PROD\w*)?(\s+(DO\s+)?AGRO\w*)?|"
+               r"\bNAS\s+CADEIAS(\s+PROD\w*)?(\s+(DO\s+)?AGRO\w*)?|"
+               r"RESPONSABILIDAD\w*\s+LI\w*|\bRESP\.?\s+LIM\w*\.?|\bR\.?\s*L\.?$|\bLIMITADA\b|CLASSE [ÚU]NICA( D[OE])?|\bCLASSE\b|"
+               r"\bFUNDO DE INVESTIMENTO\b", " ", n or "", flags=re.I)
     s = re.sub(r"\s+", " ", s).strip(" -–,")
     s = re.sub(r"(\s+(de|da|do|das|dos|e|-|–|,))+$", "", s, flags=re.I).strip(" -–,")
+    s = re.sub(r"^(de|da|do)\s+", "", s, flags=re.I)
+    if s and "FIAGRO" not in s.upper() and len(s.split()) <= 2:
+        s += " Fiagro"
     return titulo(s) or "Fiagro"
 
 
@@ -93,12 +120,12 @@ def gerar(saida: dict, fg: dict):
         venc = info["vencidos"] / info["prazo_total"] if info.get("prazo_total") else None
 
         if evs:
-            resumo = (f"{len(evs)} {'evento' if len(evs) == 1 else 'eventos'} de crédito em operações citadas no relatório gerencial"
+            resumo = (f"{len(evs)} {'evento' if len(evs) == 1 else 'eventos'} de crédito em CRAs da carteira ou citados no relatório gerencial"
                       + (f", {cont['crit']} {'urgente' if cont['crit'] == 1 else 'urgentes'}" if cont["crit"] else "") + ".")
         elif info["cra"] + info["cri"] <= 0:
             resumo = "Não declarou CRA nem CRI no informe mensal."
         elif g.get("valido"):
-            resumo = f"Nenhum evento de crédito nas operações citadas no relatório gerencial desde {inicio}."
+            resumo = f"Nenhum evento de crédito nos CRAs identificados na carteira desde {inicio}."
         else:
             resumo = "Sem relatório gerencial recente no Fundos.Net para ligar eventos de crédito ao fundo."
 
@@ -108,7 +135,26 @@ def gerar(saida: dict, fg: dict):
             f'<li><span>{e_(n)}</span><b>{pct(v / pl) if pl else brl(v)}</b><i class="cbar"><i style="width:{min(100, v / maior * 100):.1f}%"></i></i></li>'
             for n, v in comp) or '<li><span>Nada declarado</span><b>–</b></li>'
 
-        linhas_ev = "".join(linha_evento(ev, "código citado" if f.get("metodo") == "codigo" else "devedor citado")
+        cda = info.get("cda") or {}
+        cras = sorted(cda.get("cras", []), key=lambda c: -c["valor"])
+        pl_cda = cda.get("pl") or pl
+        tabela_cras = ""
+        if cras:
+            ident = sum(1 for c in cras if c.get("codigos"))
+            linhas_cra = "".join(
+                f"""<tr><td><b>{e_(next((x for x in c.get('codigos', []) if x.startswith('CRA')), '') or 'Não identificado')}</b>
+          <small>{e_(emissor_cra(c))}{(', ' + e_(c['emissao']) + 'ª emissão') if c.get('emissao') else ''}{(', série ' + e_(c['serie'])) if c.get('serie') else ''}</small></td>
+          <td>{data_br(c['venc'])}<small>{e_(taxa_cra(c))}</small></td>
+          <td class="num">{brl(c['valor'])}</td><td class="num"><b>{pct(c['valor'] / pl_cda) if pl_cda else '–'}</b></td></tr>"""
+                for c in cras[:80])
+            tabela_cras = f"""<div class="panel tbl-wrap" style="margin-top:20px">
+          <h2 style="padding:16px 18px 0">CRAs na carteira</h2>
+          <p class="sub" style="padding:0 18px">Composição da carteira (CDA) de {e_(cda.get('referencia') or '–')} entregue à CVM: {len(cras)} CRAs, {ident} com o código identificado pelo informe das securitizadoras.</p>
+          <table class="rank"><thead><tr><th>CRA</th><th>Vencimento</th><th class="num">Valor</th><th class="num">% do PL</th></tr></thead><tbody>{linhas_cra}</tbody></table>
+        </div>"""
+
+        linhas_ev = "".join(linha_evento(ev, (pct(f["pct_pl"]) + " do PL") if f.get("pct_pl") is not None
+                                         else "código citado" if f.get("metodo") == "codigo" else "devedor citado")
                             for ev, f in evs[:60]) or (
             f'<li class="empty"><b>Nenhum evento no período.</b>As operações citadas no relatório gerencial não tiveram fatos relevantes, avisos ou assembleias de crédito desde {inicio}.</li>'
             if g.get("valido") else
@@ -134,7 +180,8 @@ def gerar(saida: dict, fg: dict):
                if g.get("doc_id") and g.get("data_entrega") else "<p>Nenhum relatório gerencial encontrado no Fundos.Net.</p>")
         ficha = f"""<section class="panel">
         <h2>De onde vêm os eventos</h2>
-        <p class="sub">A CVM não divulga quais CRAs cada Fiagro tem. O radar procura no relatório gerencial mais recente o código ou o nome das operações que tiveram evento.</p>
+        <p class="sub">A carteira entregue à CVM (CDA) não traz o código dos CRAs. O radar cruza securitizadora, vencimento e taxa de cada CRA com o informe das securitizadoras para chegar ao código. Quando não fecha, procura a operação no relatório gerencial mais recente.</p>
+        {f"<p>Carteira (CDA) de {e_(cda.get('referencia'))}.</p>" if cda.get('referencia') else ''}
         {rel}
       </section>
       <section class="panel">
@@ -157,7 +204,7 @@ def gerar(saida: dict, fg: dict):
     <div>
       <section id="p-ev" role="tabpanel" aria-labelledby="t-ev">
         <div class="panel"><ul class="list" style="list-style:none;margin:0;padding:0">{linhas_ev}</ul></div>
-        <p class="note">“Código citado”: o código IF do CRA aparece no relatório gerencial. “Devedor citado”: aparece o nome do devedor, que pode ter outros CRAs. Confira no relatório.</p>
+        <p class="note">“% do PL”: o CRA está na carteira entregue à CVM, identificado pelo informe das securitizadoras. “Código citado”: o código do CRA aparece no relatório gerencial. “Devedor citado”: aparece o nome do devedor, que pode ter outros CRAs.</p>
       </section>
       <section id="p-comp" role="tabpanel" aria-labelledby="t-comp">
         <div class="panel">
@@ -166,6 +213,7 @@ def gerar(saida: dict, fg: dict):
           <ul class="comp">{linhas_comp}</ul>
         </div>
         <p class="note">Informe mensal de Fiagro, dados abertos da CVM. “Carteira vencida” é a parte dos ativos com prazo que já passou do vencimento sem ser paga.</p>
+        {tabela_cras}
       </section>
     </div>
     <aside class="side">
@@ -223,9 +271,9 @@ def gerar_cras(saida: dict, fg: dict):
         fiagros = {}
         for e in evs:
             for f in e["fundos"]:
-                if f.get("tf") == "fiagro" and (f["cnpj_fundo"] not in fiagros or f.get("metodo") == "codigo"):
+                if f.get("tf") == "fiagro" and (f["cnpj_fundo"] not in fiagros or f.get("metodo") in ("carteira", "codigo")):
                     fiagros[f["cnpj_fundo"]] = f
-        fs = sorted(fiagros.values(), key=lambda f: (f.get("metodo") != "codigo", f["ticker"] is None, f["ticker"] or f["fundo"]))
+        fs = sorted(fiagros.values(), key=lambda f: ({"carteira": 0, "codigo": 1}.get(f.get("metodo"), 2), -(f.get("pct_pl") or 0), f["ticker"] or f["fundo"]))
         cont = Counter(e["severidade"] for e in evs)
         serie = (f"séries {topo['serie']} a {int(topo['serie']) + topo['outras_series']}" if topo.get("outras_series") and topo["serie"].isdigit()
                  else f"{topo['serie']}ª série")
@@ -235,12 +283,12 @@ def gerar_cras(saida: dict, fg: dict):
         linhas_f = "".join(
             f"""<tr><td><a href="/fiagro/{e_(slugs.get(f['cnpj_fundo'], ''))}/"><b class="{'tk' if f['ticker'] else ''}">{e_(f['ticker'] or nome_fiagro(f['fundo']))}</b></a>
           <small>{e_(gestora_curta(f.get('gestor')))}</small></td>
-        <td>{e_(METODO.get(f.get('metodo'), ''))}<small class="quote">{e_(f.get('trecho'))}</small></td></tr>""" for f in fs
-        ) or '<tr><td colspan="2" class="empty"><b>Nenhum Fiagro citou esta operação.</b>A operação não aparece nos relatórios gerenciais recentes dos Fiagros. Ela pode estar na carteira de fundos que não detalham os CRAs no relatório, ou de outros investidores.</td></tr>'
+        <td>{e_(METODO.get(f.get('metodo'), ''))}{(' · <b>' + pct(f['pct_pl']) + ' do PL</b>') if f.get('pct_pl') is not None else ''}<small class="quote">{e_(f.get('trecho'))}</small></td></tr>""" for f in fs
+        ) or '<tr><td colspan="2" class="empty"><b>Nenhum Fiagro identificado.</b>A operação não aparece na última carteira entregue à CVM pelos Fiagros, nem nos relatórios gerenciais recentes. Pode estar em fundos cuja carteira não deu para identificar, ou com outros investidores.</td></tr>'
         kpis = f"""<div class="kpis">
       <div><span>Eventos de crédito</span><b>{len(evs)}</b><small>desde {data_br(saida['janela']['inicio'])}</small></div>
       <div><span>Urgentes</span><b>{cont['crit']}</b><small>{cont['warn']} de atenção</small></div>
-      <div><span>Fiagros que citam</span><b>{len(fs)}</b><small>nos relatórios gerenciais</small></div>
+      <div><span>Fiagros ligados</span><b>{len(fs)}</b><small>{sum(1 for f in fs if f.get("metodo") == "carteira")} pela carteira</small></div>
       <div><span>Último documento</span><b>{data_br(topo['data'][:10])}</b><small>{e_(topo['especie'] or topo['categoria'])}</small></div>
     </div>"""
         titulo_cra = codigos[0] if len(codigos) == 1 else (topo.get("isin") or nome_op)
@@ -251,7 +299,7 @@ def gerar_cras(saida: dict, fg: dict):
     <section aria-labelledby="h-ev">
       <div class="head"><h2 id="h-ev">Eventos de crédito</h2><small>{len(evs)} {'evento' if len(evs) == 1 else 'eventos'}</small></div>
       <div class="panel"><ul class="list" style="list-style:none;margin:0;padding:0">{linhas_ev}</ul></div>
-      <div class="head" style="margin-top:28px"><h2>Fiagros que citam esta operação</h2><small>relatório gerencial mais recente</small></div>
+      <div class="head" style="margin-top:28px"><h2>Fiagros com esta operação</h2><small>carteira entregue à CVM ou relatório gerencial</small></div>
       <div class="panel tbl-wrap"><table class="rank"><thead><tr><th>Fiagro</th><th>Como ligamos</th></tr></thead><tbody>{linhas_f}</tbody></table></div>
     </section>
     <aside class="side">
@@ -268,13 +316,13 @@ def gerar_cras(saida: dict, fg: dict):
       </section>
     </aside>
   </div>
-  <p class="note" style="margin-top:20px">A CVM não divulga o código dos CRAs na carteira dos Fiagros. Os fundos acima foram ligados pelo relatório gerencial, que pode citar outra série do mesmo devedor. Confira sempre no documento original.</p>
+  <p class="note" style="margin-top:20px">A carteira dos Fiagros entregue à CVM não traz o código dos CRAs: o radar cruza securitizadora, vencimento e taxa com o informe das securitizadoras, e usa o relatório gerencial quando o cruzamento não fecha. Valores e % do PL são da data da carteira. Confira sempre no documento original.</p>
 </main>"""
         url = f"cra/{chave}/"
         (destino / chave).mkdir(parents=True, exist_ok=True)
         (destino / chave / "index.html").write_text(pagina(
             url, f"CRA {nome_op}, {sec} · Radar de Lastro",
-            f"CRA {titulo_cra}: {linha}. {len(evs)} {'evento' if len(evs) == 1 else 'eventos'} de crédito e {len(fs)} Fiagros que citam a operação.",
+            f"CRA {titulo_cra}: {linha}. {len(evs)} {'evento' if len(evs) == 1 else 'eventos'} de crédito e {len(fs)} Fiagros ligados à operação.",
             corpo, "", nav="fiagro"))
         urls.append(url)
         busca.append({"t": "c", "tp": "CRA", "k": titulo_cra if titulo_cra != nome_op else (topo.get("isin") or ""),

@@ -34,15 +34,15 @@ function renderHero(){
     h.textContent = base.length
       ? `${base.length} ${base.length===1?'evento de crédito':'eventos de crédito'} em ${alvoTxt()} ${per}, ${base.length===1?'ligado':'ligados'} a ${nf} ${nf===1?'fundo':'fundos'}.`
       : `Nenhum evento de crédito em ${alvoTxt()} ${per}.`;
-    s.textContent='Inadimplência, assembleias, waivers e outros eventos publicados pelas securitizadoras, ligados aos FIIs que têm cada CRI na carteira e aos Fiagros que citam cada CRA no relatório gerencial.';
+    s.textContent='Inadimplência, assembleias, waivers e outros eventos publicados pelas securitizadoras, ligados aos FIIs e Fiagros que têm cada título na carteira.';
   }
 }
 
 function chips(e){
   const fs=fundosVisiveis(e).slice().sort((a,b)=>(S.carteira.has(b.cnpj_fundo)-S.carteira.has(a.cnpj_fundo))||((b.pct_pl||0)-(a.pct_pl||0)));
   const vis=fs.slice(0,4);
-  let h=vis.map(f=>`<span class="chip${S.carteira.has(f.cnpj_fundo)?' mine':''}"><b class="${f.ticker?'tk':''}">${esc(rotulo(f))}</b>${ehFiagro(f)?'<em>Fiagro</em>':f.ticker?'':'<em>balcão</em>'}<span>${ehFiagro(f)?(f.metodo==='codigo'?'código citado':'devedor citado'):pct(f.pct_pl)}</span></span>`).join('');
-  if(!fs.length && lastroDe(e)==='CRA') h='<span class="chip vazio"><span>Nenhum Fiagro citou esta operação</span></span>';
+  let h=vis.map(f=>`<span class="chip${S.carteira.has(f.cnpj_fundo)?' mine':''}"><b class="${f.ticker?'tk':''}">${esc(rotulo(f))}</b>${ehFiagro(f)?'<em>Fiagro</em>':f.ticker?'':'<em>balcão</em>'}<span>${f.pct_pl!=null?pct(f.pct_pl):(f.metodo==='codigo'?'código citado':'devedor citado')}</span></span>`).join('');
+  if(!fs.length && lastroDe(e)==='CRA') h='<span class="chip vazio"><span>Nenhum Fiagro identificado</span></span>';
   if(fs.length>vis.length) h+=`<span class="chip"><span>mais ${fs.length-vis.length}</span></span>`;
   return h;
 }
@@ -50,8 +50,8 @@ function chips(e){
 function linha(e){
   const fs=fundosVisiveis(e).slice().sort((a,b)=>(b.pct_pl||0)-(a.pct_pl||0));
   const lista=fs.length?fs:e.fundos;
-  const fiis=lista.filter(f=>!ehFiagro(f)), fgs=lista.filter(ehFiagro);
-  const maior=fiis[0]?.pct_pl, d=dia(e.data), tit=lastroDe(e);
+  const fiis=lista.filter(f=>!ehFiagro(f)), fgc=lista.filter(f=>ehFiagro(f)&&f.metodo==='carteira'), fgs=lista.filter(f=>ehFiagro(f)&&f.metodo!=='carteira');
+  const maior=lista.find(f=>f.pct_pl!=null)?.pct_pl, d=dia(e.data), tit=lastroDe(e);
   const historico=e.historico.slice(0,3).map(x=>`<a class="btn" href="${esc(x.url)}" target="_blank" rel="noopener noreferrer">${esc(x.especie)} de ${dataCurta(x.data)}</a>`).join('');
   return `<li><details class="ev" id="${e.id}">
     <summary>
@@ -72,17 +72,22 @@ function linha(e){
         ${fiis.map(f=>`<tr><td><a href="${esc(urlFundo(f))}" style="color:inherit"><b class="${f.ticker?'tk':''}">${esc(rotulo(f))}</b></a><small>${f.ticker?esc(nomeCurto(f.fundo)):'Sem negociação em bolsa'}</small></td><td>${esc(gestoraCurta(f.gestor))}</td><td class="num">${brl(f.valor)}</td><td class="num"><b>${pct(f.pct_pl)}</b></td></tr>`).join('')}
         </tbody></table></div>
       </div>`:''}
-      ${fgs.length?`<div><h3>Fiagros que citam esta operação no relatório gerencial</h3>
+      ${fgc.length?`<div><h3>Fiagros com esse CRA na carteira</h3>
+        <div class="tbl-wrap"><table><thead><tr><th>Fiagro</th><th>Gestora</th><th class="num">Valor</th><th class="num">% do PL</th></tr></thead><tbody>
+        ${fgc.map(f=>`<tr><td><a href="${esc(urlFundo(f))}" style="color:inherit"><b class="${f.ticker?'tk':''}">${esc(rotulo(f))}</b></a><small>${esc(f.trecho)}</small></td><td>${esc(gestoraCurta(f.gestor))}</td><td class="num">${brl(f.valor)}</td><td class="num"><b>${pct(f.pct_pl)}</b></td></tr>`).join('')}
+        </tbody></table></div>
+      </div>`:''}
+      ${fgs.length?`<div><h3>${fgc.length?'Outros Fiagros que citam':'Fiagros que citam'} esta operação no relatório gerencial</h3>
         <div class="tbl-wrap"><table><thead><tr><th>Fiagro</th><th>Trecho do relatório</th></tr></thead><tbody>
         ${fgs.map(f=>`<tr><td><a href="${esc(urlFundo(f))}" style="color:inherit"><b class="${f.ticker?'tk':''}">${esc(rotulo(f))}</b></a><small>${esc(gestoraCurta(f.gestor))}${f.cra_pl?', '+pct(f.cra_pl)+' do PL em CRA':''}</small></td><td><small class="quote">${esc(f.trecho)}</small><small>${f.metodo==='codigo'?'Código do título citado':'Nome do devedor citado; pode ser outra série'}${f.ref?', relatório de '+esc(f.ref):''}</small></td></tr>`).join('')}
         </tbody></table></div>
       </div>`:''}
-      ${!lista.length?`<div><h3>Fundos expostos</h3><p>Nenhum Fiagro citou esta operação no relatório gerencial mais recente. A CVM não divulga quais CRAs cada Fiagro tem, então o CRA pode estar em fundos que não detalham a carteira no relatório.</p></div>`:''}
+      ${!lista.length?`<div><h3>Fundos expostos</h3><p>Nenhum Fiagro tem esta operação na última carteira entregue à CVM, nem a cita no relatório gerencial. A carteira dos Fiagros sai com alguns meses de atraso e sem o código dos títulos, então nem todo CRA pode ser identificado.</p></div>`:''}
       <div class="links"><a class="btn primary" href="${esc(e.url)}" target="_blank" rel="noopener noreferrer">${ICON.ext}Abrir documento no Fundos.Net</a>${e.pag?`<a class="btn" href="${esc(e.pag)}">Página do ${tit}</a>`:''}${historico}</div>
       <p class="note">${fiis.length ? (e.cruzamento==='emissao_serie'
         ? 'O documento não cita o código IF; ligamos aos FIIs por securitizadora, emissão e série. Confira no documento antes de tirar conclusões.'
         : 'Ligado aos FIIs pelo código IF '+esc(e.codigos_if.slice(0,3).join(', '))+'.')+' Carteira de referência: '+dia(DATA.carteira.data_referencia).toLocaleDateString('pt-BR')+'.'
-        : 'Os Fiagros foram ligados pelo relatório gerencial mais recente de cada um, que pode citar outra série do mesmo devedor. Confira no documento antes de tirar conclusões.'}</p>
+        : ''}${fgc.length?' Fiagros “na carteira”: composição da carteira (CDA) entregue à CVM, cruzada com o informe mensal das securitizadoras pelo vencimento e pela taxa; valor e % do PL são da data dessa carteira.':''}${fgs.length?' Fiagros “que citam”: relatório gerencial mais recente, que pode citar outra série do mesmo devedor.':''} Confira no documento antes de tirar conclusões.</p>
     </div>
   </details></li>`;
 }

@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-GR6205dMyO36xbMZ+nRLI1uJ6+JMeLfngTLb6Tyq1PM=' https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self' https://cloudflareinsights.com; object-src 'none'; base-uri 'self'; form-action 'self'; upgrade-insecure-requests">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-84Mq+yKWHVh7SkmgN4Z6fieTHUEUbSeEDpLm2mfxzSE=' https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self' https://cloudflareinsights.com; object-src 'none'; base-uri 'self'; form-action 'self'; upgrade-insecure-requests">
 <meta name="referrer" content="strict-origin-when-cross-origin">
 <title>Próximas assembleias · Radar de Lastro</title>
 <meta name="description" content="Próximas assembleias de titulares de CRIs e CRAs, com data, pauta e os FIIs e Fiagros ligados a cada operação.">
@@ -119,7 +119,7 @@ function item(e, dataRef, extra){
     <div class="cal"><b>${d.getDate()}</b><span>${MESES[d.getMonth()]}</span></div>
     <div><div class="ev-top"><span class="tag ${e.severidade}">${SEV[e.severidade]}</span><span class="what">${esc(e.tipo)}</span></div>
       <div class="who">${esc(opNome(e.operacao))}, ${lastroDe(e)} da ${e.emissao}ª emissão, ${esc(secNome(e.securitizadora))}</div>
-      <div class="chips">${fs.slice(0,5).map(f=>`<span class="chip${S.carteira.has(f.cnpj_fundo)?' mine':''}"><b class="${f.ticker?'tk':''}">${esc(rotulo(f))}</b>${ehFiagro(f)?'<em>Fiagro</em>':''}<span>${ehFiagro(f)?'citado':pct(f.pct_pl)}</span></span>`).join('')}${fs.length>5?`<span class="chip"><span>mais ${fs.length-5}</span></span>`:''}${!fs.length?'<span class="chip vazio"><span>Nenhum Fiagro citou esta operação</span></span>':''}</div></div>
+      <div class="chips">${fs.slice(0,5).map(f=>`<span class="chip${S.carteira.has(f.cnpj_fundo)?' mine':''}"><b class="${f.ticker?'tk':''}">${esc(rotulo(f))}</b>${ehFiagro(f)?'<em>Fiagro</em>':''}<span>${f.pct_pl!=null?pct(f.pct_pl):'citado'}</span></span>`).join('')}${fs.length>5?`<span class="chip"><span>mais ${fs.length-5}</span></span>`:''}${!fs.length?'<span class="chip vazio"><span>Nenhum Fiagro identificado</span></span>':''}</div></div>
     ${extra}
   </a>`;
 }

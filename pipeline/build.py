@@ -6,7 +6,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from classify import classificar
-from match import CRA_RE, Indice, IndiceGerencial, expor
+from match import CRA_RE, Indice, IndiceCarteiraFiagro, IndiceGerencial, expor
 from paginas_fiagro import chave_cra, gerar as gerar_paginas_fiagro, gerar_cras, mapa_slugs_fiagro
 from paginas_fundos import gerar as gerar_paginas_fundos, mapa_slugs
 from paginas_cri import EMISSORES, emissores_por_cnpj, escrever_busca, gerar as gerar_paginas_cri
@@ -51,6 +51,7 @@ def main():
     fg = json.loads(arq_fiagro.read_text()) if arq_fiagro.exists() else {"data_referencia": None, "fundos": []}
     idx = Indice(h["posicoes"])
     gidx = IndiceGerencial(fg["fundos"], ROOT / "raw" / "fiagro" / "gerencial")
+    cidx = IndiceCarteiraFiagro(fg["fundos"])
     slugs = mapa_slugs(h)
     slugs_fg = mapa_slugs_fiagro(fg)
 
@@ -65,7 +66,13 @@ def main():
             stats["sem_texto"] += 1
         d.setdefault("tipo", "CRI")
         pos, metodo = idx.casar(d, texto or None)
-        citam = gidx.casar(d, texto or None)
+        # Fiagros: primeiro a carteira (CDA cruzado com o informe das securitizadoras), que dá valor e
+        # % do PL; depois o relatório gerencial, para os fundos que a carteira não alcança
+        na_carteira = cidx.casar(d, texto or None)
+        ja = {a["fiagro"]["cnpj_fundo"] for a in na_carteira}
+        citam = na_carteira + [a for a in gidx.casar(d, texto or None) if a["fiagro"]["cnpj_fundo"] not in ja]
+        if na_carteira:
+            stats["fiagro_carteira"] += 1
         if citam:
             stats["citados_gerencial"] += 1
         # CRI sem FII nem Fiagro ligado fica de fora; CRA entra mesmo sem Fiagro identificado, porque a
@@ -95,9 +102,10 @@ def main():
             "fundos": [{**{k: f.get(k) for k in ("cnpj_fundo", "ticker", "fundo", "listado", "gestor", "valor", "pct_pl")},
                         "slug": slugs.get(f["cnpj_fundo"])} for f in fundos]
                       + [{"cnpj_fundo": a["fiagro"]["cnpj_fundo"], "ticker": a["fiagro"]["ticker"], "fundo": a["fiagro"]["fundo"],
-                          "listado": a["fiagro"]["listado"], "gestor": a["fiagro"]["gestor"], "valor": None, "pct_pl": None,
+                          "listado": a["fiagro"]["listado"], "gestor": a["fiagro"]["gestor"],
+                          "valor": a.get("valor"), "pct_pl": a.get("pct_pl"),
                           "slug": slugs_fg.get(a["fiagro"]["cnpj_fundo"]), "tf": "fiagro", "metodo": a["metodo"],
-                          "trecho": a["trecho"], "ref": (a["fiagro"].get("gerencial") or {}).get("referencia"),
+                          "trecho": a["trecho"], "ref": a.get("ref") or (a["fiagro"].get("gerencial") or {}).get("referencia"),
                           "cra_pl": round(a["fiagro"]["cra"] / a["fiagro"]["pl"], 4) if a["fiagro"].get("pl") else None}
                          for a in citam if a["fiagro"]["cnpj_fundo"] not in {f["cnpj_fundo"] for f in fundos}],
         })
@@ -153,7 +161,8 @@ def main():
         "fiagro": {"data_referencia": fg["data_referencia"], "fundos": len(fg["fundos"]),
                    "com_cra": sum(1 for f in fg["fundos"] if f["cra"] > 0),
                    "valor_cra": round(sum(f["cra"] for f in fg["fundos"]), 2),
-                   "com_relatorio": sum(1 for f in fg["fundos"] if (f.get("gerencial") or {}).get("valido"))},
+                   "com_relatorio": sum(1 for f in fg["fundos"] if (f.get("gerencial") or {}).get("valido")),
+                   "com_carteira": sum(1 for f in fg["fundos"] if (f.get("cda") or {}).get("cras"))},
         "estatisticas": dict(stats),
         "eventos": eventos,
         "fundos": sorted(fundos.values(), key=lambda x: -(x["expo"]["crit"] * 10 + x["expo"]["warn"] * 3 + x["expo"]["mon"])),

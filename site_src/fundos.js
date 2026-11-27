@@ -7,7 +7,7 @@ function linhas(){
   if(P.mine) fs=fs.filter(f=>S.carteira.has(f.cnpj_fundo));
   if(q) fs=fs.filter(f=>((f.ticker||'')+' '+f.fundo+' '+(f.gestor||'')+' '+gestoraCurta(f.gestor)).toLowerCase().includes(q));
   // Fiagros não têm % do PL por título: nas colunas de severidade entram as contagens de eventos
-  const v=f=>P.ordem==='total'?f.total:P.ordem==='eventos'?f.eventos:(ehFiagro(f)?f.n[P.ordem]/1000:f.expo[P.ordem]);
+  const v=f=>P.ordem==='total'?f.total:P.ordem==='eventos'?f.eventos:(ehFiagro(f)&&!f.total?f.n[P.ordem]/1000:f.expo[P.ordem]);
   return fs.sort((a,b)=>v(b)-v(a)||b.total-a.total||b.eventos-a.eventos);
 }
 
@@ -25,10 +25,10 @@ function render(){
   corpo.innerHTML=fs.map(f=>{
     const m=S.carteira.has(f.cnpj_fundo), alvo=urlFundo(f);
     return `<tr data-href="${esc(alvo)}">
-      <td><a href="${esc(alvo)}"><b class="${f.ticker?'tk':''}">${esc(rotulo(f))}</b></a><small>${ehFiagro(f)?'Fiagro'+(f.ticker?', '+esc(nomeCurto(f.fundo)):''):f.ticker?esc(nomeCurto(f.fundo)):'Sem negociação em bolsa'}</small></td>
+      <td><a href="${esc(alvo)}"><b class="${f.ticker?'tk':''}">${esc(rotulo(f))}</b></a><small>${ehFiagro(f)?'Fiagro'+(f.ticker?', '+esc(nomeCurto(f.fundo)):'')+(f.total?'':', sem valor por título'):f.ticker?esc(nomeCurto(f.fundo)):'Sem negociação em bolsa'}</small></td>
       <td>${esc(gestoraCurta(f.gestor))}</td>
       <td class="num">${f.eventos}</td>
-      ${ehFiagro(f)
+      ${ehFiagro(f) && !f.total
         ? ['crit','warn','mon'].map(s=>`<td class="num">${f.n[s]?f.n[s]+(f.n[s]===1?' evento':' eventos'):'–'}</td>`).join('')+`<td class="num"><small>${f.cra_pl?pct(f.cra_pl)+' do PL em CRA':'sem % por título'}</small></td>`
         : `<td class="num">${f.expo.crit?pct(f.expo.crit):'–'}</td>
       <td class="num">${f.expo.warn?pct(f.expo.warn):'–'}</td>

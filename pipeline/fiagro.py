@@ -23,7 +23,9 @@ from pathlib import Path
 import pandas as pd
 import requests
 
-from holdings import aplicar_manuais, limpo, ticker_do_isin
+import cda_fiagro
+
+from holdings import aplicar_manuais, gestores, limpo, ticker_do_isin
 
 BASE = "https://dados.cvm.gov.br/dados/FIAGRO/DOC/INF_MENSAL/DADOS"
 ROOT = Path(__file__).resolve().parent.parent
@@ -33,6 +35,7 @@ OUT = ROOT / "data" / "fiagro.json"
 MESES_INFORME = 6           # meses de informe lidos (o ISIN às vezes só aparece em meses anteriores)
 RECHECAR_DIAS = 3           # intervalo mínimo entre consultas ao Fundos.Net por fundo
 IDADE_MAX_RELATORIO = 150   # relatório gerencial mais antigo que isso não serve para ligar eventos
+ORCAMENTO_CDA_S = 3 * 60     # idem, para a composição da carteira (CDA)
 ORCAMENTO_S = 6 * 60        # tempo máximo de consultas ao Fundos.Net por rodada (o resto fica para a próxima)
 
 # colunas do informe mensal mostradas na composição (rótulo, coluna)
@@ -100,6 +103,21 @@ def montar(hoje: date) -> list[dict]:
     limite = (pd.Timestamp(ult["Data_Referencia"].max()) - pd.DateOffset(months=4)).strftime("%Y-%m-%d")
     ult = ult[ult["Data_Referencia"] >= limite]  # só quem segue entregando o informe
 
+    # o informe mensal abrevia nomes ("FUNDO DE I. NAS C. P. DO A.") e às vezes repete o nome do fundo no
+    # campo do gestor; o cadastro de fundos da CVM (baixado pelo holdings.py) tem os nomes completos
+    nomes, ges = {}, {}
+    zcad = ROOT / "raw" / "cvm" / "registro_fundo_classe.zip"
+    if zcad.exists():
+        try:
+            ges = gestores(zcad)
+            with zipfile.ZipFile(zcad) as z, z.open("registro_classe.csv") as f:
+                rc = pd.read_csv(io.TextIOWrapper(f, encoding="latin1"), sep=";", dtype=str,
+                                 usecols=["CNPJ_Classe", "Denominacao_Social", "Data_Inicio_Situacao"])
+            rc = rc.sort_values("Data_Inicio_Situacao")
+            nomes = {so_digitos(c).zfill(14): n for c, n in zip(rc["CNPJ_Classe"], rc["Denominacao_Social"]) if isinstance(n, str)}
+        except Exception as e:
+            print(f"cadastro da CVM ilegível: {e}", file=sys.stderr)
+
     cnpjs = [cnpj_fmt(c) for c in ult["CNPJ_Classe"]]
     tickers = aplicar_manuais(cnpjs, [ticker_do_isin(isin.get(c)) for c in ult["CNPJ_Classe"]])
     fundos = []
@@ -111,9 +129,13 @@ def montar(hoje: date) -> list[dict]:
         pl = num(r["Patrimonio_Liquido"])
         comp = {rot: round(num(r[col]), 2) for rot, col in COMPOSICAO if num(r[col]) > 0}
         prazo = num(r["Total_Ativos_Prazo_Vencimento"])
+        d14 = so_digitos(cnpj).zfill(14)
+        gestor = limpo(r["Nome_Gestor"])
+        if d14 in ges and (not gestor or gestor == limpo(r["Nome_Classe"]) or ". " in gestor):
+            gestor = limpo(ges[d14][0])
         fundos.append({
-            "cnpj_fundo": cnpj, "ticker": tk, "fundo": limpo(r["Nome_Classe"]),
-            "gestor": limpo(r["Nome_Gestor"]), "cnpj_gestor": so_digitos(r["CNPJ_Gestor"]) or None,
+            "cnpj_fundo": cnpj, "ticker": tk, "fundo": limpo(nomes.get(d14) or r["Nome_Classe"]),
+            "gestor": gestor, "cnpj_gestor": so_digitos(r["CNPJ_Gestor"]) or None,
             "administrador": limpo(r["Nome_Administrador"]), "mercado": limpo(r["Mercado_Negociacao"]),
             "listado": bool(tk), "pl": round(pl, 2) or None, "data_pl": r["Data_Referencia"][:7],
             "ativo": round(num(r["Valor_Ativo"]), 2) or None, "cra": round(cra, 2), "cri": round(cri, 2),
@@ -192,7 +214,16 @@ def main():
     hoje = date.today()
     antigo = json.loads(OUT.read_text()) if OUT.exists() else {}
     fundos = montar(hoje)
-    atualizar_gerenciais(fundos, antigo, hoje, consultar="--sem-relatorios" not in sys.argv)
+    consultar = "--sem-relatorios" not in sys.argv
+    atualizar_gerenciais(fundos, antigo, hoje, consultar=consultar)
+    # carteira (CDA) + informe das securitizadoras: código e peso de cada CRA no PL
+    from fnet import BASE as FNET, Fnet
+    (RAW / "tmp").mkdir(parents=True, exist_ok=True)
+    cda_fiagro.atualizar_cdas(fundos, antigo, hoje, lambda: Fnet(pausa=0.5), FNET, RAW / "tmp", ORCAMENTO_CDA_S, consultar)
+    try:
+        cda_fiagro.aplicar_codigos(fundos, cda_fiagro.indice_securitizadoras(RAW, hoje))
+    except Exception as e:  # sem o informe das securitizadoras, os CRAs ficam sem código nesta rodada
+        print(f"informe das securitizadoras indisponível: {e}", file=sys.stderr)
     ref = max((f["data_pl"] for f in fundos), default=None)
     res = {"data_referencia": ref, "gerado_em": hoje.isoformat(), "fundos": fundos}
     OUT.parent.mkdir(exist_ok=True)

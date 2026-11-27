@@ -233,6 +233,37 @@ class IndiceGerencial:
         return achados
 
 
+class IndiceCarteiraFiagro:
+    """CRAs da carteira (CDA) dos Fiagros, já com código, para ligar documentos com valor e % do PL."""
+
+    def __init__(self, fiagros: list[dict]):
+        self.por_codigo = {}
+        for f in fiagros:
+            cda = f.get("cda") or {}
+            for cra in cda.get("cras", []):
+                for cod in cra.get("codigos_emissao") or []:
+                    self.por_codigo.setdefault(cod, []).append((f, cda, cra))
+
+    def casar(self, doc, texto: str | None = None) -> list[dict]:
+        if doc.get("tipo") != "CRA":
+            return []
+        chaves = set(CRA_RE.findall(texto or "")) | {c for c in (doc.get("isin"), doc.get("codigo_if")) if c}
+        por_fundo = {}
+        for cod in chaves:
+            for f, cda, cra in self.por_codigo.get(cod, []):
+                x = por_fundo.setdefault(f["cnpj_fundo"], {"fiagro": f, "cda": cda, "cras": {}})
+                x["cras"][id(cra)] = cra
+        achados = []
+        for x in por_fundo.values():
+            valor = sum(c["valor"] for c in x["cras"].values())
+            pl = x["cda"].get("pl") or x["fiagro"].get("pl")
+            cods = sorted({c for cra in x["cras"].values() for c in cra.get("codigos", []) if c.startswith("CRA")})
+            achados.append({"fiagro": x["fiagro"], "metodo": "carteira", "valor": round(valor, 2),
+                            "pct_pl": round(valor / pl, 6) if pl else None, "ref": x["cda"].get("referencia"),
+                            "trecho": f"Carteira de {x['cda'].get('referencia')}: {', '.join(cods) or 'CRA desta emissão'}"})
+        return achados
+
+
 def expor(posicoes):
     """Agrupa posições casadas por fundo, com % do PL."""
     por_fundo = {}
