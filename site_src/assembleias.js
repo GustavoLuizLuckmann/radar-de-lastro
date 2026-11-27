@@ -1,11 +1,11 @@
 const P = { q:'', mine:store.get('rl-mine',false) };
 
 function passa(e){
-  if(!fundosVisiveis(e).length) return false;
+  if(!visivel(e)) return false;
   if(P.mine && !afetaMeus(e)) return false;
   const q=P.q.trim().toLowerCase();
   if(q){
-    const hay=[e.tipo,e.operacao,e.securitizadora,secNome(e.securitizadora),...e.codigos_if,...e.fundos.map(f=>(f.ticker||'')+' '+f.fundo+' '+(f.gestor||''))].join(' ').toLowerCase();
+    const hay=[e.tipo,lastroDe(e),e.isin,e.operacao,e.securitizadora,secNome(e.securitizadora),...e.codigos_if,...e.fundos.map(f=>(f.ticker||'')+' '+f.fundo+' '+(f.gestor||''))].join(' ').toLowerCase();
     if(!hay.includes(q)) return false;
   }
   return true;
@@ -16,8 +16,8 @@ function item(e, dataRef, extra){
   return `<a class="ag-row" href="/#${e.id}">
     <div class="cal"><b>${d.getDate()}</b><span>${MESES[d.getMonth()]}</span></div>
     <div><div class="ev-top"><span class="tag ${e.severidade}">${SEV[e.severidade]}</span><span class="what">${esc(e.tipo)}</span></div>
-      <div class="who">${esc(opNome(e.operacao))}, CRI da ${e.emissao}ª emissão, ${esc(secNome(e.securitizadora))}</div>
-      <div class="chips">${fs.slice(0,5).map(f=>`<span class="chip${S.carteira.has(f.cnpj_fundo)?' mine':''}"><b class="${f.ticker?'tk':''}">${esc(rotulo(f))}</b><span>${pct(f.pct_pl)}</span></span>`).join('')}${fs.length>5?`<span class="chip"><span>mais ${fs.length-5}</span></span>`:''}</div></div>
+      <div class="who">${esc(opNome(e.operacao))}, ${lastroDe(e)} da ${e.emissao}ª emissão, ${esc(secNome(e.securitizadora))}</div>
+      <div class="chips">${fs.slice(0,5).map(f=>`<span class="chip${S.carteira.has(f.cnpj_fundo)?' mine':''}"><b class="${f.ticker?'tk':''}">${esc(rotulo(f))}</b>${ehFiagro(f)?'<em>Fiagro</em>':''}<span>${ehFiagro(f)?'citado':pct(f.pct_pl)}</span></span>`).join('')}${fs.length>5?`<span class="chip"><span>mais ${fs.length-5}</span></span>`:''}${!fs.length?'<span class="chip vazio"><span>Nenhum Fiagro citou esta operação</span></span>':''}</div></div>
     ${extra}
   </a>`;
 }
@@ -45,5 +45,6 @@ carregar().then(()=>{
   const mine=document.getElementById('mine'); mine.checked=P.mine;
   mine.addEventListener('change',()=>{P.mine=mine.checked; store.set('rl-mine',P.mine); render();});
   ligarBolsa(document.getElementById('listed'), render);
+  ligarLastro(document.getElementById('lastro'), render);
   render();
 }).catch(falhaCarga);

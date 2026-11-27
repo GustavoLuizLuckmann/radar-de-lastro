@@ -1,4 +1,4 @@
-"""Lista documentos de CRI no Fundos.Net e mantém um histórico acumulado dos metadados.
+"""Lista documentos de CRI e CRA no Fundos.Net e mantém um histórico acumulado dos metadados.
 
 Cada execução busca os últimos `dias` e junta ao histórico já salvo. Se o histórico estiver vazio
 ou começar depois de HISTORICO_MINIMO dias atrás, busca esse período inteiro uma vez (carga inicial).
@@ -27,7 +27,7 @@ def buscar(api: Fnet, inicio: date, fim: date) -> dict:
         n = 0
         for item in api.pesquisar(cat, inicio, fim):
             desc = ler_descricao(item.get("descricaoFundo", ""))
-            if not desc or desc["tipo"] != "CRI":
+            if not desc:  # descrição fora do padrão "SEC CRI/CRA Emissão: N Série: N"
                 continue
             if item.get("status", "").startswith("C"):  # documento cancelado
                 continue
@@ -39,7 +39,7 @@ def buscar(api: Fnet, inicio: date, fim: date) -> dict:
                 "alta_prioridade": bool(item.get("altaPrioridade")), **desc,
             }
             n += 1
-        print(f"{nome}: {n} documentos de CRI ({inicio:%d/%m} a {fim:%d/%m})", file=sys.stderr)
+        print(f"{nome}: {n} documentos de CRI e CRA ({inicio:%d/%m} a {fim:%d/%m})", file=sys.stderr)
     return docs
 
 

@@ -3,10 +3,12 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-GR6205dMyO36xbMZ+nRLI1uJ6+JMeLfngTLb6Tyq1PM=' https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self' https://cloudflareinsights.com; object-src 'none'; base-uri 'self'; form-action 'self'; upgrade-insecure-requests">
+<meta name="referrer" content="strict-origin-when-cross-origin">
 <title>Próximas assembleias · Radar de Lastro</title>
-<meta name="description" content="Próximas assembleias de titulares de CRIs que estão na carteira dos FIIs, com data, pauta e fundos expostos.">
+<meta name="description" content="Próximas assembleias de titulares de CRIs e CRAs, com data, pauta e os FIIs e Fiagros ligados a cada operação.">
 <meta property="og:title" content="Próximas assembleias · Radar de Lastro">
-<meta property="og:description" content="Próximas assembleias de titulares de CRIs que estão na carteira dos FIIs, com data, pauta e fundos expostos.">
+<meta property="og:description" content="Próximas assembleias de titulares de CRIs e CRAs, com data, pauta e os FIIs e Fiagros ligados a cada operação.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://radardelastro.com.br/assembleias.html">
 <link rel="canonical" href="https://radardelastro.com.br/assembleias.html">
@@ -34,14 +36,14 @@
         <b>Radar de Lastro</b>
       </a>
       <form class="gsearch" role="search" action="/" method="get" autocomplete="off">
-        <label for="gq" class="sr">Buscar fundo ou CRI</label>
+        <label for="gq" class="sr">Buscar fundo, CRI ou CRA</label>
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
-        <input id="gq" name="q" type="search" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="gq-list" placeholder="Buscar FII ou CRI">
+        <input id="gq" name="q" type="search" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="gq-list" placeholder="Buscar FII, Fiagro, CRI ou CRA">
         <kbd aria-hidden="true">/</kbd>
         <ul id="gq-list" class="gq-list" role="listbox" aria-label="Resultados" hidden></ul>
       </form>
       <nav class="nav" aria-label="Páginas">
-        <a href="/">Eventos</a><a href="/fundos.html">Fundos expostos</a><a href="/assembleias.html" aria-current="page">Próximas assembleias</a><a href="/como-funciona.html">Como funciona</a>
+        <a href="/">Eventos</a><a href="/fundos.html">Fundos expostos</a><a href="/fiagro/">Fiagros</a><a href="/assembleias.html" aria-current="page">Próximas assembleias</a><a href="/como-funciona.html">Como funciona</a>
       </nav>
     </div>
   </div>
@@ -49,7 +51,7 @@
 <section class="pagehead" id="conteudo">
   <div class="wrap">
       <h1 id="headline">Próximas assembleias</h1>
-      <p id="subline">Assembleias de titulares de CRIs que estão na carteira de FIIs, convocadas para tratar de crédito, de hoje em diante.</p>
+      <p id="subline">Assembleias de titulares de CRIs e CRAs, convocadas para tratar de crédito, com os FIIs e Fiagros ligados a cada operação.</p>
       <p class="updated" id="updated"></p>
   </div>
 </section>
@@ -58,12 +60,13 @@
   <div class="wrap frow" role="search">
     <label class="search" for="q"><span class="sr">Buscar</span>
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
-      <input id="q" type="search" placeholder="Buscar FII, devedor ou securitizadora" autocomplete="off">
+      <input id="q" type="search" placeholder="Buscar fundo, devedor ou securitizadora" autocomplete="off">
     </label>
     <select id="gestora" class="sel" aria-label="Filtrar por gestora"><option value="">Todas as gestoras</option></select>
   </div>
   <div class="wrap frow">
     <div class="periodo" id="periodo"></div>
+    <div class="sevs" id="lastro" role="group" aria-label="Tipo de título"></div>
     <label class="tgl" for="mine"><input id="mine" type="checkbox">Só meus fundos</label>
     <label class="tgl" for="listed"><input id="listed" type="checkbox">Só negociados em bolsa</label>
   </div>
@@ -86,10 +89,10 @@
     <div class="cols">
       <div class="col-marca">
         <a class="brand" href="/"><img src="/assets/logo-emblema.png" alt="" width="36" height="36"><b>Radar de Lastro</b></a>
-        <p>Eventos de crédito nos CRIs da carteira dos FIIs, com dados públicos do Fundos.Net e da CVM, atualizados de hora em hora.</p>
+        <p>Eventos de crédito nos CRIs dos FIIs e nos CRAs dos Fiagros, com dados públicos do Fundos.Net e da CVM, atualizados de hora em hora.</p>
       </div>
-      <nav aria-label="Radar"><h2>Radar</h2><a href="/">Eventos</a><a href="/fundos.html">Fundos expostos</a><a href="/assembleias.html">Próximas assembleias</a><a href="/fii/">Todos os FIIs com CRI</a></nav>
-      <nav aria-label="Dados"><h2>Dados</h2><a href="/como-funciona.html">Como funciona</a><a href="/como-funciona.html#limitacoes">Limitações</a><a href="https://dados.cvm.gov.br/" target="_blank" rel="noopener">Dados abertos da CVM</a><a href="https://fnet.bmfbovespa.com.br/fnet/publico/abrirGerenciadorDocumentosCVM" target="_blank" rel="noopener">Fundos.Net</a></nav>
+      <nav aria-label="Radar"><h2>Radar</h2><a href="/">Eventos</a><a href="/fundos.html">Fundos expostos</a><a href="/assembleias.html">Próximas assembleias</a><a href="/fii/">Todos os FIIs</a><a href="/fiagro/">Todos os Fiagros</a></nav>
+      <nav aria-label="Dados"><h2>Dados</h2><a href="/como-funciona.html">Como funciona</a><a href="/como-funciona.html#limitacoes">Limitações</a><a href="https://dados.cvm.gov.br/" target="_blank" rel="noopener noreferrer">Dados abertos da CVM</a><a href="https://fnet.bmfbovespa.com.br/fnet/publico/abrirGerenciadorDocumentosCVM" target="_blank" rel="noopener noreferrer">Fundos.Net</a></nav>
       <nav aria-label="Institucional"><h2>Institucional</h2><a href="/sobre.html">Sobre</a><a href="/termos.html">Termos de uso</a><a href="/privacidade.html">Privacidade</a></nav>
     </div>
     <div class="legal" id="foot"><p>O Radar de Lastro reúne informação pública e não faz recomendação de investimento. Não tem relação com a B3 nem com a CVM.</p></div>
@@ -100,11 +103,11 @@
 const P = { q:'', mine:store.get('rl-mine',false) };
 
 function passa(e){
-  if(!fundosVisiveis(e).length) return false;
+  if(!visivel(e)) return false;
   if(P.mine && !afetaMeus(e)) return false;
   const q=P.q.trim().toLowerCase();
   if(q){
-    const hay=[e.tipo,e.operacao,e.securitizadora,secNome(e.securitizadora),...e.codigos_if,...e.fundos.map(f=>(f.ticker||'')+' '+f.fundo+' '+(f.gestor||''))].join(' ').toLowerCase();
+    const hay=[e.tipo,lastroDe(e),e.isin,e.operacao,e.securitizadora,secNome(e.securitizadora),...e.codigos_if,...e.fundos.map(f=>(f.ticker||'')+' '+f.fundo+' '+(f.gestor||''))].join(' ').toLowerCase();
     if(!hay.includes(q)) return false;
   }
   return true;
@@ -115,8 +118,8 @@ function item(e, dataRef, extra){
   return `<a class="ag-row" href="/#${e.id}">
     <div class="cal"><b>${d.getDate()}</b><span>${MESES[d.getMonth()]}</span></div>
     <div><div class="ev-top"><span class="tag ${e.severidade}">${SEV[e.severidade]}</span><span class="what">${esc(e.tipo)}</span></div>
-      <div class="who">${esc(opNome(e.operacao))}, CRI da ${e.emissao}ª emissão, ${esc(secNome(e.securitizadora))}</div>
-      <div class="chips">${fs.slice(0,5).map(f=>`<span class="chip${S.carteira.has(f.cnpj_fundo)?' mine':''}"><b class="${f.ticker?'tk':''}">${esc(rotulo(f))}</b><span>${pct(f.pct_pl)}</span></span>`).join('')}${fs.length>5?`<span class="chip"><span>mais ${fs.length-5}</span></span>`:''}</div></div>
+      <div class="who">${esc(opNome(e.operacao))}, ${lastroDe(e)} da ${e.emissao}ª emissão, ${esc(secNome(e.securitizadora))}</div>
+      <div class="chips">${fs.slice(0,5).map(f=>`<span class="chip${S.carteira.has(f.cnpj_fundo)?' mine':''}"><b class="${f.ticker?'tk':''}">${esc(rotulo(f))}</b>${ehFiagro(f)?'<em>Fiagro</em>':''}<span>${ehFiagro(f)?'citado':pct(f.pct_pl)}</span></span>`).join('')}${fs.length>5?`<span class="chip"><span>mais ${fs.length-5}</span></span>`:''}${!fs.length?'<span class="chip vazio"><span>Nenhum Fiagro citou esta operação</span></span>':''}</div></div>
     ${extra}
   </a>`;
 }
@@ -144,6 +147,7 @@ carregar().then(()=>{
   const mine=document.getElementById('mine'); mine.checked=P.mine;
   mine.addEventListener('change',()=>{P.mine=mine.checked; store.set('rl-mine',P.mine); render();});
   ligarBolsa(document.getElementById('listed'), render);
+  ligarLastro(document.getElementById('lastro'), render);
   render();
 }).catch(falhaCarga);
 </script>

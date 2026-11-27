@@ -36,6 +36,7 @@ const S = {
   carteira: new Set(store.get('rl-carteira', [])),
   gestora: '',
   periodo: store.get('rl-periodo', {modo:'30'}),  // modo: 'hoje' | '7' | '30' | '90' | 'datas'
+  lastro: store.get('rl-lastro', 'todos'),     // 'todos' | 'CRI' (FIIs) | 'CRA' (Fiagros)
 };
 let DATA = null;
 const FUNDOS_IDX = new Map();
@@ -53,7 +54,9 @@ function nomeCurto(n){
   const corte=s.lastIndexOf(' ',34); return s.slice(0,corte>18?corte:34)+'…';
 }
 const rotulo = f => f.ticker || nomeCurto(f.fundo);
-const urlFundo = f => f.slug ? '/fii/'+f.slug+'/' : '/?q='+encodeURIComponent(f.ticker||f.fundo);
+const urlFundo = f => f.slug ? (f.tf==='fiagro'?'/fiagro/':'/fii/')+f.slug+'/' : '/?q='+encodeURIComponent(f.ticker||f.fundo);
+const ehFiagro = f => f.tf==='fiagro';
+const lastroDe = e => e.lastro||'CRI';
 function gestoraCurta(n){
   if(!n) return 'Gestora não informada';
   let t=n.replace(/\b(LTDA|S\/?A|S\.A|EIRELI)\b\.?/gi,' ').replace(/GEST(Ã|A)O DE RECURSOS|GESTORA DE RECURSOS|ADMINISTRA(Ç|C)(Ã|A)O DE RECURSOS|ASSET MANAGEMENT|GEST(Ã|A)O E CONSULTORIA DE INVESTIMENTOS|INVESTIMENTOS E PARTICIPA(Ç|C)(Õ|O)ES|\bGESTORA\b|INVESTIMENTOS|\bDTVM\b|DISTRIBUIDORA DE T(Í|I)TULOS E VALORES MOBILI(Á|A)RIOS|CORRETORA DE T(Í|I)TULOS E VALORES MOBILI(Á|A)RIOS/gi,' ');
@@ -120,6 +123,10 @@ function montarPeriodo(el, aoMudar){
 const emBolsa = f => !!f.ticker;
 const passaFundo = f => (!S.listed || emBolsa(f)) && (!S.gestora || f.gestor===S.gestora);
 const fundosVisiveis = e => e.fundos.filter(passaFundo);
+// evento aparece se passa no filtro de lastro e tem fundo visível; CRA aparece mesmo sem Fiagro ligado,
+// porque a CVM não divulga os CRAs de cada Fiagro (some só quando há filtro de gestora)
+const passaLastro = e => S.lastro==='todos' || lastroDe(e)===S.lastro;
+const visivel = e => passaLastro(e) && (fundosVisiveis(e).length>0 || (lastroDe(e)==='CRA' && !S.gestora));
 const afetaMeus = e => e.fundos.some(f=>S.carteira.has(f.cnpj_fundo));
 function salvarCarteira(){ store.set('rl-carteira',[...S.carteira]); }
 function acharFundo(texto){
@@ -133,9 +140,9 @@ function calcExpo(eventos){
   const ORD={crit:0,warn:1,mon:2}, m=new Map();
   eventos.forEach(e=>e.fundos.forEach(f=>{
     let x=m.get(f.cnpj_fundo);
-    if(!x){ x={...f, expo:{crit:0,warn:0,mon:0}, eventos:0, ops:new Map()}; m.set(f.cnpj_fundo,x); }
-    x.eventos++;
-    const op=e.securitizadora+'|'+e.emissao+'|'+e.serie, atual=x.ops.get(op);
+    if(!x){ x={...f, expo:{crit:0,warn:0,mon:0}, n:{crit:0,warn:0,mon:0}, eventos:0, ops:new Map()}; m.set(f.cnpj_fundo,x); }
+    x.eventos++; x.n[e.severidade]++;
+    const op=lastroDe(e)+'|'+e.securitizadora+'|'+e.emissao+'|'+e.serie, atual=x.ops.get(op);
     if(f.pct_pl!=null && (!atual || ORD[e.severidade]<ORD[atual[0]])) x.ops.set(op,[e.severidade,f.pct_pl]);
   }));
   return [...m.values()].map(x=>{ x.ops.forEach(([s,p])=>x.expo[s]+=p); delete x.ops; x.total=x.expo.crit+x.expo.warn+x.expo.mon; return x; });
@@ -151,6 +158,14 @@ function montarGestoras(sel, eventos, aoMudar){
   if(!sel.dataset.ligado){ sel.dataset.ligado='1'; sel.addEventListener('change',()=>{S.gestora=sel.value; aoMudar();}); }
 }
 
+function ligarLastro(el, aoMudar){
+  const op=[['todos','Todos'],['CRI','CRI · FIIs'],['CRA','CRA · Fiagros']];
+  el.innerHTML=op.map(([v,t])=>`<button type="button" data-l="${v}" aria-pressed="${S.lastro===v}">${t}</button>`).join('');
+  el.addEventListener('click',ev=>{const b=ev.target.closest('button[data-l]'); if(!b) return;
+    S.lastro=b.dataset.l; store.set('rl-lastro',S.lastro);
+    el.querySelectorAll('button[data-l]').forEach(x=>x.setAttribute('aria-pressed',x===b)); aoMudar();});
+}
+
 function ligarBolsa(input, aoMudar){
   input.checked=S.listed;
   input.addEventListener('change',()=>{S.listed=input.checked; store.set('rl-bolsa',S.listed); aoMudar();});
@@ -161,7 +176,7 @@ function marcarNav(){} // a página atual já vem marcada no HTML gerado
 function rodape(){
   const el=document.getElementById('foot'); if(!el||!DATA) return;
   el.innerHTML=`<p>O Radar de Lastro reúne informação pública e não faz recomendação de investimento. A classificação dos eventos é automática e pode errar: abra sempre o documento original antes de qualquer decisão.</p>
-    <p>Fontes: Fundos.Net (B3 e CVM) e Portal de Dados Abertos da CVM. Carteira de referência: informe trimestral de ${dia(DATA.carteira.data_referencia).toLocaleDateString('pt-BR')}. <a href="/como-funciona.html">Como funciona</a>.</p>`;
+    <p>Fontes: Fundos.Net (B3 e CVM) e Portal de Dados Abertos da CVM. Carteira dos FIIs: informe trimestral de ${dia(DATA.carteira.data_referencia).toLocaleDateString('pt-BR')}.${DATA.fiagro&&DATA.fiagro.data_referencia?` Fiagros: informe mensal de ${MESES[+DATA.fiagro.data_referencia.slice(5,7)-1]}/${DATA.fiagro.data_referencia.slice(0,4)} e relatórios gerenciais.`:''} <a href="/como-funciona.html">Como funciona</a>.</p>`;
 }
 function carregar(){
   marcarNav();
@@ -188,7 +203,7 @@ function iniciarBusca(form){
   function carregar(){
     if(!_busca.carregando){
       _busca.carregando=fetch('/busca.json').then(r=>r.json()).then(d=>{
-        _busca.itens=d.map(x=>({...x, kn:norm(x.k), nn:norm(x.n), hay:norm([x.k,x.n,x.s].join(' '))}));
+        _busca.itens=d.map(x=>({...x, kn:norm(x.k), nn:norm(x.n), hay:norm([x.k,x.n,x.s,x.tp,x.x].join(' '))}));
       }).catch(()=>{ _busca.itens=[]; });
     }
     return _busca.carregando.then(()=>{ const vazio=!itens; itens=_busca.itens; if(vazio && inp.value.trim()) buscar(); });
@@ -209,11 +224,14 @@ function iniciarBusca(form){
   const marca=(txt,q)=>{ const t=esc(txt); if(!q) return t; const i=norm(txt).indexOf(q); return i<0?t:esc(txt.slice(0,i))+'<mark>'+esc(txt.slice(i,i+q.length))+'</mark>'+esc(txt.slice(i+q.length)); };
   function linha(x,i,q){
     const principal = x.t==='f' ? (x.k||x.n) : x.k;
-    const segundo = x.t==='f' ? (x.k?x.n:'Sem negociação em bolsa') : x.n;
+    const fiagro = x.tp==='Fiagro', cra = x.tp==='CRA';
+    const segundo = x.t==='f' ? (x.k?x.n:(fiagro?'Sem ticker identificado':'Sem negociação em bolsa')) : x.n;
     const detalhe = x.t==='f'
-      ? (x.c ? `Gestão ${x.s}, ${x.c} ${x.c===1?'CRI':'CRIs'} na carteira` : `Gestão ${x.s}. Sem CRI na carteira`)
-      : `${x.s}. Em ${x.f} ${x.f===1?'FII':'FIIs'}`;
-    const tag = x.t==='f' ? '<span class="gq-t">FII</span>' : (x.e?`<span class="gq-t ev">${x.e} ${x.e===1?'evento':'eventos'}</span>`:'<span class="gq-t">CRI</span>');
+      ? (fiagro ? `Gestão ${x.s}. ${x.cra?pct(x.cra)+' do PL em CRA':'Sem CRA na carteira'}`
+         : x.c ? `Gestão ${x.s}, ${x.c} ${x.c===1?'CRI':'CRIs'} na carteira` : `Gestão ${x.s}. Sem CRI na carteira`)
+      : cra ? `${x.s}. ${x.f?'Citado por '+x.f+(x.f===1?' Fiagro':' Fiagros'):'Nenhum Fiagro citou'}` : `${x.s}. Em ${x.f} ${x.f===1?'FII':'FIIs'}`;
+    const tipo = x.t==='f' ? (fiagro?'Fiagro':'FII') : (cra?'CRA':'CRI');
+    const tag = x.e && x.t==='c' ? `<span class="gq-t ev">${tipo} · ${x.e} ${x.e===1?'evento':'eventos'}</span>` : `<span class="gq-t">${tipo}</span>`;
     return `<li role="option" id="${pre}${i}" aria-selected="${i===ativo}"><a href="${esc(x.u)}"><span class="gq-k">${marca(principal,q)}</span><span class="gq-n">${marca(segundo,q)}</span>${tag}<span class="gq-s">${esc(detalhe)}</span></a></li>`;
   }
   function mostrar(){
@@ -224,8 +242,8 @@ function iniciarBusca(form){
     const fs=achados.filter(x=>x.t==='f'), cs=achados.filter(x=>x.t==='c');
     let i=0;
     if(fs.length){ html+='<li class="gq-head" role="presentation">Fundos</li>'+fs.map(x=>linha(x,i++,q)).join(''); }
-    if(cs.length){ html+='<li class="gq-head" role="presentation">CRIs</li>'+cs.map(x=>linha(x,i++,q)).join(''); }
-    if(!achados.length) html=`<li class="gq-empty">Nada encontrado para “${esc(inp.value.trim())}”. Tente o ticker (ex.: RBHY11), o código IF do CRI ou o nome da operação. Enter busca na lista de eventos.</li>`;
+    if(cs.length){ html+='<li class="gq-head" role="presentation">CRIs e CRAs</li>'+cs.map(x=>linha(x,i++,q)).join(''); }
+    if(!achados.length) html=`<li class="gq-empty">Nada encontrado para “${esc(inp.value.trim())}”. Tente o ticker (ex.: RBHY11 ou KNCA11), o código IF ou o nome da operação. Enter busca na lista de eventos.</li>`;
     lista.innerHTML=html; abrir();
     inp.setAttribute('aria-activedescendant', ativo>=0?pre+ativo:'');
   }

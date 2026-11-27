@@ -1,4 +1,9 @@
-"""Liga documentos de CRI do Fundos.Net às posições dos FIIs no informe trimestral."""
+"""Liga documentos de CRI e CRA do Fundos.Net aos fundos.
+
+FIIs: posições do informe trimestral (código IF, ou emissão e série).
+Fiagros: nome da operação citado no relatório gerencial mais recente do fundo (a CVM não divulga
+os códigos dos CRAs na carteira dos Fiagros).
+"""
 import json
 import re
 import unicodedata
@@ -96,7 +101,8 @@ class Indice:
             if codigos:
                 achados = [p for c in sorted(codigos) for p in self.por_if.get(c, [])]
                 return achados, ("if_texto" if achados else None)
-        if norm(doc["securitizadora"]).strip() in NUMERACAO_AMBIGUA:
+        if doc.get("tipo") == "CRA" or norm(doc["securitizadora"]).strip() in NUMERACAO_AMBIGUA:
+            # os informes de FII só trazem CRI; um CRA com a mesma emissão e série seria outro título
             return [], None
         tts = [norm(t) for t in termos(doc["securitizadora"])]
         series = [str(int(doc["serie"]) + i) for i in range(doc.get("outras_series", 0) + 1)] if doc["serie"].isdigit() else [doc["serie"]]
@@ -106,6 +112,125 @@ class Indice:
                 if any(t in norm(p["descricao"]) for t in tts):
                     achados.append(p)
         return achados, ("emissao_serie" if achados else None)
+
+
+# palavras que não identificam um devedor sozinhas
+GENERICOS = set("""
+DIVERSIFICADO DIVERSIFICADA PULVERIZADO PULVERIZADA MULTIPLOS MULTIPLAS DIVERSOS VARIOS CARTEIRA PORTFOLIO
+REVENDA REVENDAS PRODUTOR PRODUTORES RURAL RURAIS AGRO AGROPECUARIA AGROPECUARIO AGRONEGOCIO AGRONEGOCIOS
+AGRICOLA AGRICOLAS AGROINDUSTRIAL ALIMENTOS ALIMENTO INSUMOS COOPERATIVA COOP COOPERATIVAS GRUPO CIA COMPANHIA
+LTDA EIRELI HOLDING PARTICIPACOES INDUSTRIA INDUSTRIAS COMERCIO COMERCIAL DISTRIBUIDORA FAZENDA FAZENDAS
+CORP CORPORATIVO CORPORATIVA BRASIL BRASILEIRA NACIONAL ENERGIA BIOENERGIA SERVICOS EMPREENDIMENTOS
+CRA CRI SERIE SERIES EMISSAO SENIOR SUBORDINADA MEZANINO UNICA NOVA NOVO SAO SANTA SANTO
+IMOBILIARIO IMOBILIARIA LOGISTICA FINANCEIRA CREDITO CREDITOS RECEBIVEIS SECURITIZADORA SECURITIZACAO
+USINA USINAS FIDC FUNDO FIAGRO ESTADO MUNICIPIO TRADING CEREAIS GRAOS
+""".split())
+SUFIXOS = {"SA", "S", "A", "LTDA", "ME", "EPP", "EIRELI", "DE", "DA", "DO", "DAS", "DOS", "E", "EM"}
+LINHA_TABELA = re.compile(r"%|R\$|\d{1,3}(?:\.\d{3}){2,}|\d{2}/\d{2}/\d{4}")  # linha de tabela: valor, taxa ou data
+CRA_RE = re.compile(r"(?<![0-9A-Z])(CRA0\d{2}[0-9A-Z]{5})(?![0-9A-Z])")
+
+
+def _nome_devedor(operacao: str) -> list[str]:
+    """'São Salvador Aliment 11/2020' -> ['SAO', 'SALVADOR'] (o Fundos.Net corta o nome em 20 letras)."""
+    bruto = re.sub(r"\s+\d{2}/\d{4}\s*$", "", operacao or "").strip()
+    cortado = len(bruto) >= 20
+    toks = [t for t in norm(bruto).split() if not t.isdigit()]
+    if cortado and len(toks) > 1:
+        toks = toks[:-1]  # última palavra provavelmente pela metade
+    while toks and toks[-1] in SUFIXOS:
+        toks.pop()
+    return toks[:3]
+
+
+def padroes_operacao(operacao: str):
+    """Expressões que, achadas no relatório gerencial, indicam esta operação.
+
+    Devolve (fortes, comuns): 'fortes' exigem o nome logo depois de CRA/CRI ('CRA Boa Safra');
+    'comuns' valem sozinhas, mas só para nomes que não se confundem com palavras do dia a dia.
+    """
+    toks = _nome_devedor(operacao)
+    if not toks or all(t in GENERICOS for t in toks):
+        return [], []
+    frase = " ".join(toks)
+    uteis = [t for t in toks if t not in GENERICOS]
+    # só a primeira palavra ("CRA Jalles" para "Jalles Machado") quando ela não é uma sigla curta:
+    # "CRA SLC" serviria tanto para SLC Agrícola quanto para SLC Máquinas
+    fortes = [frase] + ([toks[0]] if len(toks) > 1 and toks[0] not in GENERICOS and len(toks[0]) >= 4 else [])
+    comuns = []
+    if len(frase) >= 8 and any(len(t) >= 4 for t in uteis):
+        comuns.append(frase)
+    if len(toks) > 1 and len(uteis[0]) >= 7 and uteis[0] == toks[0]:
+        comuns.append(uteis[0])
+    return fortes, comuns
+
+
+class IndiceGerencial:
+    """Procura o nome de cada operação nos relatórios gerenciais dos Fiagros."""
+
+    def __init__(self, fiagros: list[dict], pasta: Path):
+        self.textos = []
+        for f in fiagros:
+            g = f.get("gerencial") or {}
+            arq = pasta / (re.sub(r"\D", "", f["cnpj_fundo"]) + ".txt")
+            if not g.get("valido") or not arq.exists():
+                continue
+            linhas = [" ".join(norm(l).split()) for l in arq.read_text(errors="ignore").splitlines()]
+            originais = [" ".join(l.split()) for l in arq.read_text(errors="ignore").splitlines()]
+            self.textos.append((f, linhas, originais))
+        self._cache = {}
+
+    def casar(self, doc, texto: str | None = None) -> list[dict]:
+        """Fiagros cujo relatório gerencial cita a operação.
+
+        Primeiro pelo código IF do CRA citado no documento (confiança alta); se o documento não
+        trouxer código, pelo nome do devedor (pode ser outra série do mesmo devedor).
+        """
+        tipo = doc.get("tipo") or "CRI"
+        campo = "cra" if tipo == "CRA" else "cri"
+        codigos = set(CRA_RE.findall(texto or "")) if tipo == "CRA" else set(IF_RE.findall(texto or ""))
+        if doc.get("codigo_if"):
+            codigos.add(doc["codigo_if"])
+        achados, vistos = [], set()
+        if codigos:
+            re_cod = re.compile(r"(?<![0-9A-Z])(?:" + "|".join(sorted(codigos)) + r")(?![0-9A-Z])")
+            for f, linhas, originais in self.textos:
+                if not f.get(campo):
+                    continue
+                i = next((i for i, l in enumerate(linhas) if re_cod.search(l)), None)
+                if i is not None:
+                    achados.append({"fiagro": f, "trecho": originais[i][:180], "metodo": "codigo",
+                                    "codigo": re_cod.search(linhas[i]).group(0)})
+                    vistos.add(f["cnpj_fundo"])
+        chave = (tipo, doc.get("operacao"))
+        if chave not in self._cache:
+            self._cache[chave] = self._por_nome(tipo, campo, doc.get("operacao"))
+        for a in self._cache[chave]:
+            if a["fiagro"]["cnpj_fundo"] in vistos:
+                continue
+            # a linha do relatório traz o código de outro CRA do mesmo devedor: é outra série, não esta
+            na_linha = set(CRA_RE.findall(a["trecho"].upper())) | set(IF_RE.findall(a["trecho"]))
+            if codigos and na_linha and not (na_linha & codigos):
+                continue
+            achados.append(a)
+        return achados
+
+    def _por_nome(self, tipo, campo, operacao):
+        fortes, comuns = padroes_operacao(operacao)
+        if not (fortes or comuns):
+            return []
+        re_forte = re.compile(r"\b" + tipo + r"S? (?:" + "|".join(map(re.escape, fortes)) + r")\b") if fortes else None
+        re_comum = re.compile(r"\b(?:" + "|".join(map(re.escape, comuns)) + r")\b") if comuns else None
+        achados = []
+        for f, linhas, originais in self.textos:
+            if not f.get(campo):
+                continue  # o informe mensal diz que o fundo não tem esse tipo de título
+            for i, l in enumerate(linhas):
+                if re.match(r"(\d+ )?CPR", l) and tipo not in l:
+                    continue  # linha de CPR do mesmo devedor: é outro título
+                if (re_forte and re_forte.search(l)) or (re_comum and re_comum.search(l) and LINHA_TABELA.search(l)):
+                    achados.append({"fiagro": f, "trecho": originais[i][:180], "metodo": "nome"})
+                    break
+        return achados
 
 
 def expor(posicoes):

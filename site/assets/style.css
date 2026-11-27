@@ -354,3 +354,13 @@ footer.rodape{background:var(--brand);color:var(--brand-ink);border-top:0;margin
 .panel.vazio{padding:22px 24px}
 .panel.vazio h2{font-size:19px;font-weight:800;margin:0 0 8px}
 .panel.vazio p{margin:0 0 10px;max-width:68ch;color:var(--muted)}
+
+/* CRI x CRA */
+.lt{font-size:11.5px;font-weight:700;letter-spacing:.02em;border-radius:4px;padding:1px 5px;border:1px solid var(--line);color:var(--muted)}
+.lt-CRA{color:#2F7A3E;border-color:color-mix(in srgb,#2F7A3E 40%,transparent);background:color-mix(in srgb,#2F7A3E 8%,transparent)}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .lt-CRA{color:#7FC98D;border-color:color-mix(in srgb,#7FC98D 40%,transparent)}}
+:root[data-theme="dark"] .lt-CRA{color:#7FC98D;border-color:color-mix(in srgb,#7FC98D 40%,transparent)}
+.chip.vazio{background:none;border:1px dashed var(--line)}
+td small.quote{font-style:italic;color:var(--ink);opacity:.85;margin:2px 0 4px;word-break:break-word}
+#lastro button{white-space:nowrap}
+@media (max-width:640px){#lastro{display:flex;overflow-x:auto;max-width:100%;scrollbar-width:none}}

@@ -3,6 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-8drs+9Hgvyn9FxiQiB8XA1WiTxa9wEQkR6+v2gcdr88=' https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self' https://cloudflareinsights.com; object-src 'none'; base-uri 'self'; form-action 'self'; upgrade-insecure-requests">
+<meta name="referrer" content="strict-origin-when-cross-origin">
 <title>Como funciona · Radar de Lastro</title>
 <meta name="description" content="De onde vêm os dados do Radar de Lastro, como os eventos são classificados e o que cada um significa.">
 <meta property="og:title" content="Como funciona · Radar de Lastro">
@@ -34,14 +36,14 @@
         <b>Radar de Lastro</b>
       </a>
       <form class="gsearch" role="search" action="/" method="get" autocomplete="off">
-        <label for="gq" class="sr">Buscar fundo ou CRI</label>
+        <label for="gq" class="sr">Buscar fundo, CRI ou CRA</label>
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
-        <input id="gq" name="q" type="search" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="gq-list" placeholder="Buscar FII ou CRI">
+        <input id="gq" name="q" type="search" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="gq-list" placeholder="Buscar FII, Fiagro, CRI ou CRA">
         <kbd aria-hidden="true">/</kbd>
         <ul id="gq-list" class="gq-list" role="listbox" aria-label="Resultados" hidden></ul>
       </form>
       <nav class="nav" aria-label="Páginas">
-        <a href="/">Eventos</a><a href="/fundos.html">Fundos expostos</a><a href="/assembleias.html">Próximas assembleias</a><a href="/como-funciona.html" aria-current="page">Como funciona</a>
+        <a href="/">Eventos</a><a href="/fundos.html">Fundos expostos</a><a href="/fiagro/">Fiagros</a><a href="/assembleias.html">Próximas assembleias</a><a href="/como-funciona.html" aria-current="page">Como funciona</a>
       </nav>
     </div>
   </div>
@@ -58,10 +60,11 @@
   <div class="prose">
     <h2>O caminho dos dados</h2>
     <ol class="steps">
-      <li><b>Lemos os documentos dos CRIs</b><span>De hora em hora, das 6h às 23h, o radar baixa os fatos relevantes, comunicados, avisos e documentos de assembleia que as securitizadoras publicam no Fundos.Net.</span></li>
+      <li><b>Lemos os documentos dos CRIs e CRAs</b><span>De hora em hora, das 6h às 23h, o radar baixa os fatos relevantes, comunicados, avisos e documentos de assembleia que as securitizadoras publicam no Fundos.Net.</span></li>
       <li><b>Identificamos o tema</b><span>Regras procuram assuntos de crédito no corpo do comunicado ou na pauta da assembleia, como inadimplência, vencimento antecipado, waiver e fundo de reserva, e definem a severidade.</span></li>
-      <li><b>Encontramos quem tem o CRI</b><span>A carteira de cada FII vem do informe trimestral estruturado, publicado nos dados abertos da CVM. O evento é ligado ao fundo pelo código IF do CRI ou, quando o documento não traz o código, por securitizadora, emissão e série.</span></li>
-      <li><b>Calculamos o peso no fundo</b><span>O valor do CRI na carteira é dividido pelo patrimônio líquido do fundo no mesmo mês, informado no informe mensal. A gestora vem do cadastro de fundos da CVM.</span></li>
+      <li><b>Encontramos o FII que tem o CRI</b><span>A carteira de cada FII vem do informe trimestral estruturado, publicado nos dados abertos da CVM. O evento é ligado ao fundo pelo código IF do CRI ou, quando o documento não traz o código, por securitizadora, emissão e série.</span></li>
+      <li><b>Calculamos o peso no FII</b><span>O valor do CRI na carteira é dividido pelo patrimônio líquido do fundo no mesmo mês, informado no informe mensal. A gestora vem do cadastro de fundos da CVM.</span></li>
+      <li><b>Procuramos o CRA nos Fiagros</b><span>A CVM não divulga quais CRAs cada Fiagro tem: o informe mensal traz só o total aplicado em CRA. Por isso o radar lê o relatório gerencial mais recente de cada Fiagro no Fundos.Net e procura nele o código IF do CRA ou o nome do devedor. O evento mostra o trecho do relatório em que a operação aparece.</span></li>
     </ol>
 
     <h2>A base hoje</h2>
@@ -81,6 +84,7 @@
     <ul>
       <li>A carteira dos fundos vem do informe trimestral, que é uma foto com alguns meses de atraso. Compras e vendas posteriores não aparecem.</li>
       <li>Parte dos informes não traz o código IF do CRI. Nesses casos o cruzamento usa emissão e série, que é menos preciso, e o evento avisa isso.</li>
+      <li>Nos Fiagros, a ligação vem do relatório gerencial, que cada gestora monta do seu jeito. Quando o relatório cita só o devedor, o fundo pode ter outra série do mesmo devedor. Fiagros que não detalham a carteira no relatório não aparecem ligados a nenhum CRA, e não há como mostrar quanto do PL está em cada CRA.</li>
       <li>A classificação é feita por regras e pode errar. Todo evento tem o link do documento original.</li>
       <li>Fundos sem código de negociação aparecem como "balcão": as cotas estão registradas na B3, mas não são negociadas em pregão.</li>
     </ul>
@@ -94,10 +98,10 @@
     <div class="cols">
       <div class="col-marca">
         <a class="brand" href="/"><img src="/assets/logo-emblema.png" alt="" width="36" height="36"><b>Radar de Lastro</b></a>
-        <p>Eventos de crédito nos CRIs da carteira dos FIIs, com dados públicos do Fundos.Net e da CVM, atualizados de hora em hora.</p>
+        <p>Eventos de crédito nos CRIs dos FIIs e nos CRAs dos Fiagros, com dados públicos do Fundos.Net e da CVM, atualizados de hora em hora.</p>
       </div>
-      <nav aria-label="Radar"><h2>Radar</h2><a href="/">Eventos</a><a href="/fundos.html">Fundos expostos</a><a href="/assembleias.html">Próximas assembleias</a><a href="/fii/">Todos os FIIs com CRI</a></nav>
-      <nav aria-label="Dados"><h2>Dados</h2><a href="/como-funciona.html">Como funciona</a><a href="/como-funciona.html#limitacoes">Limitações</a><a href="https://dados.cvm.gov.br/" target="_blank" rel="noopener">Dados abertos da CVM</a><a href="https://fnet.bmfbovespa.com.br/fnet/publico/abrirGerenciadorDocumentosCVM" target="_blank" rel="noopener">Fundos.Net</a></nav>
+      <nav aria-label="Radar"><h2>Radar</h2><a href="/">Eventos</a><a href="/fundos.html">Fundos expostos</a><a href="/assembleias.html">Próximas assembleias</a><a href="/fii/">Todos os FIIs</a><a href="/fiagro/">Todos os Fiagros</a></nav>
+      <nav aria-label="Dados"><h2>Dados</h2><a href="/como-funciona.html">Como funciona</a><a href="/como-funciona.html#limitacoes">Limitações</a><a href="https://dados.cvm.gov.br/" target="_blank" rel="noopener noreferrer">Dados abertos da CVM</a><a href="https://fnet.bmfbovespa.com.br/fnet/publico/abrirGerenciadorDocumentosCVM" target="_blank" rel="noopener noreferrer">Fundos.Net</a></nav>
       <nav aria-label="Institucional"><h2>Institucional</h2><a href="/sobre.html">Sobre</a><a href="/termos.html">Termos de uso</a><a href="/privacidade.html">Privacidade</a></nav>
     </div>
     <div class="legal" id="foot"><p>O Radar de Lastro reúne informação pública e não faz recomendação de investimento. Não tem relação com a B3 nem com a CVM.</p></div>
@@ -109,7 +113,8 @@ carregar().then(d=>{
   const c=d.carteira, v=c.valor_por_metodo||{};
   const fatos=[
     [c.fundos_com_cri, 'FIIs com CRI na carteira'],
-    [brl(c.valor_total), 'aplicados em CRI'],
+    [brl(c.valor_total), 'aplicados em CRI pelos FIIs'],
+    ...(d.fiagro && d.fiagro.fundos ? [[d.fiagro.com_cra, 'Fiagros com CRA na carteira'], [brl(d.fiagro.valor_cra), 'aplicados em CRA pelos Fiagros'], [d.fiagro.com_relatorio, 'Fiagros com relatório gerencial lido']] : []),
     [pct(v.if||0), 'do valor com código IF no informe'],
     [d.eventos.length, 'eventos no histórico'],
     [dia(c.data_referencia).toLocaleDateString('pt-BR'), 'data da carteira de referência'],

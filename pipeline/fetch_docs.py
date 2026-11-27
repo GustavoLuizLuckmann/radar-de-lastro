@@ -22,7 +22,7 @@ def texto(pdf: Path, txt: Path):
         # alguns documentos vêm como HTML ou texto puro
         txt.write_text(pdf.read_bytes().decode("utf-8", "ignore"))
         return
-    subprocess.run(["pdftotext", "-layout", "-l", "8", str(pdf), str(txt)], check=False, timeout=60)
+    subprocess.run(["pdftotext", "-layout", "-l", "8", str(pdf), str(txt)], check=False, timeout=60, stderr=subprocess.DEVNULL)
     if not txt.exists():
         txt.write_text("")
 

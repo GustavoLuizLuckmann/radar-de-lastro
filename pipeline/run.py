@@ -8,7 +8,7 @@ from pathlib import Path
 AQUI = Path(__file__).resolve().parent
 
 
-LIMITE = {"holdings.py": 15, "collect.py": 15, "fetch_docs.py": 25, "build.py": 15}  # minutos
+LIMITE = {"holdings.py": 15, "fiagro.py": 12, "collect.py": 15, "fetch_docs.py": 25, "build.py": 15}  # minutos
 
 
 def etapa(*args):
@@ -28,6 +28,12 @@ if __name__ == "__main__":
         etapa("holdings.py", str(date.today().year))  # informes da CVM mudam pouco: uma vez por dia basta
     else:
         print("→ carteira da CVM atualizada há menos de 20 horas; mantida", flush=True)
+    try:
+        # Fiagros: informe mensal (CVM) e relatórios gerenciais (Fundos.Net), um pouco por rodada.
+        # Se falhar, o site sai com os dados de Fiagro da rodada anterior.
+        etapa("fiagro.py")
+    except (subprocess.CalledProcessError, subprocess.TimeoutExpired) as e:
+        print(f"  Fiagros não atualizados nesta rodada: {e}", flush=True)
     etapa("collect.py", dias)
     etapa("fetch_docs.py")
     etapa("build.py")

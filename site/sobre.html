@@ -3,6 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-daEdpEyAJIa8b2VkCqSKcw8PaExcB6Qro80XNes/sHA=' https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self' https://cloudflareinsights.com; object-src 'none'; base-uri 'self'; form-action 'self'; upgrade-insecure-requests">
+<meta name="referrer" content="strict-origin-when-cross-origin">
 <title>Sobre · Radar de Lastro</title>
 <meta name="description" content="O que é o Radar de Lastro, o problema que resolve, para quem é e de onde vêm os dados.">
 <meta property="og:title" content="Sobre · Radar de Lastro">
@@ -34,14 +36,14 @@
         <b>Radar de Lastro</b>
       </a>
       <form class="gsearch" role="search" action="/" method="get" autocomplete="off">
-        <label for="gq" class="sr">Buscar fundo ou CRI</label>
+        <label for="gq" class="sr">Buscar fundo, CRI ou CRA</label>
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
-        <input id="gq" name="q" type="search" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="gq-list" placeholder="Buscar FII ou CRI">
+        <input id="gq" name="q" type="search" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="gq-list" placeholder="Buscar FII, Fiagro, CRI ou CRA">
         <kbd aria-hidden="true">/</kbd>
         <ul id="gq-list" class="gq-list" role="listbox" aria-label="Resultados" hidden></ul>
       </form>
       <nav class="nav" aria-label="Páginas">
-        <a href="/">Eventos</a><a href="/fundos.html">Fundos expostos</a><a href="/assembleias.html">Próximas assembleias</a><a href="/como-funciona.html">Como funciona</a>
+        <a href="/">Eventos</a><a href="/fundos.html">Fundos expostos</a><a href="/fiagro/">Fiagros</a><a href="/assembleias.html">Próximas assembleias</a><a href="/como-funciona.html">Como funciona</a>
       </nav>
     </div>
   </div>
@@ -49,7 +51,7 @@
 <section class="pagehead" id="conteudo">
   <div class="wrap">
       <h1 id="headline">Sobre o Radar de Lastro</h1>
-      <p id="subline">Um jeito rápido de saber o que está acontecendo com os CRIs que estão na carteira dos fundos imobiliários.</p>
+      <p id="subline">Um jeito rápido de saber o que está acontecendo com os CRIs dos fundos imobiliários e os CRAs dos Fiagros.</p>
   </div>
 </section>
 
@@ -57,17 +59,18 @@
   <div class="prose">
     <h2>O problema</h2>
     <p>Os FIIs de papel investem em CRIs, e o que acontece com cada CRI é publicado pelas securitizadoras no Fundos.Net: fatos relevantes, avisos, editais e atas de assembleia. São centenas de documentos por mês, espalhados por dezenas de securitizadoras, e nenhum deles diz quais fundos têm aquele CRI nem quanto isso pesa no patrimônio de cada um.</p>
-    <p>Quem acompanha um fundo precisa ler o relatório gerencial, descobrir os CRIs da carteira e procurar os documentos de cada um. Quem acompanha o mercado de crédito imobiliário como um todo não tem uma visão consolidada.</p>
+    <p>Com os Fiagros é parecido: eles investem em CRAs, títulos de crédito do agronegócio, e os documentos de cada CRA também saem no Fundos.Net, sem dizer quais fundos têm o título.</p>
+    <p>Quem acompanha um fundo precisa ler o relatório gerencial, descobrir os títulos da carteira e procurar os documentos de cada um. Quem acompanha o mercado de crédito imobiliário ou do agro como um todo não tem uma visão consolidada.</p>
 
     <h2>O que o radar faz</h2>
-    <p>De hora em hora, das 6h às 23h, o radar lê os documentos novos dos CRIs no Fundos.Net, identifica os que tratam de crédito (atraso de pagamento, vencimento antecipado, waiver, fundo de reserva, repactuação e outros) e cruza cada operação com a carteira declarada pelos FIIs na CVM. O resultado é uma lista de eventos com os fundos afetados e o peso de cada CRI no PL.</p>
-    <p>Também há uma página para cada FII com CRI na carteira e para cada CRI com código IF, com a carteira, os fundos que detêm a operação e o histórico de eventos.</p>
+    <p>De hora em hora, das 6h às 23h, o radar lê os documentos novos dos CRIs e CRAs no Fundos.Net, identifica os que tratam de crédito (atraso de pagamento, vencimento antecipado, waiver, fundo de reserva, repactuação e outros) e cruza cada operação com os fundos. Para os FIIs, o cruzamento usa a carteira declarada na CVM e mostra o peso de cada CRI no PL. Para os Fiagros, usa o relatório gerencial de cada fundo, porque a CVM não divulga os CRAs de cada um.</p>
+    <p>Também há uma página para cada FII, cada Fiagro, cada CRI com código IF e cada CRA com evento, com a carteira, os fundos ligados à operação e o histórico de eventos.</p>
 
     <h2>Para quem é</h2>
     <ul>
-      <li>Cotistas de FIIs de papel que querem acompanhar a própria carteira.</li>
-      <li>Analistas, gestores e alocadores que monitoram crédito estruturado imobiliário.</li>
-      <li>Jornalistas e pesquisadores que acompanham o mercado de CRI.</li>
+      <li>Cotistas de FIIs de papel e de Fiagros que querem acompanhar a própria carteira.</li>
+      <li>Analistas, gestores e alocadores que monitoram crédito estruturado imobiliário e do agronegócio.</li>
+      <li>Jornalistas e pesquisadores que acompanham o mercado de CRI e CRA.</li>
     </ul>
 
     <h2>Independência</h2>
@@ -83,10 +86,10 @@
     <div class="cols">
       <div class="col-marca">
         <a class="brand" href="/"><img src="/assets/logo-emblema.png" alt="" width="36" height="36"><b>Radar de Lastro</b></a>
-        <p>Eventos de crédito nos CRIs da carteira dos FIIs, com dados públicos do Fundos.Net e da CVM, atualizados de hora em hora.</p>
+        <p>Eventos de crédito nos CRIs dos FIIs e nos CRAs dos Fiagros, com dados públicos do Fundos.Net e da CVM, atualizados de hora em hora.</p>
       </div>
-      <nav aria-label="Radar"><h2>Radar</h2><a href="/">Eventos</a><a href="/fundos.html">Fundos expostos</a><a href="/assembleias.html">Próximas assembleias</a><a href="/fii/">Todos os FIIs com CRI</a></nav>
-      <nav aria-label="Dados"><h2>Dados</h2><a href="/como-funciona.html">Como funciona</a><a href="/como-funciona.html#limitacoes">Limitações</a><a href="https://dados.cvm.gov.br/" target="_blank" rel="noopener">Dados abertos da CVM</a><a href="https://fnet.bmfbovespa.com.br/fnet/publico/abrirGerenciadorDocumentosCVM" target="_blank" rel="noopener">Fundos.Net</a></nav>
+      <nav aria-label="Radar"><h2>Radar</h2><a href="/">Eventos</a><a href="/fundos.html">Fundos expostos</a><a href="/assembleias.html">Próximas assembleias</a><a href="/fii/">Todos os FIIs</a><a href="/fiagro/">Todos os Fiagros</a></nav>
+      <nav aria-label="Dados"><h2>Dados</h2><a href="/como-funciona.html">Como funciona</a><a href="/como-funciona.html#limitacoes">Limitações</a><a href="https://dados.cvm.gov.br/" target="_blank" rel="noopener noreferrer">Dados abertos da CVM</a><a href="https://fnet.bmfbovespa.com.br/fnet/publico/abrirGerenciadorDocumentosCVM" target="_blank" rel="noopener noreferrer">Fundos.Net</a></nav>
       <nav aria-label="Institucional"><h2>Institucional</h2><a href="/sobre.html">Sobre</a><a href="/termos.html">Termos de uso</a><a href="/privacidade.html">Privacidade</a></nav>
     </div>
     <div class="legal" id="foot"><p>O Radar de Lastro reúne informação pública e não faz recomendação de investimento. Não tem relação com a B3 nem com a CVM.</p></div>

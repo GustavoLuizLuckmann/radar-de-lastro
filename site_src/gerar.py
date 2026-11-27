@@ -2,6 +2,9 @@
 
 Rode `python site_src/gerar.py` depois de editar qualquer arquivo em site_src/.
 """
+import base64
+import hashlib
+import html as _html
 import re
 from pathlib import Path
 
@@ -9,11 +12,11 @@ AQUI = Path(__file__).resolve().parent
 SITE = AQUI.parent / "site"
 
 PAGINAS = {
-    "index.html": ("Radar de Lastro: eventos de crédito nos CRIs dos FIIs",
-                   "Acompanhe inadimplência, assembleias, waivers e vencimento antecipado dos CRIs na carteira dos FIIs, "
+    "index.html": ("Radar de Lastro: eventos de crédito nos CRIs e CRAs de FIIs e Fiagros",
+                   "Acompanhe inadimplência, assembleias, waivers e vencimento antecipado dos CRIs dos FIIs e dos CRAs dos Fiagros, "
                    "com o peso de cada um no PL do fundo. Dados públicos do Fundos.Net e da CVM, atualizados de hora em hora."),
-    "fundos.html": ("Fundos expostos · Radar de Lastro", "Ranking dos FIIs com mais patrimônio em CRIs que tiveram eventos de crédito."),
-    "assembleias.html": ("Próximas assembleias · Radar de Lastro", "Próximas assembleias de titulares de CRIs que estão na carteira dos FIIs, com data, pauta e fundos expostos."),
+    "fundos.html": ("Fundos expostos · Radar de Lastro", "Ranking dos FIIs com mais patrimônio em CRIs que tiveram eventos de crédito, e dos Fiagros que citam operações com evento."),
+    "assembleias.html": ("Próximas assembleias · Radar de Lastro", "Próximas assembleias de titulares de CRIs e CRAs, com data, pauta e os FIIs e Fiagros ligados a cada operação."),
     "sobre.html": ("Sobre · Radar de Lastro", "O que é o Radar de Lastro, o problema que resolve, para quem é e de onde vêm os dados."),
     "termos.html": ("Termos de uso · Radar de Lastro", "Condições de uso do Radar de Lastro: informação pública, sem recomendação de investimento."),
     "privacidade.html": ("Privacidade · Radar de Lastro", "Como o Radar de Lastro trata dados: sem cadastro, sem cookies de rastreamento, preferências só no navegador."),
@@ -25,6 +28,8 @@ HEAD = """<!doctype html>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta http-equiv="Content-Security-Policy" content="{csp}">
+<meta name="referrer" content="strict-origin-when-cross-origin">
 <title>{titulo}</title>
 <meta name="description" content="{descricao}">
 <meta property="og:title" content="{titulo}">
@@ -56,14 +61,14 @@ HEAD = """<!doctype html>
         <b>Radar de Lastro</b>
       </a>
       <form class="gsearch" role="search" action="/" method="get" autocomplete="off">
-        <label for="gq" class="sr">Buscar fundo ou CRI</label>
+        <label for="gq" class="sr">Buscar fundo, CRI ou CRA</label>
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
-        <input id="gq" name="q" type="search" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="gq-list" placeholder="Buscar FII ou CRI">
+        <input id="gq" name="q" type="search" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="gq-list" placeholder="Buscar FII, Fiagro, CRI ou CRA">
         <kbd aria-hidden="true">/</kbd>
         <ul id="gq-list" class="gq-list" role="listbox" aria-label="Resultados" hidden></ul>
       </form>
       <nav class="nav" aria-label="Páginas">
-        <a href="/"{a_index}>Eventos</a><a href="/fundos.html"{a_fundos}>Fundos expostos</a><a href="/assembleias.html"{a_assembleias}>Próximas assembleias</a><a href="/como-funciona.html"{a_como}>Como funciona</a>
+        <a href="/"{a_index}>Eventos</a><a href="/fundos.html"{a_fundos}>Fundos expostos</a><a href="/fiagro/"{a_fiagro}>Fiagros</a><a href="/assembleias.html"{a_assembleias}>Próximas assembleias</a><a href="/como-funciona.html"{a_como}>Como funciona</a>
       </nav>
     </div>
 {fecha_header}"""
@@ -73,28 +78,35 @@ FIM = """<footer class="rodape">
     <div class="cols">
       <div class="col-marca">
         <a class="brand" href="/"><img src="/assets/logo-emblema.png" alt="" width="36" height="36"><b>Radar de Lastro</b></a>
-        <p>Eventos de crédito nos CRIs da carteira dos FIIs, com dados públicos do Fundos.Net e da CVM, atualizados de hora em hora.</p>
+        <p>Eventos de crédito nos CRIs dos FIIs e nos CRAs dos Fiagros, com dados públicos do Fundos.Net e da CVM, atualizados de hora em hora.</p>
       </div>
-      <nav aria-label="Radar"><h2>Radar</h2><a href="/">Eventos</a><a href="/fundos.html">Fundos expostos</a><a href="/assembleias.html">Próximas assembleias</a><a href="/fii/">Todos os FIIs com CRI</a></nav>
-      <nav aria-label="Dados"><h2>Dados</h2><a href="/como-funciona.html">Como funciona</a><a href="/como-funciona.html#limitacoes">Limitações</a><a href="https://dados.cvm.gov.br/" target="_blank" rel="noopener">Dados abertos da CVM</a><a href="https://fnet.bmfbovespa.com.br/fnet/publico/abrirGerenciadorDocumentosCVM" target="_blank" rel="noopener">Fundos.Net</a></nav>
+      <nav aria-label="Radar"><h2>Radar</h2><a href="/">Eventos</a><a href="/fundos.html">Fundos expostos</a><a href="/assembleias.html">Próximas assembleias</a><a href="/fii/">Todos os FIIs</a><a href="/fiagro/">Todos os Fiagros</a></nav>
+      <nav aria-label="Dados"><h2>Dados</h2><a href="/como-funciona.html">Como funciona</a><a href="/como-funciona.html#limitacoes">Limitações</a><a href="https://dados.cvm.gov.br/" target="_blank" rel="noopener noreferrer">Dados abertos da CVM</a><a href="https://fnet.bmfbovespa.com.br/fnet/publico/abrirGerenciadorDocumentosCVM" target="_blank" rel="noopener noreferrer">Fundos.Net</a></nav>
       <nav aria-label="Institucional"><h2>Institucional</h2><a href="/sobre.html">Sobre</a><a href="/termos.html">Termos de uso</a><a href="/privacidade.html">Privacidade</a></nav>
     </div>
     <div class="legal" id="foot"><p>O Radar de Lastro reúne informação pública e não faz recomendação de investimento. Não tem relação com a B3 nem com a CVM.</p></div>
   </div>
 </footer>
 <script src="/assets/app.js"></script>
-<script>
-{script}
-</script>
+<script>{script}</script>
 <!-- Cloudflare Web Analytics (sem cookies) -->
 <script type="module" src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{{"token": "8320a7efa9a3461a9691bc75bac53d7b"}}'></script>
 </body>
 </html>
 """
 
-NAV = {"index": "a_index", "fundos": "a_fundos", "assembleias": "a_assembleias", "como-funciona": "a_como"}
+NAV = {"index": "a_index", "fundos": "a_fundos", "fiagro": "a_fiagro", "assembleias": "a_assembleias", "como-funciona": "a_como"}
 ANEIS = '  <div class="rings-clip" aria-hidden="true"><div class="rings"><div class="sweep"></div></div></div>'
 HERO_ANTIGO = re.compile(r'\s*<div class="hero compact">\n(.*?)\n    </div>\n  </div>\n</header>\n', re.S)
+
+
+# Política de segurança de conteúdo: o navegador só roda os scripts do próprio site, o script desta
+# página (pelo hash) e o contador de visitas da Cloudflare. Bloqueia código injetado por algum texto
+# de documento que escape do tratamento, formulários enviados para fora e o site dentro de <object>.
+CSP = ("default-src 'self'; script-src 'self' {hash} https://static.cloudflareinsights.com; "
+       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; "
+       "img-src 'self' data:; connect-src 'self' https://cloudflareinsights.com; object-src 'none'; "
+       "base-uri 'self'; form-action 'self'; upgrade-insecure-requests")
 
 
 def cabeca(titulo_h1: str, sub: str = "", trilha: str = "", extra: str = "", lado: str = "") -> str:
@@ -134,7 +146,11 @@ def pagina(url: str, titulo: str, descricao: str, corpo: str, script: str, nav: 
         m = HERO_ANTIGO.match(corpo)
         if m:
             corpo = '<section class="pagehead" id="conteudo">\n  <div class="wrap">\n' + m.group(1) + '\n  </div>\n</section>\n' + corpo[m.end():]
-    cab = HEAD.format(titulo=titulo, descricao=descricao, arquivo=url, dados_estruturados=dados, pg=nav or "outra",
+    # título e descrição levam nomes de fundos e operações vindos de fontes externas: sempre escapados
+    titulo, descricao = _html.escape(titulo, quote=True), _html.escape(descricao, quote=True)
+    script = "\n" + script.strip() + "\n"
+    hash_script = "'sha256-" + base64.b64encode(hashlib.sha256(script.encode()).digest()).decode() + "'"
+    cab = HEAD.format(csp=CSP.format(hash=hash_script), titulo=titulo, descricao=descricao, arquivo=url, dados_estruturados=dados, pg=nav or "outra",
                       aneis=ANEIS if inicio else "", fecha_header="" if inicio else "  </div>\n</header>\n", **atual)
     return cab + corpo.rstrip() + "\n" + FIM.format(script=script)
 

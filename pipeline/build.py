@@ -6,7 +6,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from classify import classificar
-from match import Indice, expor
+from match import CRA_RE, Indice, IndiceGerencial, expor
+from paginas_fiagro import chave_cra, gerar as gerar_paginas_fiagro, gerar_cras, mapa_slugs_fiagro
 from paginas_fundos import gerar as gerar_paginas_fundos, mapa_slugs
 from paginas_cri import EMISSORES, emissores_por_cnpj, escrever_busca, gerar as gerar_paginas_cri
 
@@ -25,7 +26,7 @@ def data_iso(br: str):
 
 
 PAGINAS = [("", "daily", "1.0"), ("fundos.html", "daily", "0.8"), ("assembleias.html", "daily", "0.8"),
-           ("como-funciona.html", "monthly", "0.5"), ("fii/", "daily", "0.7"), ("sobre.html", "monthly", "0.3"),
+           ("como-funciona.html", "monthly", "0.5"), ("fii/", "daily", "0.7"), ("fiagro/", "daily", "0.7"), ("sobre.html", "monthly", "0.3"),
            ("termos.html", "yearly", "0.2"), ("privacidade.html", "yearly", "0.2")]
 
 
@@ -46,8 +47,12 @@ def escrever_sitemap(data: str, fundos: list[str] = ()):
 def main():
     h = json.loads((ROOT / "data" / "holdings.json").read_text())
     coleta = json.loads((ROOT / "raw" / "fnet" / "docs.json").read_text())
+    arq_fiagro = ROOT / "data" / "fiagro.json"
+    fg = json.loads(arq_fiagro.read_text()) if arq_fiagro.exists() else {"data_referencia": None, "fundos": []}
     idx = Indice(h["posicoes"])
+    gidx = IndiceGerencial(fg["fundos"], ROOT / "raw" / "fiagro" / "gerencial")
     slugs = mapa_slugs(h)
+    slugs_fg = mapa_slugs_fiagro(fg)
 
     stats = defaultdict(int)
     brutos = []
@@ -58,10 +63,16 @@ def main():
         stats["documentos"] += 1
         if not texto.strip():
             stats["sem_texto"] += 1
+        d.setdefault("tipo", "CRI")
         pos, metodo = idx.casar(d, texto or None)
-        if not metodo:
+        citam = gidx.casar(d, texto or None)
+        if citam:
+            stats["citados_gerencial"] += 1
+        # CRI sem FII nem Fiagro ligado fica de fora; CRA entra mesmo sem Fiagro identificado, porque a
+        # CVM não divulga os CRAs de cada Fiagro e o evento interessa a quem acompanha o mercado
+        if not metodo and not citam and d["tipo"] != "CRA":
             continue
-        stats["casados_" + metodo] += 1
+        stats["casados_" + (metodo or ("gerencial" if citam else "cra_sem_fundo"))] += 1
         if metodo in ("if", "if_texto"):
             for p in pos:
                 c = p["codigo_if"]
@@ -73,20 +84,29 @@ def main():
             stats["rotina"] += 1
             continue
         fundos = expor(pos)
+        cods = sorted(set(CRA_RE.findall(texto)))[:6] if d["tipo"] == "CRA" else []
         brutos.append({
             "doc_id": d["id"], "data": data_iso(d["data_entrega"]), "categoria": d["categoria"],
             "especie": d["especie"], "securitizadora": d["securitizadora"], "emissao": d["emissao"],
             "serie": d["serie"], "outras_series": d["outras_series"], "operacao": d["operacao"],
-            "url": URL_DOC.format(id=d["id"]), "cruzamento": metodo, **c,
-            "codigos_if": sorted({p["codigo_if"] for p in pos if p["codigo_if"]}),
+            "url": URL_DOC.format(id=d["id"]), "cruzamento": metodo or ("gerencial" if citam else None), **c,
+            "lastro": d["tipo"], "isin": d.get("isin"),
+            "codigos_if": sorted({p["codigo_if"] for p in pos if p["codigo_if"]}) or cods,
             "fundos": [{**{k: f.get(k) for k in ("cnpj_fundo", "ticker", "fundo", "listado", "gestor", "valor", "pct_pl")},
-                        "slug": slugs.get(f["cnpj_fundo"])} for f in fundos],
+                        "slug": slugs.get(f["cnpj_fundo"])} for f in fundos]
+                      + [{"cnpj_fundo": a["fiagro"]["cnpj_fundo"], "ticker": a["fiagro"]["ticker"], "fundo": a["fiagro"]["fundo"],
+                          "listado": a["fiagro"]["listado"], "gestor": a["fiagro"]["gestor"], "valor": None, "pct_pl": None,
+                          "slug": slugs_fg.get(a["fiagro"]["cnpj_fundo"]), "tf": "fiagro", "metodo": a["metodo"],
+                          "trecho": a["trecho"], "ref": (a["fiagro"].get("gerencial") or {}).get("referencia"),
+                          "cra_pl": round(a["fiagro"]["cra"] / a["fiagro"]["pl"], 4) if a["fiagro"].get("pl") else None}
+                         for a in citam if a["fiagro"]["cnpj_fundo"] not in {f["cnpj_fundo"] for f in fundos}],
         })
 
     # um card por operação e tipo de evento; documentos repetidos (edital, proposta, ata) viram histórico
     grupos = defaultdict(list)
     for e in brutos:
-        grupos[(e["securitizadora"], e["emissao"], e["serie"], e["tipo"])].append(e)
+        grupos[(e["lastro"], e["securitizadora"], e["emissao"], e["serie"], e["tipo"])].append(e)
+    cris_com_pagina = {p["codigo_if"] for p in h["posicoes"] if p["codigo_if"]}
     eventos = []
     for lista in grupos.values():
         lista.sort(key=lambda e: e["data"], reverse=True)
@@ -96,6 +116,10 @@ def main():
         topo["historico"] = [{"doc_id": e["doc_id"], "data": e["data"], "especie": e["especie"] or e["categoria"],
                               "url": e["url"]} for e in lista[1:]]
         topo["id"] = f"e{topo['doc_id']}"
+        if topo["lastro"] == "CRA":
+            topo["pag"] = f"/cra/{chave_cra(topo)}/"
+        elif len(topo["codigos_if"]) == 1 and topo["codigos_if"][0] in cris_com_pagina:
+            topo["pag"] = f"/cri/{topo['codigos_if'][0]}/"
         eventos.append(topo)
     eventos.sort(key=lambda e: e["data"], reverse=True)
 
@@ -103,12 +127,14 @@ def main():
     fundos = {}
     for e in eventos:
         for f in e["fundos"]:
+            if f.get("tf") == "fiagro":
+                continue  # sem posição declarada, não entra na conta de exposição
             x = fundos.setdefault(f["cnpj_fundo"], {"cnpj_fundo": f["cnpj_fundo"], "ticker": f["ticker"], "fundo": f["fundo"],
                                                     "listado": f["listado"], "gestor": f.get("gestor"), "pl": None,
                                                     "expo": {"crit": 0.0, "warn": 0.0, "mon": 0.0}, "eventos": 0, "_ops": {}})
             x["eventos"] += 1
             # a mesma operação pode aparecer em mais de um evento; conta o pior
-            op = (e["securitizadora"], e["emissao"], e["serie"])
+            op = (e["lastro"], e["securitizadora"], e["emissao"], e["serie"])
             atual = x["_ops"].get(op)
             if f["pct_pl"] is not None and (atual is None or ORDEM[e["severidade"]] < ORDEM[atual[0]]):
                 x["_ops"][op] = (e["severidade"], f["pct_pl"])
@@ -124,6 +150,10 @@ def main():
         "gerado_em": datetime.now(timezone.utc).isoformat(timespec="minutes"),
         "janela": {"inicio": coleta["inicio"], "fim": coleta["fim"]},
         "carteira": h["resumo"],
+        "fiagro": {"data_referencia": fg["data_referencia"], "fundos": len(fg["fundos"]),
+                   "com_cra": sum(1 for f in fg["fundos"] if f["cra"] > 0),
+                   "valor_cra": round(sum(f["cra"] for f in fg["fundos"]), 2),
+                   "com_relatorio": sum(1 for f in fg["fundos"] if (f.get("gerencial") or {}).get("valido"))},
         "estatisticas": dict(stats),
         "eventos": eventos,
         "fundos": sorted(fundos.values(), key=lambda x: -(x["expo"]["crit"] * 10 + x["expo"]["warn"] * 3 + x["expo"]["mon"])),
@@ -133,9 +163,13 @@ def main():
     EMISSORES.update(emissores_por_cnpj(h["posicoes"]))
     paginas = gerar_paginas_fundos(saida, h, ops)
     paginas_cri, busca_cri = gerar_paginas_cri(saida, h, ops)
+    paginas_fg, busca_fg = gerar_paginas_fiagro(saida, fg)
+    paginas_cra, busca_cra = gerar_cras(saida, fg)
     stats["paginas_cri"] = len(paginas_cri)
-    stats["itens_busca"] = escrever_busca(h, busca_cri)
-    escrever_sitemap(saida["gerado_em"][:10], paginas + paginas_cri)
+    stats["paginas_fiagro"] = len(paginas_fg)
+    stats["paginas_cra"] = len(paginas_cra)
+    stats["itens_busca"] = escrever_busca(h, busca_cri + busca_fg + busca_cra)
+    escrever_sitemap(saida["gerado_em"][:10], paginas + paginas_cri + paginas_fg + paginas_cra)
     print(json.dumps({"eventos": len(eventos), "fundos": len(fundos), **stats}, ensure_ascii=False), file=sys.stderr)
 
 

@@ -1,10 +1,10 @@
     <div class="hero" id="conteudo">
-      <h1 id="headline">Eventos de crédito nos CRIs da carteira dos FIIs</h1>
-      <p id="subline">Inadimplência, assembleias, waivers e outros eventos de crédito dos CRIs, ligados aos FIIs que têm cada CRI na carteira. Dados públicos do Fundos.Net e da CVM, atualizados de hora em hora.</p>
+      <h1 id="headline">Eventos de crédito nos CRIs dos FIIs e nos CRAs dos Fiagros</h1>
+      <p id="subline">Inadimplência, assembleias, waivers e outros eventos de crédito de CRIs e CRAs, ligados aos fundos que têm cada título na carteira. Dados públicos do Fundos.Net e da CVM, atualizados de hora em hora.</p>
       <form class="gsearch hero-search" role="search" action="/" method="get" autocomplete="off">
-        <label for="gq-home" class="sr">Buscar fundo ou CRI</label>
+        <label for="gq-home" class="sr">Buscar fundo, CRI ou CRA</label>
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
-        <input id="gq-home" name="q" type="search" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="gq-home-list" placeholder="Busque um FII ou CRI: RBHY11, KNSC11, 24G2775710, Opea…">
+        <input id="gq-home" name="q" type="search" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="gq-home-list" placeholder="Busque um FII, Fiagro, CRI ou CRA: RBHY11, KNCA11, 24G2775710, Opea…">
         <kbd aria-hidden="true">/</kbd>
         <ul id="gq-home-list" class="gq-list" role="listbox" aria-label="Resultados" hidden></ul>
       </form>
@@ -22,7 +22,7 @@
   <div class="wrap frow" role="search">
     <label class="search" for="q"><span class="sr">Buscar</span>
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
-      <input id="q" type="search" placeholder="Filtrar esta lista: FII, operação, securitizadora ou código IF" autocomplete="off">
+      <input id="q" type="search" placeholder="Filtrar esta lista: fundo, operação, securitizadora ou código" autocomplete="off">
     </label>
     <select id="gestora" class="sel" aria-label="Filtrar por gestora"><option value="">Todas as gestoras</option></select>
     <div class="sevs" id="sevs" role="group" aria-label="Severidade">
@@ -33,6 +33,7 @@
   </div>
   <div class="wrap frow">
     <div class="periodo" id="periodo"></div>
+    <div class="sevs" id="lastro" role="group" aria-label="Tipo de título"></div>
     <label class="tgl" for="mine"><input id="mine" type="checkbox">Só meus fundos</label>
     <label class="tgl" for="listed"><input id="listed" type="checkbox">Só negociados em bolsa</label>
   </div>
@@ -49,7 +50,7 @@
     <aside class="side">
       <section class="panel" aria-labelledby="h-mine">
         <h2 id="h-mine">Meus fundos</h2>
-        <p class="sub">Adicione os FIIs que você acompanha para ver primeiro o que afeta sua carteira. Fica salvo só neste navegador.</p>
+        <p class="sub">Adicione os FIIs e Fiagros que você acompanha para ver primeiro o que afeta sua carteira. Fica salvo só neste navegador.</p>
         <form class="add" id="add-form">
           <label for="add-input" class="sr">Fundo para acompanhar</label>
           <input id="add-input" list="fundos-list" placeholder="Ticker ou nome" autocomplete="off">
@@ -62,7 +63,7 @@
 
       <section class="panel" aria-labelledby="h-expo">
         <h2 id="h-expo">Fundos mais expostos</h2>
-        <p class="sub" id="expo-sub">Parte do PL aplicada em CRIs que tiveram evento no período.</p>
+        <p class="sub" id="expo-sub">Parte do PL dos FIIs aplicada em CRIs que tiveram evento no período.</p>
         <ul class="expo" id="expo"></ul>
         <div class="scale" id="scale"></div>
         <a class="link-btn" href="/fundos.html" style="display:inline-block;text-decoration:none">Ver o ranking completo</a>

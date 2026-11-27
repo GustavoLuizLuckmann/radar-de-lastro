@@ -6,4 +6,6 @@ __pycache__/
 site/sitemap.xml
 site/fii/
 site/cri/
+site/cra/
+site/fiagro/
 site/busca.json

@@ -10,10 +10,11 @@
   <div class="prose">
     <h2>O caminho dos dados</h2>
     <ol class="steps">
-      <li><b>Lemos os documentos dos CRIs</b><span>De hora em hora, das 6h às 23h, o radar baixa os fatos relevantes, comunicados, avisos e documentos de assembleia que as securitizadoras publicam no Fundos.Net.</span></li>
+      <li><b>Lemos os documentos dos CRIs e CRAs</b><span>De hora em hora, das 6h às 23h, o radar baixa os fatos relevantes, comunicados, avisos e documentos de assembleia que as securitizadoras publicam no Fundos.Net.</span></li>
       <li><b>Identificamos o tema</b><span>Regras procuram assuntos de crédito no corpo do comunicado ou na pauta da assembleia, como inadimplência, vencimento antecipado, waiver e fundo de reserva, e definem a severidade.</span></li>
-      <li><b>Encontramos quem tem o CRI</b><span>A carteira de cada FII vem do informe trimestral estruturado, publicado nos dados abertos da CVM. O evento é ligado ao fundo pelo código IF do CRI ou, quando o documento não traz o código, por securitizadora, emissão e série.</span></li>
-      <li><b>Calculamos o peso no fundo</b><span>O valor do CRI na carteira é dividido pelo patrimônio líquido do fundo no mesmo mês, informado no informe mensal. A gestora vem do cadastro de fundos da CVM.</span></li>
+      <li><b>Encontramos o FII que tem o CRI</b><span>A carteira de cada FII vem do informe trimestral estruturado, publicado nos dados abertos da CVM. O evento é ligado ao fundo pelo código IF do CRI ou, quando o documento não traz o código, por securitizadora, emissão e série.</span></li>
+      <li><b>Calculamos o peso no FII</b><span>O valor do CRI na carteira é dividido pelo patrimônio líquido do fundo no mesmo mês, informado no informe mensal. A gestora vem do cadastro de fundos da CVM.</span></li>
+      <li><b>Procuramos o CRA nos Fiagros</b><span>A CVM não divulga quais CRAs cada Fiagro tem: o informe mensal traz só o total aplicado em CRA. Por isso o radar lê o relatório gerencial mais recente de cada Fiagro no Fundos.Net e procura nele o código IF do CRA ou o nome do devedor. O evento mostra o trecho do relatório em que a operação aparece.</span></li>
     </ol>
 
     <h2>A base hoje</h2>
@@ -33,6 +34,7 @@
     <ul>
       <li>A carteira dos fundos vem do informe trimestral, que é uma foto com alguns meses de atraso. Compras e vendas posteriores não aparecem.</li>
       <li>Parte dos informes não traz o código IF do CRI. Nesses casos o cruzamento usa emissão e série, que é menos preciso, e o evento avisa isso.</li>
+      <li>Nos Fiagros, a ligação vem do relatório gerencial, que cada gestora monta do seu jeito. Quando o relatório cita só o devedor, o fundo pode ter outra série do mesmo devedor. Fiagros que não detalham a carteira no relatório não aparecem ligados a nenhum CRA, e não há como mostrar quanto do PL está em cada CRA.</li>
       <li>A classificação é feita por regras e pode errar. Todo evento tem o link do documento original.</li>
       <li>Fundos sem código de negociação aparecem como "balcão": as cotas estão registradas na B3, mas não são negociadas em pregão.</li>
     </ul>

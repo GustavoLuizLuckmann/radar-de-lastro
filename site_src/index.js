@@ -6,16 +6,17 @@ function filtrar(){
     if(e.id===P.forcar) return true;
     if(!noPeriodo(e.data)) return false;
     if(!P.sev.has(e.severidade)) return false;
-    if(!fundosVisiveis(e).length) return false;
+    if(!visivel(e)) return false;
     if(P.mine && !afetaMeus(e)) return false;
     if(q){
-      const hay=[e.tipo,e.securitizadora,secNome(e.securitizadora),e.operacao,e.trecho,...e.codigos_if,...e.fundos.map(f=>(f.ticker||'')+' '+f.fundo+' '+(f.gestor||''))].join(' ').toLowerCase();
+      const hay=[e.tipo,lastroDe(e),e.isin,e.securitizadora,secNome(e.securitizadora),e.operacao,e.trecho,...e.codigos_if,...e.fundos.map(f=>(f.ticker||'')+' '+f.fundo+' '+(f.gestor||''))].join(' ').toLowerCase();
       if(!hay.includes(q)) return false;
     }
     return true;
   }).sort((a,b)=>(S.carteira.size?(afetaMeus(b)-afetaMeus(a)):0) || b.data.localeCompare(a.data));
 }
-const doPeriodo = () => DATA.eventos.filter(e=>noPeriodo(e.data) && fundosVisiveis(e).length);
+const doPeriodo = () => DATA.eventos.filter(e=>noPeriodo(e.data) && visivel(e));
+const alvoTxt = () => S.lastro==='CRI' ? 'CRIs de FIIs' : S.lastro==='CRA' ? 'CRAs de Fiagros' : 'CRIs e CRAs';
 
 function renderHero(){
   const base=doPeriodo();
@@ -27,20 +28,21 @@ function renderHero(){
     const meus=base.filter(afetaMeus), mc=meus.filter(e=>e.severidade==='crit').length;
     h.textContent = meus.length
       ? `Seus fundos tiveram ${meus.length} ${meus.length===1?'evento':'eventos'} de crédito ${per}${mc?`, ${mc} ${mc===1?'urgente':'urgentes'}`:''}.`
-      : `Nenhum CRI dos seus fundos teve evento de crédito ${per}.`;
-    s.textContent=`No mercado todo foram ${base.length} ${base.length===1?'evento':'eventos'}, em CRIs de ${nf} FIIs.`;
+      : `Nenhum título dos seus fundos teve evento de crédito ${per}.`;
+    s.textContent=`No mercado todo foram ${base.length} ${base.length===1?'evento':'eventos'} em ${alvoTxt()}, ligados a ${nf} ${nf===1?'fundo':'fundos'}.`;
   } else {
     h.textContent = base.length
-      ? `${base.length} ${base.length===1?'evento de crédito atingiu':'eventos de crédito atingiram'} CRIs de ${nf} ${nf===1?'FII':'FIIs'} ${per}.`
-      : `Nenhum evento de crédito em CRIs de FIIs ${per}.`;
-    s.textContent='Inadimplência, assembleias, waivers e outros eventos publicados pelas securitizadoras, ligados aos fundos que têm cada CRI na carteira.';
+      ? `${base.length} ${base.length===1?'evento de crédito':'eventos de crédito'} em ${alvoTxt()} ${per}, ${base.length===1?'ligado':'ligados'} a ${nf} ${nf===1?'fundo':'fundos'}.`
+      : `Nenhum evento de crédito em ${alvoTxt()} ${per}.`;
+    s.textContent='Inadimplência, assembleias, waivers e outros eventos publicados pelas securitizadoras, ligados aos FIIs que têm cada CRI na carteira e aos Fiagros que citam cada CRA no relatório gerencial.';
   }
 }
 
 function chips(e){
   const fs=fundosVisiveis(e).slice().sort((a,b)=>(S.carteira.has(b.cnpj_fundo)-S.carteira.has(a.cnpj_fundo))||((b.pct_pl||0)-(a.pct_pl||0)));
   const vis=fs.slice(0,4);
-  let h=vis.map(f=>`<span class="chip${S.carteira.has(f.cnpj_fundo)?' mine':''}"><b class="${f.ticker?'tk':''}">${esc(rotulo(f))}</b>${f.ticker?'':'<em>balcão</em>'}<span>${pct(f.pct_pl)}</span></span>`).join('');
+  let h=vis.map(f=>`<span class="chip${S.carteira.has(f.cnpj_fundo)?' mine':''}"><b class="${f.ticker?'tk':''}">${esc(rotulo(f))}</b>${ehFiagro(f)?'<em>Fiagro</em>':f.ticker?'':'<em>balcão</em>'}<span>${ehFiagro(f)?(f.metodo==='codigo'?'código citado':'devedor citado'):pct(f.pct_pl)}</span></span>`).join('');
+  if(!fs.length && lastroDe(e)==='CRA') h='<span class="chip vazio"><span>Nenhum Fiagro citou esta operação</span></span>';
   if(fs.length>vis.length) h+=`<span class="chip"><span>mais ${fs.length-vis.length}</span></span>`;
   return h;
 }
@@ -48,14 +50,15 @@ function chips(e){
 function linha(e){
   const fs=fundosVisiveis(e).slice().sort((a,b)=>(b.pct_pl||0)-(a.pct_pl||0));
   const lista=fs.length?fs:e.fundos;
-  const maior=lista[0]?.pct_pl, d=dia(e.data);
-  const historico=e.historico.slice(0,3).map(x=>`<a class="btn" href="${esc(x.url)}" target="_blank" rel="noopener">${esc(x.especie)} de ${dataCurta(x.data)}</a>`).join('');
+  const fiis=lista.filter(f=>!ehFiagro(f)), fgs=lista.filter(ehFiagro);
+  const maior=fiis[0]?.pct_pl, d=dia(e.data), tit=lastroDe(e);
+  const historico=e.historico.slice(0,3).map(x=>`<a class="btn" href="${esc(x.url)}" target="_blank" rel="noopener noreferrer">${esc(x.especie)} de ${dataCurta(x.data)}</a>`).join('');
   return `<li><details class="ev" id="${e.id}">
     <summary>
       <div class="when"><b>${d.getDate()} ${MESES[d.getMonth()]}</b>${relativo(e.data)}</div>
       <div class="ev-main">
         <div class="ev-top"><span class="tag ${e.severidade}">${SEV[e.severidade]}</span><span class="ev-title">${esc(e.tipo)}</span></div>
-        <div class="ev-op"><strong>${esc(opNome(e.operacao))}</strong>, CRI da ${e.emissao}ª emissão, ${serieTxt(e)}, ${esc(secNome(e.securitizadora))}. <span class="phase">${esc(fase(e))}.</span></div>
+        <div class="ev-op"><strong>${esc(opNome(e.operacao))}</strong>, <span class="lt lt-${tit}">${tit}</span> da ${e.emissao}ª emissão, ${serieTxt(e)}, ${esc(secNome(e.securitizadora))}. <span class="phase">${esc(fase(e))}.</span></div>
         <div class="chips">${chips(e)}</div>
       </div>
       <div class="max">${maior!=null?`até<b>${pct(maior)}</b>do PL`:''}</div>
@@ -64,15 +67,22 @@ function linha(e){
       ${EXPLICA[e.tipo]?`<div><h3>O que isso significa</h3><p>${esc(EXPLICA[e.tipo])}</p></div>`:''}
       ${e.trecho?`<div><h3>Trecho do documento</h3><p class="quote">${esc(e.trecho)}</p></div>`:''}
       ${e.data_assembleia?`<div><h3>Próximo passo</h3><p>Assembleia marcada para ${dataLonga(e.data_assembleia)}, segundo o edital.</p></div>`:''}
-      <div><h3>FIIs com esse CRI na carteira</h3>
+      ${fiis.length?`<div><h3>FIIs com esse CRI na carteira</h3>
         <div class="tbl-wrap"><table><thead><tr><th>Fundo</th><th>Gestora</th><th class="num">Valor</th><th class="num">% do PL</th></tr></thead><tbody>
-        ${lista.map(f=>`<tr><td><a href="${esc(urlFundo(f))}" style="color:inherit"><b class="${f.ticker?'tk':''}">${esc(rotulo(f))}</b></a><small>${f.ticker?esc(nomeCurto(f.fundo)):'Sem negociação em bolsa'}</small></td><td>${esc(gestoraCurta(f.gestor))}</td><td class="num">${brl(f.valor)}</td><td class="num"><b>${pct(f.pct_pl)}</b></td></tr>`).join('')}
+        ${fiis.map(f=>`<tr><td><a href="${esc(urlFundo(f))}" style="color:inherit"><b class="${f.ticker?'tk':''}">${esc(rotulo(f))}</b></a><small>${f.ticker?esc(nomeCurto(f.fundo)):'Sem negociação em bolsa'}</small></td><td>${esc(gestoraCurta(f.gestor))}</td><td class="num">${brl(f.valor)}</td><td class="num"><b>${pct(f.pct_pl)}</b></td></tr>`).join('')}
         </tbody></table></div>
-      </div>
-      <div class="links"><a class="btn primary" href="${esc(e.url)}" target="_blank" rel="noopener">${ICON.ext}Abrir documento no Fundos.Net</a>${historico}</div>
-      <p class="note">${e.cruzamento==='emissao_serie'
-        ? 'O documento não cita o código IF; ligamos aos fundos por securitizadora, emissão e série. Confira no documento antes de tirar conclusões.'
-        : 'Ligado aos fundos pelo código IF '+esc(e.codigos_if.slice(0,3).join(', '))+'.'} Carteira de referência: ${dia(DATA.carteira.data_referencia).toLocaleDateString('pt-BR')}.</p>
+      </div>`:''}
+      ${fgs.length?`<div><h3>Fiagros que citam esta operação no relatório gerencial</h3>
+        <div class="tbl-wrap"><table><thead><tr><th>Fiagro</th><th>Trecho do relatório</th></tr></thead><tbody>
+        ${fgs.map(f=>`<tr><td><a href="${esc(urlFundo(f))}" style="color:inherit"><b class="${f.ticker?'tk':''}">${esc(rotulo(f))}</b></a><small>${esc(gestoraCurta(f.gestor))}${f.cra_pl?', '+pct(f.cra_pl)+' do PL em CRA':''}</small></td><td><small class="quote">${esc(f.trecho)}</small><small>${f.metodo==='codigo'?'Código do título citado':'Nome do devedor citado; pode ser outra série'}${f.ref?', relatório de '+esc(f.ref):''}</small></td></tr>`).join('')}
+        </tbody></table></div>
+      </div>`:''}
+      ${!lista.length?`<div><h3>Fundos expostos</h3><p>Nenhum Fiagro citou esta operação no relatório gerencial mais recente. A CVM não divulga quais CRAs cada Fiagro tem, então o CRA pode estar em fundos que não detalham a carteira no relatório.</p></div>`:''}
+      <div class="links"><a class="btn primary" href="${esc(e.url)}" target="_blank" rel="noopener noreferrer">${ICON.ext}Abrir documento no Fundos.Net</a>${e.pag?`<a class="btn" href="${esc(e.pag)}">Página do ${tit}</a>`:''}${historico}</div>
+      <p class="note">${fiis.length ? (e.cruzamento==='emissao_serie'
+        ? 'O documento não cita o código IF; ligamos aos FIIs por securitizadora, emissão e série. Confira no documento antes de tirar conclusões.'
+        : 'Ligado aos FIIs pelo código IF '+esc(e.codigos_if.slice(0,3).join(', '))+'.')+' Carteira de referência: '+dia(DATA.carteira.data_referencia).toLocaleDateString('pt-BR')+'.'
+        : 'Os Fiagros foram ligados pelo relatório gerencial mais recente de cada um, que pode citar outra série do mesmo devedor. Confira no documento antes de tirar conclusões.'}</p>
     </div>
   </details></li>`;
 }
@@ -96,7 +106,7 @@ function renderFeed(){
 }
 
 function renderExpo(){
-  const fs=calcExpo(doPeriodo()).filter(passaFundo);
+  const fs=calcExpo(doPeriodo()).filter(f=>passaFundo(f) && f.total>0);
   const peso=f=>f.expo.crit*10+f.expo.warn*3+f.expo.mon;
   fs.sort((a,b)=>peso(b)-peso(a));
   const vis=fs.slice(0,8);
@@ -112,13 +122,13 @@ function renderExpo(){
 
 function renderAgenda(){
   const hoje=isoHoje();
-  const prox=DATA.eventos.filter(e=>e.data_assembleia && e.data_assembleia>=hoje && fundosVisiveis(e).length)
+  const prox=DATA.eventos.filter(e=>e.data_assembleia && e.data_assembleia>=hoje && visivel(e))
     .sort((a,b)=>a.data_assembleia.localeCompare(b.data_assembleia)).slice(0,4);
   const el=document.getElementById('agenda-list');
   if(!prox.length){el.innerHTML='<li class="note">Nenhuma assembleia futura com data identificada nos editais.</li>';return}
   el.innerHTML=prox.map(e=>{const d=dia(e.data_assembleia), n=diasEntre(hoje,e.data_assembleia);
     return `<li><button type="button" data-ev="${e.id}"><div class="cal"><b>${d.getDate()}</b><span>${MESES[d.getMonth()]}</span></div>
-      <div><div class="what">${esc(e.tipo)}</div><div class="who">${esc(opNome(e.operacao))}, ${esc((fundosVisiveis(e).length?fundosVisiveis(e):e.fundos).map(rotulo).slice(0,3).join(', '))}</div><div class="in${n<=7?' soon':''}">${n===0?'hoje':'em '+n+(n===1?' dia':' dias')}</div></div></button></li>`}).join('');
+      <div><div class="what">${esc(e.tipo)}</div><div class="who">${esc(opNome(e.operacao))} (${lastroDe(e)})${e.fundos.length?', '+esc((fundosVisiveis(e).length?fundosVisiveis(e):e.fundos).map(rotulo).slice(0,3).join(', ')):''}</div><div class="in${n<=7?' soon':''}">${n===0?'hoje':'em '+n+(n===1?' dia':' dias')}</div></div></button></li>`}).join('');
 }
 
 function renderCarteira(){
@@ -150,6 +160,7 @@ carregar().then(()=>{
   const mine=document.getElementById('mine'); mine.checked=P.mine;
   mine.addEventListener('change',()=>{P.mine=mine.checked; store.set('rl-mine',P.mine); P.limite=25; renderFeed();});
   ligarBolsa(document.getElementById('listed'), render);
+  ligarLastro(document.getElementById('lastro'), ()=>{P.limite=25; render();});
   document.getElementById('loadmore').addEventListener('click',()=>{P.limite+=25; renderFeed();});
   document.getElementById('expo').addEventListener('click',ev=>{const t=ev.target.closest('.fn'); if(!t) return;
     q.value=t.dataset.q; P.q=t.dataset.q; P.limite=25; renderFeed(); document.getElementById('eventos').scrollIntoView({behavior:'smooth',block:'start'});});
@@ -158,7 +169,7 @@ carregar().then(()=>{
   form.addEventListener('submit',ev=>{ev.preventDefault();
     const f=acharFundo(inp.value);
     if(f){ S.carteira.add(f.cnpj_fundo); salvarCarteira(); inp.value=''; inp.setCustomValidity(''); render(); }
-    else { inp.setCustomValidity('Não encontramos esse fundo entre os FIIs com eventos no histórico.'); inp.reportValidity(); }});
+    else { inp.setCustomValidity('Não encontramos esse fundo entre os FIIs e Fiagros com eventos no histórico.'); inp.reportValidity(); }});
   inp.addEventListener('input',()=>inp.setCustomValidity(''));
   document.getElementById('mine-list').addEventListener('click',ev=>{const b=ev.target.closest('button[data-rm]'); if(!b) return;
     S.carteira.delete(b.dataset.rm); salvarCarteira(); render();});

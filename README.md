@@ -1,15 +1,16 @@
 # Radar de Lastro
 
-Site que acompanha eventos de crédito nos CRIs da carteira dos FIIs, só com dados públicos.
+Site que acompanha eventos de crédito nos CRIs dos FIIs e nos CRAs dos Fiagros, só com dados públicos.
 
 ## Como funciona
 
 1. `pipeline/holdings.py` baixa o informe trimestral estruturado (tabela de ativos) e o informe mensal de FII nos dados abertos da CVM e monta a carteira de CRI/CRA de cada fundo, com valor e % do PL.
-2. `pipeline/collect.py` lista, na consulta pública do Fundos.Net (página de certificados), os fatos relevantes, comunicados, avisos e documentos de assembleia de CRI dos últimos 30 dias.
-3. `pipeline/fetch_docs.py` baixa cada documento e guarda só o texto (`pdftotext`).
-4. `pipeline/match.py` liga documento e fundo. Ordem de confiança: código IF na descrição do Fundos.Net, código IF citado no texto, e por fim securitizadora + emissão + série (desligado para securitizadoras que repetem numeração de emissão, como a Opea).
-5. `pipeline/classify.py` classifica o evento por regras e define a severidade.
-6. `pipeline/build.py` grava `site/data.json`, que o `site/index.html` lê.
+2. `pipeline/fiagro.py` baixa o informe mensal de Fiagro (CVM) e o relatório gerencial mais recente de cada Fiagro no Fundos.Net. A CVM não divulga o código dos CRAs na carteira dos Fiagros; os eventos são ligados aos Fiagros pelo código do CRA ou pelo nome do devedor citado no relatório.
+3. `pipeline/collect.py` lista, na consulta pública do Fundos.Net (página de certificados), os fatos relevantes, comunicados, avisos e documentos de assembleia de CRI e CRA (histórico acumulado de até um ano).
+4. `pipeline/fetch_docs.py` baixa cada documento e guarda só o texto (`pdftotext`).
+5. `pipeline/match.py` liga documento e fundo. Ordem de confiança: código IF na descrição do Fundos.Net, código IF citado no texto, e por fim securitizadora + emissão + série (desligado para securitizadoras que repetem numeração de emissão, como a Opea).
+6. `pipeline/classify.py` classifica o evento por regras e define a severidade.
+7. `pipeline/build.py` grava `site/data.json` e as páginas de FII, Fiagro, CRI e CRA.
 
 `python pipeline/run.py 30` roda tudo. O workflow em `.github/workflows/atualizar.yml` roda de hora em hora (6h às 23h) e publica o site no GitHub Pages.
 

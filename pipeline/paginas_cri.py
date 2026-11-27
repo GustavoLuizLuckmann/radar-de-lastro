@@ -157,7 +157,7 @@ def gerar(saida: dict, holdings: dict, ops: dict) -> list[str]:
           {f'<div><dt>Vencimento</dt><dd>{data_br(venc)}</dd></div>' if venc else ''}
           <div><dt>Em carteira de FIIs</dt><dd>{brl(total)} em {len(fundos)} {'fundo' if len(fundos) == 1 else 'fundos'}</dd></div>
         </dl>
-        {f'<a class="btn" style="margin-top:14px" href="https://fnet.bmfbovespa.com.br/fnet/publico/exibirDocumento?id={doc}&cvm=true" target="_blank" rel="noopener">Último documento no Fundos.Net</a>' if doc else ''}
+        {f'<a class="btn" style="margin-top:14px" href="https://fnet.bmfbovespa.com.br/fnet/publico/exibirDocumento?id={doc}&cvm=true" target="_blank" rel="noopener noreferrer">Último documento no Fundos.Net</a>' if doc else ''}
       </section>
     </aside>
   </div>

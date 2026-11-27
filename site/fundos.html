@@ -3,10 +3,12 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-RN5HdKG4inmNeIu/iNRgu6Wx8NGTUC4A5HxlwdiW2WI=' https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self' https://cloudflareinsights.com; object-src 'none'; base-uri 'self'; form-action 'self'; upgrade-insecure-requests">
+<meta name="referrer" content="strict-origin-when-cross-origin">
 <title>Fundos expostos · Radar de Lastro</title>
-<meta name="description" content="Ranking dos FIIs com mais patrimônio em CRIs que tiveram eventos de crédito.">
+<meta name="description" content="Ranking dos FIIs com mais patrimônio em CRIs que tiveram eventos de crédito, e dos Fiagros que citam operações com evento.">
 <meta property="og:title" content="Fundos expostos · Radar de Lastro">
-<meta property="og:description" content="Ranking dos FIIs com mais patrimônio em CRIs que tiveram eventos de crédito.">
+<meta property="og:description" content="Ranking dos FIIs com mais patrimônio em CRIs que tiveram eventos de crédito, e dos Fiagros que citam operações com evento.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://radardelastro.com.br/fundos.html">
 <link rel="canonical" href="https://radardelastro.com.br/fundos.html">
@@ -34,14 +36,14 @@
         <b>Radar de Lastro</b>
       </a>
       <form class="gsearch" role="search" action="/" method="get" autocomplete="off">
-        <label for="gq" class="sr">Buscar fundo ou CRI</label>
+        <label for="gq" class="sr">Buscar fundo, CRI ou CRA</label>
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
-        <input id="gq" name="q" type="search" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="gq-list" placeholder="Buscar FII ou CRI">
+        <input id="gq" name="q" type="search" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="gq-list" placeholder="Buscar FII, Fiagro, CRI ou CRA">
         <kbd aria-hidden="true">/</kbd>
         <ul id="gq-list" class="gq-list" role="listbox" aria-label="Resultados" hidden></ul>
       </form>
       <nav class="nav" aria-label="Páginas">
-        <a href="/">Eventos</a><a href="/fundos.html" aria-current="page">Fundos expostos</a><a href="/assembleias.html">Próximas assembleias</a><a href="/como-funciona.html">Como funciona</a>
+        <a href="/">Eventos</a><a href="/fundos.html" aria-current="page">Fundos expostos</a><a href="/fiagro/">Fiagros</a><a href="/assembleias.html">Próximas assembleias</a><a href="/como-funciona.html">Como funciona</a>
       </nav>
     </div>
   </div>
@@ -49,7 +51,7 @@
 <section class="pagehead" id="conteudo">
   <div class="wrap">
       <h1 id="headline">Fundos expostos</h1>
-      <p id="subline">FIIs com patrimônio aplicado em CRIs que tiveram eventos de crédito no período.</p>
+      <p id="subline">FIIs com patrimônio aplicado em CRIs que tiveram eventos de crédito no período, e Fiagros que citam CRAs com evento no relatório gerencial.</p>
       <p class="updated" id="updated"></p>
   </div>
 </section>
@@ -58,12 +60,13 @@
   <div class="wrap frow" role="search">
     <label class="search" for="q"><span class="sr">Buscar fundo</span>
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
-      <input id="q" type="search" placeholder="Buscar FII ou gestora" autocomplete="off">
+      <input id="q" type="search" placeholder="Buscar fundo ou gestora" autocomplete="off">
     </label>
     <select id="gestora" class="sel" aria-label="Filtrar por gestora"><option value="">Todas as gestoras</option></select>
   </div>
   <div class="wrap frow">
     <div class="periodo" id="periodo"></div>
+    <div class="sevs" id="lastro" role="group" aria-label="Tipo de título"></div>
     <label class="tgl" for="mine"><input id="mine" type="checkbox">Só meus fundos</label>
     <label class="tgl" for="listed"><input id="listed" type="checkbox">Só negociados em bolsa</label>
   </div>
@@ -71,7 +74,7 @@
 
 <main class="wrap">
   <div class="head"><h2 id="h-rank">Ranking</h2><small id="count"></small></div>
-  <p class="note" style="margin:0 0 12px">Cada coluna soma a parte do PL aplicada em CRIs com evento daquela severidade. Um CRI conta uma vez, pela pior severidade do período. Clique num fundo para ver os eventos.</p>
+  <p class="note" style="margin:0 0 12px">Para FIIs, cada coluna soma a parte do PL aplicada em CRIs com evento daquela severidade; um CRI conta uma vez, pela pior severidade do período. Para Fiagros, a CVM não divulga o valor de cada CRA, então as colunas mostram o número de eventos. Clique num fundo para ver os eventos.</p>
   <div class="panel tbl-wrap">
     <table class="rank">
       <thead><tr>
@@ -87,17 +90,17 @@
       <tbody id="rank"><tr><td colspan="8" class="loading">Carregando fundos…</td></tr></tbody>
     </table>
   </div>
-  <p class="note" style="margin-top:14px">Procura um fundo que não teve evento? Veja a <a href="/fii/">lista de todos os FIIs com CRI na carteira</a>, com a carteira de cada um.</p>
+  <p class="note" style="margin-top:14px">Procura um fundo que não teve evento? Veja a <a href="/fii/">lista de todos os FIIs</a> e a <a href="/fiagro/">lista de todos os Fiagros</a>, com a carteira de cada um.</p>
 </main>
 <footer class="rodape">
   <div class="wrap">
     <div class="cols">
       <div class="col-marca">
         <a class="brand" href="/"><img src="/assets/logo-emblema.png" alt="" width="36" height="36"><b>Radar de Lastro</b></a>
-        <p>Eventos de crédito nos CRIs da carteira dos FIIs, com dados públicos do Fundos.Net e da CVM, atualizados de hora em hora.</p>
+        <p>Eventos de crédito nos CRIs dos FIIs e nos CRAs dos Fiagros, com dados públicos do Fundos.Net e da CVM, atualizados de hora em hora.</p>
       </div>
-      <nav aria-label="Radar"><h2>Radar</h2><a href="/">Eventos</a><a href="/fundos.html">Fundos expostos</a><a href="/assembleias.html">Próximas assembleias</a><a href="/fii/">Todos os FIIs com CRI</a></nav>
-      <nav aria-label="Dados"><h2>Dados</h2><a href="/como-funciona.html">Como funciona</a><a href="/como-funciona.html#limitacoes">Limitações</a><a href="https://dados.cvm.gov.br/" target="_blank" rel="noopener">Dados abertos da CVM</a><a href="https://fnet.bmfbovespa.com.br/fnet/publico/abrirGerenciadorDocumentosCVM" target="_blank" rel="noopener">Fundos.Net</a></nav>
+      <nav aria-label="Radar"><h2>Radar</h2><a href="/">Eventos</a><a href="/fundos.html">Fundos expostos</a><a href="/assembleias.html">Próximas assembleias</a><a href="/fii/">Todos os FIIs</a><a href="/fiagro/">Todos os Fiagros</a></nav>
+      <nav aria-label="Dados"><h2>Dados</h2><a href="/como-funciona.html">Como funciona</a><a href="/como-funciona.html#limitacoes">Limitações</a><a href="https://dados.cvm.gov.br/" target="_blank" rel="noopener noreferrer">Dados abertos da CVM</a><a href="https://fnet.bmfbovespa.com.br/fnet/publico/abrirGerenciadorDocumentosCVM" target="_blank" rel="noopener noreferrer">Fundos.Net</a></nav>
       <nav aria-label="Institucional"><h2>Institucional</h2><a href="/sobre.html">Sobre</a><a href="/termos.html">Termos de uso</a><a href="/privacidade.html">Privacidade</a></nav>
     </div>
     <div class="legal" id="foot"><p>O Radar de Lastro reúne informação pública e não faz recomendação de investimento. Não tem relação com a B3 nem com a CVM.</p></div>
@@ -108,17 +111,18 @@
 const P = { q:'', mine:store.get('rl-mine',false), ordem:'total' };
 
 function linhas(){
-  const eventos=DATA.eventos.filter(e=>noPeriodo(e.data));
+  const eventos=DATA.eventos.filter(e=>noPeriodo(e.data) && passaLastro(e));
   const q=P.q.trim().toLowerCase();
-  let fs=calcExpo(eventos).filter(passaFundo);
+  let fs=calcExpo(eventos).filter(f=>passaFundo(f) && (S.lastro==='todos' || ehFiagro(f)===(S.lastro==='CRA')));
   if(P.mine) fs=fs.filter(f=>S.carteira.has(f.cnpj_fundo));
   if(q) fs=fs.filter(f=>((f.ticker||'')+' '+f.fundo+' '+(f.gestor||'')+' '+gestoraCurta(f.gestor)).toLowerCase().includes(q));
-  const v=f=>P.ordem==='total'?f.total:P.ordem==='eventos'?f.eventos:f.expo[P.ordem];
-  return fs.sort((a,b)=>v(b)-v(a)||b.total-a.total);
+  // Fiagros não têm % do PL por título: nas colunas de severidade entram as contagens de eventos
+  const v=f=>P.ordem==='total'?f.total:P.ordem==='eventos'?f.eventos:(ehFiagro(f)?f.n[P.ordem]/1000:f.expo[P.ordem]);
+  return fs.sort((a,b)=>v(b)-v(a)||b.total-a.total||b.eventos-a.eventos);
 }
 
 function render(){
-  montarGestoras(document.getElementById('gestora'), DATA.eventos.filter(e=>noPeriodo(e.data)), render);
+  montarGestoras(document.getElementById('gestora'), DATA.eventos.filter(e=>noPeriodo(e.data) && passaLastro(e)), render);
   const fs=linhas();
   document.getElementById('h-rank').textContent='Fundos com eventos '+periodoTexto();
   document.getElementById('count').textContent=fs.length+(fs.length===1?' fundo':' fundos');
@@ -131,13 +135,15 @@ function render(){
   corpo.innerHTML=fs.map(f=>{
     const m=S.carteira.has(f.cnpj_fundo), alvo=urlFundo(f);
     return `<tr data-href="${esc(alvo)}">
-      <td><a href="${esc(alvo)}"><b class="${f.ticker?'tk':''}">${esc(rotulo(f))}</b></a><small>${f.ticker?esc(nomeCurto(f.fundo)):'Sem negociação em bolsa'}</small></td>
+      <td><a href="${esc(alvo)}"><b class="${f.ticker?'tk':''}">${esc(rotulo(f))}</b></a><small>${ehFiagro(f)?'Fiagro'+(f.ticker?', '+esc(nomeCurto(f.fundo)):''):f.ticker?esc(nomeCurto(f.fundo)):'Sem negociação em bolsa'}</small></td>
       <td>${esc(gestoraCurta(f.gestor))}</td>
       <td class="num">${f.eventos}</td>
-      <td class="num">${f.expo.crit?pct(f.expo.crit):'–'}</td>
+      ${ehFiagro(f)
+        ? ['crit','warn','mon'].map(s=>`<td class="num">${f.n[s]?f.n[s]+(f.n[s]===1?' evento':' eventos'):'–'}</td>`).join('')+`<td class="num"><small>${f.cra_pl?pct(f.cra_pl)+' do PL em CRA':'sem % por título'}</small></td>`
+        : `<td class="num">${f.expo.crit?pct(f.expo.crit):'–'}</td>
       <td class="num">${f.expo.warn?pct(f.expo.warn):'–'}</td>
       <td class="num">${f.expo.mon?pct(f.expo.mon):'–'}</td>
-      <td class="num"><b>${pct(f.total)}</b><div class="bar" role="img" aria-label="Total ${pct(f.total)}">${['crit','warn','mon'].filter(s=>f.expo[s]>0).map(s=>`<i class="${s}" style="width:${(f.expo[s]/max*100).toFixed(2)}%"></i>`).join('')}</div></td>
+      <td class="num"><b>${pct(f.total)}</b><div class="bar" role="img" aria-label="Total ${pct(f.total)}">${['crit','warn','mon'].filter(s=>f.expo[s]>0).map(s=>`<i class="${s}" style="width:${(f.expo[s]/max*100).toFixed(2)}%"></i>`).join('')}</div></td>`}
       <td><button type="button" class="btn" data-f="${esc(f.cnpj_fundo)}" aria-pressed="${m}">${m?'Acompanhando':'Acompanhar'}</button></td>
     </tr>`;
   }).join('');
@@ -149,6 +155,7 @@ carregar().then(()=>{
   const mine=document.getElementById('mine'); mine.checked=P.mine;
   mine.addEventListener('change',()=>{P.mine=mine.checked; store.set('rl-mine',P.mine); render();});
   ligarBolsa(document.getElementById('listed'), render);
+  ligarLastro(document.getElementById('lastro'), render);
   document.querySelector('.rank thead').addEventListener('click',ev=>{
     const th=ev.target.closest('th[data-sort]'); if(!th) return;
     P.ordem=th.dataset.sort;
